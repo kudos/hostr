@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle"  xmlns:dc="http://purl.org/dc/elements/1.1/">
+   <channel>
+      <title>Hostr's Changelog</title>
+      <link>https://hostr.co/updaters/mac.xml</link>
+      <description>Hostr updates.</description>
+      <language>en</language>
+      <item>
+        <title>Version 0.8.0</title>
+        <sparkle:releaseNotesLink>
+          https://hostr.co/updaters/mac-changelog.html
+        </sparkle:releaseNotesLink>
+        <pubDate>Mon, 27 Jul 2014 20:55:00 +0000</pubDate>
+        <enclosure url="https://web-1.hostr.co/apps/mac/Hostr-0.8.0.zip" sparkle:version="0.8.0" type="application/octet-stream" sparkle:dsaSignature="MCwCFBclXt+6Qh0u+Vt4lH7YSGxrgvxyAhQB5xU0QmXwx5E150y24/qggNyIBQ==" />
+      </item>
+      <item>
+        <title>Version 0.7.0</title>
+        <sparkle:releaseNotesLink>
+          https://hostr.co/updaters/mac-changelog.html
+        </sparkle:releaseNotesLink>
+        <pubDate>Mon, 7 Jul 2014 13:20:11 +0000</pubDate>
+        <enclosure url="https://hostr.co/apps/mac/Hostr-0.7.0.zip" sparkle:version="0.7.0" length="3360915" type="application/octet-stream" />
+      </item>
+      <item>
+        <title>Version 0.6.0</title>
+        <sparkle:releaseNotesLink>
+          https://hostr.co/updaters/mac/changelog
+        </sparkle:releaseNotesLink>
+        <pubDate>Wed, 3 May 2013 23:20:11 +0000</pubDate>
+        <enclosure url="https://hostr.co/apps/mac/Hostr-0.6.0.zip" sparkle:version="0.6.0" length="3360915" type="application/octet-stream" />
+      </item>
+      <item>
+        <title>Version 0.5.3</title>
+        <sparkle:releaseNotesLink>
+          https://hostr.co/updaters/mac/changelog
+        </sparkle:releaseNotesLink>
+        <pubDate>Wed, 24 Mar 2013 19:30:11 +0000</pubDate>
+        <enclosure url="https://hostr.co/apps/mac/Hostr-0.5.3.zip" sparkle:version="0.5.3" length="1261891" type="application/octet-stream" />
+      </item>
+      <item>
+        <title>Version 0.5.2</title>
+        <sparkle:releaseNotesLink>
+          https://hostr.co/updaters/mac/changelog
+        </sparkle:releaseNotesLink>
+        <pubDate>Wed, 24 Mar 2013 19:30:11 +0000</pubDate>
+        <enclosure url="https://hostr.co/apps/mac/Hostr-0.5.2.zip" sparkle:version="0.5.2" length="714292" type="application/octet-stream" />
+      </item>
+      <item>
+         <title>Version 0.5.0</title>
+         <sparkle:releaseNotesLink>
+           https://hostr.co/updaters/mac/changelog
+         </sparkle:releaseNotesLink>
+         <pubDate>Wed, 24 Mar 2013 19:30:11 +0000</pubDate>
+         <enclosure url="https://hostr.co/apps/mac/HostrforMac-0.5.0.zip" sparkle:version="0.5.0" length="714979" type="application/octet-stream" sparkle:dsaSignature="MC0CFBe/G2wPlsNf5+RBEEY0lASzAiWCAhUApJTLf0cYks5MLm68usLcZ3Bf7CI=" />
+      </item>
+      <item>
+         <title>Version 0.4.0</title>
+         <sparkle:releaseNotesLink>
+           https://hostr.co/updaters/mac/changelog
+         </sparkle:releaseNotesLink>
+         <pubDate>Wed, 24 Mar 2013 19:30:11 +0000</pubDate>
+         <enclosure url="https://hostr.co/apps/mac/HostrforMac-0.4.0.zip" sparkle:version="0.4.0" sparkle:dsaSignature="MCwCFEnq7aKTY065gi6s2UKcazEclhkHAhRN5EJtubpzq60T9ZOik/h1qAok7w==" length="642693" type="application/octet-stream" />
+      </item>
+      <item>
+         <title>Version 0.3.0</title>
+         <sparkle:releaseNotesLink>
+           https://hostr.co/updaters/mac/changelog
+         </sparkle:releaseNotesLink>
+         <pubDate>Wed, 24 Mar 2013 19:30:11 +0000</pubDate>
+         <enclosure url="https://hostr.co/apps/mac/HostrforMac-0.3.0.zip" sparkle:version="0.3.0" sparkle:dsaSignature="MCwCFAn8kOMRLboEoTnpPVINriyxqvzTAhR8Us7GZTeOEphQhPMUVD1oHD7mAw==" length="621224" type="application/octet-stream" />
+      </item>
+      <item>
+         <title>Version 0.2.0</title>
+         <sparkle:releaseNotesLink>
+           https://hostr.co/updaters/mac/changelog
+         </sparkle:releaseNotesLink>
+         <pubDate>Wed, 24 Mar 2013 19:30:11 +0000</pubDate>
+         <enclosure url="http://api.hostr.co/distribution/mac/HostrforMac-0.2.0.zip" sparkle:version="0.2.0" sparkle:dsaSignature="MC4CFQDTu5Pflo8GbOBrYbZhi3dxS83negIVANXpvnaMEeQ87OHM2YHIndWXagdD" length="588162" type="application/octet-stream" />
+      </item>
+      <item>
+        <title>Version 0.1.0</title>
+        <sparkle:releaseNotesLink>
+          https://hostr.co/updaters/mac/changelog
+        </sparkle:releaseNotesLink>
+        <pubDate>Wed, 23 Mar 2013 12:20:11 +0000</pubDate>
+        <enclosure url="https://hostr.co/apps/mac/HostrforMac-0.1.0.zip" sparkle:version="0.1.0" sparkle:dsaSignature="MC0CFQCTt9l491CIhvhsAZSHxBzCVD1ShgIUDS2WhT3JB1kkyWoyxRSCWEEVfF8=" length="622650" type="application/octet-stream" />
+      </item>
+   </channel>
+</rss>

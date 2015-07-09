@@ -1,0 +1,3 @@
+# hostr.co/
+
+User-agent: *

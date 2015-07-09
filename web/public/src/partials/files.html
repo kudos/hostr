@@ -1,0 +1,81 @@
+<app-header></app-header>
+<section class="container files">
+  <div class="row" >
+    <div class="col-sm-12">
+      <header class="add">
+        <h3>Files</h3><a class="choose-file"><img  src="/images/plus.png"></a>
+      </header>
+
+      <div ng-repeat="uploadingFile in uploadingFiles">
+        <div class="file" ng-show="uploadingFile.href" bs-tooltip data-title="Click file to copy link!" data-container="body">
+          <a ng-href="{{uploadingFile.href}}" title="{{ uploadingFile.name }}" data-clipboard-text="{{uploadingFile.href}}" clippy><div class="uploading">
+            <div class="throbber">
+            </div>
+          </div></a>
+          <span class="title truncate"><a ng-href="{{uploadingFile.href}}" title="{{ uploadingFile.name }}">{{ uploadingFile.name }}</a>
+          </span>
+
+          <div class="menu" menu-dropdown>
+            <img src="/images/gear.png" height="13" width="13" alt="">
+
+            <div class="dropdown">
+              <div class="file-info">
+                <ul class="list-unstyled">
+                  <li><a data-clipboard-text="{{uploadingFile.href}}" clippy>Copy Link</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="file" ng-hide="uploadingFile.href">
+          <div class="image">
+            <img src="/images/clock-25.png" width="25">
+          </div>
+          <span class="title truncate"><a ng-href="{{uploadingFile.href}}" title="{{ uploadingFile.name }}">{{ uploadingFile.name }}</a>
+          </span>
+        </div>
+      </div>
+
+      <div class="file" ng-repeat="file in files | filter:{trashed:'false'} | filter:searchText">
+        <div class="image">
+          <a href="{{::file.href}}">
+            <img lazy-src="{{:: file.direct['150x'] ? (file.direct['150x']) : '/images/file-adjusted.png'}}" width="160">
+          </a>
+        </div>
+        <span class="title truncate"><a href="{{::file.href}}" title="{{:: file.name }}">{{:: file.name }}</a>
+        </span>
+
+        <div class="menu" menu-dropdown>
+          <img src="/images/gear.png" height="13" width="13" alt="">
+
+          <div class="dropdown">
+            <div class="file-info">
+              <ul class="list-unstyled">
+                <li><a data-clipboard-text="{{::file.href}}" clippy>Copy Link</a></li>
+              </ul>
+              <ul class="list-unstyled">
+                <li>{{:: file.added | date : "d MMM yy 'at' h:mm a"}}</li>
+                <li>{{:: file.size | fileSize }}</li>
+                <li class="sep">{{ file.downloads }} <span ng-show="::file.direct['970x']">views</span><span ng-hide="::file.direct['970x']">downloads</span></li>
+              </ul>
+              <ul class="list-unstyled">
+                <li><a ng-click="remove(file)">Delete</a></div></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ng-cloak jumbotron info" ng-show="uploadingFiles.length === 0 && files.length === 0 && files.$resolved">
+        <div class="drop-zone">
+          <div>
+            <p>Right now you have no files!</p>
+            <p class="plus">Drop a file onto the page or click <a class="choose-file"><img src="/images/plus.png"></a> to begin.</p>
+            <p>For even easier uploading and sharing <a href="/apps">download our apps</a> for Mac and Windows.</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<app-footer></app-footer>

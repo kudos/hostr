@@ -1,0 +1,53 @@
+<section class="container header clearfix" ng-if="file" ng-cloak="file">
+  <div class="logo pull-left">
+    <a href="/"><img src="/images/logo-dark-r.png" height="22" width="26" alt=""></a>
+  </div>
+  <div class="menu" menu-dropdown>
+    <img src="/images/menu-retina.png" height="6" width="24" alt="" class="dots">
+
+    <div class="dropdown">
+      <div class="file-info">
+        <a href="{{::file | direct}}" ng-show="file.width" target="_blank">Original File <span class="dimensions">({{:: file.width }}x{{:: file.height }})</span></a>
+        <div class="meta">
+          <div class="date">{{::file.added | date : "d MMM yy 'at' h:mm a"}}</div>
+          <span class="filesize">{{:: file.size | fileSize }}</span>
+          <span class="num-downloads">{{ file.downloads.toLocaleString() }} <span ng-show="file.width">views</span><span ng-hide="file.width">downloads</span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <span class="filename" ng-show="file.direct['970x'] || file.status == 'uploading'">{{ ::file.name }}<span class="filetype"></span></span>
+
+</section>
+
+<section class="container" ng-if="file" ng-show="file.status == 'uploading'" ng-cloak="file">
+  <div class="file-progress">
+    <span>File has not finished uploading&hellip;</span>
+    <span>Please wait.</span>
+
+    <span class="percent"><h3>{{file.percent}}%</h3></span>
+
+    <div class="progress">
+      <div class="progress-bar" role="progressbar" aria-valuenow="{{file.percent}}" aria-valuemin="0" aria-valuemax="100" style="width: {{file.percent}}%;">
+        {{file.percent}}%
+      </div>
+    </div>
+  </div>
+</section>
+
+<section ng-if="file.status == 'active'" class="container image-preview" ng-show="file.direct['970x']">
+  <img class="img-responsive" ng-src="{{:: file.direct['970x'] }}">
+</section>
+
+
+<section ng-if="file.status == 'active'" class="container file-preview" ng-show="file.href && !file.direct['970x']">
+  <span class="file-icon"></span>
+  <span class="filename">{{:: file.name }}<span class="filetype"></span></span>
+  <form action="{{::file | direct}}" method="get" onsubmit="this.submit()">
+    <div class="file-warning">
+      <p>This file has been scanned for viruses but may still not be safe.</p>
+      <p class="agree"><label for="warning"><input type="checkbox" id="warning" name="warning" ng-model="warning"> I understand and want to download</label>
+      </div>
+    <button type="submit" class="btn btn-download btn-lg" ng-disabled="!warning">Download</button>
+  </form>
+</section>

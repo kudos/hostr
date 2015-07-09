@@ -1,0 +1,74 @@
+<app-header></app-header>
+
+
+<section class="container admin">
+    <div class="row">
+        <div class="col-sm-2">
+            <ul class="nav nav-pills nav-stacked">
+                <li class="active"><a href="/account">Account</a>
+                </li>
+                <li><a href="/billing">Billing</a>
+                </li>
+            </ul>
+        </div>
+        <div class="col-sm-10">
+            <div class="holder">
+                <div ng-show="user.plan == 'Free'">
+                  <a href="/pro"><p class="lead bg-primary"><strong>Go Pro</strong> and get 500MB per file upload, no daily upload limits, no advertising and more!</p></a>
+
+                  <p class="info bg-info">
+                      <span>Plan</span>
+                      <span class="type">Free — 20 MB max filesize, 15 file daily upload limit.</span>
+
+                      <span class="type">
+                          <strong>{{user.uploads_today}}/15</strong> files uploaded today</span>
+                  </p>
+                </div>
+                <div ng-show="user.plan != 'Free'">
+                  <p class="info bg-info">
+                      <span>Plan</span>
+                      <span class="type">Pro — 500 MB max filesize, no daily upload limit.</span>
+
+                      <span class="type">
+                          <strong>0/&infin;</strong> files uploaded today</span>
+                  </p>
+                </div>
+                <hr>
+
+                <form role="form" ng-submit="submit(user)">
+                  <div class="alert alert-danger" ng-show="error">{{error}}</div>
+                  <div class="alert alert-success" ng-show="updated">Updated your details successfully</div>
+                    <div class="form-group">
+                        <label for="fname">Email</label>
+                        <input type="email" class="form-control" id="fname" value="{{user.email}}" ng-model="user.email">
+
+                        <span>
+                            <strong>Required.</strong> Password resets will be sent to this address.</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="fname">New Password</label>
+                        <input type="password" class="form-control" id="fname"   ng-model="user.new_password">
+
+                        <span>Leave this field blank unless you want to update your password.</span>
+                    </div>
+
+                    <hr>
+
+                    <div class="form-group">
+                        <label for="fname">Current Password</label>
+                        <input type="password" class="form-control" id="fname"  ng-model="user.current_password">
+
+                        <span><strong>Required.</strong> When updating your details we require your current password.</span>
+                    </div>
+
+                    <button type="submit" href="#" class="btn btn-signup">Save Changes</button>
+                    <!-- <button type="button" href="#" class="btn">Cancel</button> -->
+                    <!-- <button type="button" class="btn btn-danger">Delete Account</button> -->
+                </form>
+
+            </div>
+        </div>
+</section>
+
+<app-footer></app-footer>

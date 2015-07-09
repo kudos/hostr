@@ -1,0 +1,35 @@
+<section class="container header clearfix" ng-keyup="keypress">
+  <div class="row">
+    <div class="col-sm-4 col-sm-push-4 col-xs-12">
+      <div class="logo">
+        <a href="/"><img src="/images/logo-dark-r.png" height="22" width="26" alt=""></a>
+      </div>
+    </div>
+    <div class="col-sm-4 col-sm-pull-4 col-xs-12">
+      <span class="user menu" menu-dropdown ng-click="dropdownClick()">
+        <span class="chevron"><img ng-src="//www.gravatar.com/avatar/{{userMD5}}?s=28&d=blank" height="28" width="28" alt="" class="avatar"></span>
+        {{email}}
+        <div class="dropdown left">
+          <div class="file-info">
+            <a href="/account">Account</a>
+            <a href="/logout" target="_self">Logout</a>
+            <hr>
+            <a href="/apps" target="_self">Get the app</a>
+          </div>
+        </div>
+      </span>
+      <span ng-if="user.plan =='Free'"
+        class="remaining"
+        ng-class="{limit: user.uploads_today >= user.daily_upload_allowance}"
+        bs-tooltip
+        data-placement="right"
+        data-title="You've uploaded {{user.uploads_today}} files today. You can upload {{user.daily_upload_allowance - user.uploads_today}} more for free.">
+        {{user.uploads_today}}</span>
+    </div>
+    <div class="col-sm-4 col-xs-12">
+      <form id="search" name="search" file-search>
+        <input name="query" type="search" ng-model="searchText" value="" search-shortcut placeholder="Search&hellip;">
+      </form>
+    </div>
+  </div>
+</section>

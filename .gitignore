@@ -1,0 +1,10 @@
+.env*
+.DS_Store
+.sass-cache/
+node_modules
+jspm_packages
+/coverage/
+npm-debug.log
+web/public/build
+web/public/styles/*.css
+*.gz

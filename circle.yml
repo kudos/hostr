@@ -1,0 +1,24 @@
+machine:
+  services:
+    - docker
+  pre:
+    - curl https://raw.githubusercontent.com/creationix/nvm/v0.25.4/install.sh | bash
+    - npm install -g npm@3
+  node:
+    version: iojs-2.5.0
+
+test:
+  pre:
+    - mongo hostr test/fixtures/mongo-user.js test/fixtures/mongo-file.js
+  override:
+    - npm run cover
+  post:
+    - docker build -t $CIRCLE_PROJECT_REPONAME:$CIRCLE_BUILD_NUM . && docker save $CIRCLE_PROJECT_REPONAME:$CIRCLE_BUILD_NUM | gzip > $CIRCLE_ARTIFACTS/$CIRCLE_PROJECT_REPONAME-ci-build-$CIRCLE_BUILD_NUM.tar.gz
+
+dependencies:
+  cache_directories:
+    - node_modules
+    - web/public/jspm_packages
+  post:
+    - ./node_modules/.bin/jspm config registries.github.auth $JSPM_GITHUB_AUTH_TOKEN
+    - ./node_modules/.bin/jspm install

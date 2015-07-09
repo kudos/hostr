@@ -1,0 +1,98 @@
+{
+  "name": "hostr",
+  "description": "Hostr - simple sharing",
+  "repository": "https://github.com/kudos/hostr-web",
+  "version": "0.0.0",
+  "private": true,
+  "engines": {
+    "iojs": "^2.5.0",
+    "npm": "^3.2.0"
+  },
+  "scripts": {
+    "build": "npm run build-js && npm run build-sass",
+    "build-js": "babel -D -m system -d web/public/build web/public/src",
+    "build-sass": "node-sass -r -o web/public/styles/ web/public/styles/",
+    "cover": "istanbul cover _mocha -- --require babel/register test/**/*.spec.js",
+    "init": "node --require babel/register init.js",
+    "jspm": "jspm install",
+    "start": "npm run build && node -r 'babel/register' app.js",
+    "test": "mongo hostr test/fixtures/mongo-user.js test/fixtures/mongo-file.js && mocha -r babel/register test/api test/web",
+    "watch": "nodemon -x \"node -r 'babel/register'\" -i web/public/ app.js",
+    "watch-js": "babel -D -w -m system -d web/public/build web/public/src",
+    "watch-sass": "node-sass -w -r -o web/public/styles/ web/public/styles/"
+  },
+  "dependencies": {
+    "aws-sdk": "~2.1.42",
+    "babel": "~5.8.20",
+    "basic-auth": "~1.0.3",
+    "co": "~4.6.0",
+    "co-busboy": "~1.3.0",
+    "co-redis": "~1.2.1",
+    "co-views": "~1.0.0",
+    "debug": "~2.2.0",
+    "ejs": "~2.3.2",
+    "gm": "~1.18.1",
+    "http-errors": "^1.3.1",
+    "jspm": "~0.16.0-beta.3",
+    "kcors": "~1.0.1",
+    "koa": "~0.21.0",
+    "koa-bodyparser": "~2.0.0",
+    "koa-compress": "~1.0.8",
+    "koa-favicon": "~1.2.0",
+    "koa-file-server": "~2.3.1",
+    "koa-generic-session": "~1.9.0",
+    "koa-logger": "~1.3.0",
+    "koa-mount": "~1.3.0",
+    "koa-redis": "~1.0.0",
+    "koa-route": "~2.4.2",
+    "koa-views": "~3.1.0",
+    "koa-websocket": "~1.0.0",
+    "mandrill-api": "~1.0.45",
+    "mime-types": "~2.1.4",
+    "mkdirp": "~0.5.1",
+    "moment": "~2.10.6",
+    "mongodb-promisified": "~1.0.3",
+    "node-sass": "~3.2.0",
+    "node-uuid": "~1.4.3",
+    "passwords": "~1.3.0",
+    "pretty-error": "^1.1.2",
+    "raven": "~0.8.1",
+    "redis": "0.12.1",
+    "redis-url": "~1.2.1",
+    "s3-upload-stream": "^1.0.7",
+    "spdy": "~1.32.4",
+    "stripe": "~3.6.0",
+    "supertest": "~1.0.1",
+    "swig": "^1.4.2",
+    "virustotal.js": "~0.3.1"
+  },
+  "devDependencies": {
+    "eslint": "~1.0.0",
+    "istanbul": "^0.3.17",
+    "mocha": "~2.2.5",
+    "nodemon": "~1.4.0",
+    "tmp": "0.0.26"
+  },
+  "jspm": {
+    "directories": {
+      "baseURL": "web/public"
+    },
+    "dependencies": {
+      "angular": "npm:angular@~1.4.3",
+      "angular-reconnecting-websocket": "github:adieu/angular-reconnecting-websocket@~0.1.1",
+      "angular-strap": "npm:angular-strap@~2.3.1",
+      "angular/resource": "npm:angular-resource@~1.4.3",
+      "angular/route": "npm:angular-route@~1.4.3",
+      "bootstrap-sass": "npm:bootstrap-sass@~3.3.5",
+      "cferdinandi/smooth-scroll": "github:cferdinandi/smooth-scroll@~5.3.7",
+      "dropzone": "npm:dropzone@~4.0.1",
+      "jquery": "npm:jquery@~2.1.4",
+      "zeroclipboard": "npm:zeroclipboard@~2.2.0"
+    },
+    "devDependencies": {
+      "babel": "npm:babel-core@^5.8.5",
+      "babel-runtime": "npm:babel-runtime@^5.8.5",
+      "core-js": "npm:core-js@~1.0.0"
+    }
+  }
+}

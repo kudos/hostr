@@ -1,0 +1,67 @@
+<app-header></app-header>
+<section class="container pro">
+  <div class="row">
+    <div class="col-md-3 col-md-offset-3">
+      <h1>Hostr Free</h1>
+
+      <h2>Free!</h2>
+
+      <ul class="list-unstyled">
+        <li>Simple, Secure file sharing</li>
+        <li>15 Uploads per day</li>
+        <li>Share 25MB files</li>
+        <li>Ads on popular files</li>
+      </ul>
+
+      <button ng-hide="user.plan == 'Free'" class="btn btn-primary" ng-click="cancel()">Downgrade</button>
+      <button ng-show="user.plan == 'Free'" class="btn btn-primary" disabled>You</button>
+    </div>
+    <div class="col-md-3">
+      <h1>Hostr Pro</h1>
+
+      <h2>$6/month</h2>
+
+      <ul class="list-unstyled">
+        <li>All the features of Free</li>
+        <li>Unlimited file sharing</li>
+        <li>Share 500MB files</li>
+        <li>No ads, for you or your files</li>
+      </ul>
+
+      <button ng-hide="user.plan == 'Free'" class="btn btn-primary" disabled>You</button>
+      <button ng-show="user.plan == 'Free'" id="upgrade" class="btn btn-primary" stripe-subscribe>Go Pro</button>
+    </div>
+  </div>
+  <div class="row questions">
+    <div class="col-md-12">
+      <h2>Questions?</h2>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-3 col-md-offset-3">
+      <h3>Is there a minimum contract?</h3>
+      <p>You can cancel whenever you like. We will downgrade your account at the end of your billing cycle.</p>
+    </div>
+    <div class="col-md-3">
+      <h3>Can I pay yearly?</h3>
+      <p>Not yet, but we do plan to offer it in the near future.</p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-3 col-md-offset-3">
+      <h3>How secure is my credit card?</h3>
+      <p>Every step of the transaction is protected by 256-bit SSL. We use Stripe for our credit card transactions, meaning your card details are never transmitted to us.</p>
+    </div>
+    <div class="col-md-3">
+      <h3>What payment methods do you accept?</h3>
+      <p>We accept Visa, MasterCard, and American Express.</p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-3 col-md-offset-3">
+      <h3>Got more questions?</h3>
+      <p>Hit us up on <a href="mailto:support@hostr.co?subject=Hostr%20Pro%20Question">support@hostr.co</a> or click the support link below.</p>
+    </div>
+  </div>
+</section>
+<app-footer></app-footer>

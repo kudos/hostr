@@ -1,0 +1,469 @@
+[ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .x-ng-cloak {
+  display: none !important;
+}
+
+html {
+   height: 100%;
+}
+
+body {
+   min-height: 100%;
+}
+
+$icon-font-path: "../jspm_packages/npm/bootstrap-sass@3.3.5/assets/fonts/bootstrap/";
+
+// MAIN VARIABLES
+$body-bg: #0d0d1a;
+$text-color: #5c686e;
+$brand-primary: #456470;
+$link-hover-color: lighten($brand-primary, 15%);
+
+// TYPOGRAPHY
+$font-family-sans-serif: 'Open Sans', sans-serif;
+$headings-font-family: 'Lato', sans-serif;
+$headings-font-weight: 300;
+$headings-color: lighten($brand-primary, 30%);
+
+// MODIFY GIRD
+$grid-gutter-width: 30px !default;
+$container-tablet: ((750px + $grid-gutter-width)) !default;
+$container-desktop: $container-tablet;
+$container-large-desktop: $container-tablet;
+
+// FORMS
+
+$input-border-radius: 3px;
+
+// $input-bg: rgba(255,255,255,0);
+// $input-border: $brand-primary;
+// $input-color-placeholder: $input-border;
+// $input-color: $input-border;
+// $input-border-focus: lighten($brand-primary, 15%);
+
+$nav-link-hover-bg: rgba(255,255,255,0);
+
+
+// bower: scss
+@import '../jspm_packages/npm/bootstrap-sass@3.3.5/assets/stylesheets/bootstrap';
+// endbower
+html,
+body {
+  height: 100%;
+}
+
+a {
+  &:hover,
+  &:focus {
+    color: $link-hover-color;
+    text-decoration: none;
+  }
+}
+
+.header {
+  padding-top: 70px;
+  padding-bottom: 70px;
+  text-align: center;
+  .logo {
+    width: 26px;
+    margin: 0 auto;
+  }
+}
+
+.btn {
+  width: auto;
+  margin: 90px auto 15px;
+  font-family: 'Lato', sans-serif;
+  font-weight: 300;
+  padding-left: 45px;
+  padding-right: 45px;
+  padding-top: 5px;
+  font-size: 30px;
+}
+
+.btn-mast {
+  @include button-variant(white, rgba(255,255,255,0), white);
+}
+
+.masthead {
+  @media (min-width: $screen-lg-min) {
+    height: 100%;
+  }
+  text-align: center;
+  background: url(../images/cloud_top.jpg) 0 0 no-repeat;
+  .container {
+    position: relative;
+    @media (max-width: $screen-lg-min) {
+      // height: 900px;
+      padding-top: 100px;
+    }
+    @media (min-width: $screen-lg-min) {
+      height: 100%;
+      > div:first-child {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50.1%, -50.1%);
+        -webkit-transform: translate(-50.1%, -50.08%);
+      }
+    }
+    .filetypes {
+      margin-right: auto;
+      margin-left: auto;
+      margin-top: 75px;
+      margin-bottom: 65px;
+      width: 505px;
+      @media (max-width: $screen-sm-min) {
+        width: 100%;
+      }
+      @include clearfix;
+      span {
+        float: left;
+        margin-right: 65px;
+      }
+      span:last-child {
+        margin-right: 0;
+      }
+    }
+    img {
+      margin: 0 auto;
+    }
+    .btn-mast {
+      @include button-variant(white, rgba(255,255,255,0), white);
+    }
+    .more {
+      position: absolute;
+      left: 50%;
+      bottom: 20px;
+      width: 100px;
+      transform: translate(-50%);
+      -webkit-transform: translate(-50%);
+      img {
+        display: block;
+        margin: 0 auto;
+        margin-top: 5px;
+      }
+    }
+    .app-download {
+      position: absolute;
+      top: 75px;
+      left: 80%;
+      a {
+        padding-right: 10px;
+        opacity: 0.25;
+      }
+      a:hover {
+        opacity: 0.5;
+      }
+      img {
+        vertical-align: baseline;
+      }
+    }
+    @media (max-width: $screen-lg-min) {
+      .more, .app-download {
+        display: none;
+      }
+    }
+  }
+}
+
+.user-form {
+  display: block;
+  .lead {
+    text-align: center;
+    color: #8997A0;
+  }
+  .holder {
+    @media (max-width: $screen-sm-min) {
+      width: 100%;
+    }
+    width: 50%;
+    margin: 0 auto;
+    text-align: left;
+    background: #ededf3;
+    padding: 35px;
+    border-radius: 3px;
+  }
+  .alert {
+    padding: 8px 15px;
+  }
+  .alert-signin {
+    @media (max-width: $screen-sm-min) {
+      width: 100%;
+    }
+    margin: 10px auto;
+    width: 50%;
+    text-align: center;
+  }
+  form {
+    .btn {
+      margin: 35px auto 0;
+      &-signup {
+        @include button-variant(white, #39b54a, #39b54a);
+      }
+    }
+    label {
+      font-family: 'Lato', sans-serif;
+      font-weight: 300;
+    }
+    input {
+      border-radius: 3px;
+      font-family: 'Lato', sans-serif;
+      font-weight: 300;
+    }
+    .has-error .form-control {
+      border-color: #FF524F;
+      &:focus {
+        border-color: #FF524F;
+        -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px #ffb4b3;
+        box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px #ffb4b3;
+      }
+    }
+    .has-warning  .form-control {
+      border-color: #F93 !important;
+      &:focus {
+        -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px #ffd894;
+        box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px #ffd894;
+      }
+    }
+    .forgot, .terms {
+      text-decoration: underline;
+    }
+  }
+  .trail {
+    font-family: 'Lato', sans-serif;
+    font-weight: 300;
+    font-size: 1.15em;
+    text-align: center;
+    color: #8997A0;
+    padding-top: 15px;
+  }
+}
+
+.headline {
+  .row {
+    margin-top: 115px;
+    > div {
+      > img {
+        margin-bottom: 100px;
+      }
+      .lead {
+        margin-top: 45px;
+        margin-bottom: 130px;
+      }
+    }
+  }
+  .lead {
+    @media (min-width: $screen-sm-min) {
+      font-size: floor($font-size-base * 1.45);
+    }
+    line-height: 1.7;
+  }
+  h1 {
+    position: relative;
+    .tag {
+      display: inline-block;
+      width: 36px;
+      height: 18px;
+      background-color: #cf0d39;
+      color: #fff;
+      font-size: 12px;
+      text-align: center;
+      line-height: 16px;
+      margin-left: 25px;
+      border-radius: 3px;
+      font-weight: 400;
+      vertical-align: middle;
+    }
+  }
+}
+
+.features {
+  background-color: #0d0d1f;
+  @media (max-width: $screen-sm-min) {
+    text-align: center;
+    img {
+      margin: 0 auto;
+    }
+  }
+  .row {
+    margin-top: 120px;
+    &:first-child {
+      margin-top: 90px;
+    }
+    &:last-child {
+      margin-bottom: 90px;
+    }
+  }
+  h2,
+  h3 {
+    color: #309184;
+  }
+  h2 {
+    text-align: center;
+  }
+  .f1 .copy {
+    margin-top: 75px;
+  }
+  .f2 .copy {
+    margin-top: 40px;
+  }
+  p {
+    margin-top: 25px;
+    line-height: 1.7;
+  }
+}
+
+.faq {
+  .row {
+    margin-top: 60px;
+    &:first-child {
+      margin-top: 100px;
+      margin-bottom: 100px;
+      @media (max-width: $screen-sm-min) {
+        margin-top: 60px;
+        margin-bottom: 60px;
+      }
+    }
+    &.cta {
+      margin-top: 100px;
+      margin-bottom: 50px;
+    }
+  }
+  h2 {
+    text-align: center;
+  }
+  h4 {
+    color: #309184;
+  }
+  p {
+    font-size: 13px;
+    margin-top: 20px;
+    line-height: 1.7;
+  }
+  .col-sm-4 {
+    padding-left: 30px;
+    padding-right: 30px;
+    @media (max-width: $screen-sm-min) {
+      padding-right: 8px;
+      padding-left: 8px;
+    }
+  }
+  .btn {
+    @media (max-width: $screen-sm-min) {
+      font-size: 24px;
+    }
+  }
+  text-align: center;
+  .btn-mast {
+    @include button-variant(white, #cf0d39, #cf0d39);
+  }
+}
+
+.pro {
+
+  h2 {
+    margin-bottom: 0;
+  }
+
+  h3 {
+    color: #309184;
+    margin-top: 5px;
+    font-size: 1.2em;
+  }
+
+  li {
+    padding-bottom: 5px;
+    &:before {
+      color: lighten($text-color, 25%);
+      content:"\2713\0020";
+    }
+  }
+
+  .pricing {
+    margin-bottom: 20px;
+  }
+
+  .btn {
+    margin-top: 10px;
+    font-size: 20px;
+  }
+
+}
+
+.questions {
+  margin-top: 50px;
+  h3 {
+    color: #309184;
+    font-size: 1.3em;
+  }
+}
+
+.apps {
+
+  h1, ul {
+    margin-bottom: 40px;
+  }
+
+  li {
+    font-size: 1.2em;
+    padding-bottom: 10px;
+    list-style: none;
+
+    &:before {
+      color: lighten($text-color, 25%);
+      content:"\2713\0020";
+    }
+  }
+
+  .downloads {
+    text-align: center;
+  }
+
+  .btn {
+    margin-top: 10px;
+    font-size: 20px;
+  }
+}
+
+.footer {
+  font-size: 12px;
+  margin: 0 auto;
+  margin-top: 50px;
+  margin-bottom: 35px;
+  text-align: center;
+
+  .nav > li {
+    display: inline-block;
+    float: none;
+  }
+
+  p {
+    margin-top: 20px;
+    font-size: 90%;
+  }
+}
+
+
+.icon {
+  width: 30px;
+  height: 30px;
+  display: block;
+  &.file {
+    background: url(../images/file.png) 0 0 no-repeat;
+  }
+  &.folder {
+    background: url(../images/folder.png) 0 0 no-repeat;
+  }
+  &.music {
+    background: url(../images/music.png) 0 0 no-repeat;
+  }
+  &.url {
+    background: url(../images/url.png) 0 0 no-repeat;
+  }
+  &.video {
+    background: url(../images/video.png) 0 0 no-repeat;
+  }
+  &.camera {
+    background: url(../images/camera.png) 0 0 no-repeat;
+  }
+}

@@ -1,0 +1,104 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Hostr Pro Pricing | Hostr &bull; Instant Sharing</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="/images/favicon.png">
+    <link href='//fonts.googleapis.com/css?family=Lato:300,400' rel='stylesheet' type='text/css'>
+    <link href='//fonts.googleapis.com/css?family=Open+Sans:400,300,600' rel='stylesheet' type='text/css'>
+    <%- CDN(['/styles/style.css']) %>
+</head>
+<body>
+
+  <section class="container header clearfix">
+      <a href="/"><img class="logo img-responsive" src="/images/logo_dark.png" height="21" width="26" alt=""></a>
+  </section>
+
+  <section class="container pro">
+    <div class="row pricing">
+      <div class="col-md-10 col-md-offset-1">
+        <h1>Pricing</h1>
+        <p>Hostr is available to everyone for free, no trial period, just free. If you want to get even more from Hostr, you can upgrade to Hostr Pro.</p>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-5 col-md-offset-1">
+        <h2>Hostr Free</h2>
+
+        <h3>Free!</h3>
+
+        <ul class="list-unstyled">
+          <li>Simple, Secure file sharing</li>
+          <li>15 Uploads per day</li>
+          <li>Share 25MB files</li>
+          <li>Ads only on popular files</li>
+        </ul>
+
+        <a href="/signup" class="btn btn-success">Sign Up</a>
+      </div>
+      <div class="col-md-5">
+        <h2>Hostr Pro</h2>
+
+        <h3>$6/month</h3>
+
+        <ul class="list-unstyled">
+          <li>All the features of Free</li>
+          <li>Unlimited file sharing</li>
+          <li>Share 500MB files</li>
+          <li>No ads, for you or your files</li>
+        </ul>
+
+        <a href="/signup?pro=true" class="btn btn-primary">Go Pro</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="container questions">
+    <div class="row">
+      <div class="col-md-10 col-md-offset-1">
+        <h2>Questions?</h2>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-5 col-md-offset-1">
+        <h3>Is there a minimum contract?</h3>
+        <p>You can cancel whenever you like. We will downgrade your account at the end of your billing cycle.</p>
+      </div>
+      <div class="col-md-5">
+        <h3>Can I pay yearly?</h3>
+        <p>Not yet, but we do plan to offer it in the near future.</p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-5 col-md-offset-1">
+        <h3>How secure is my credit card?</h3>
+        <p>Every step of the transaction is protected by 256-bit SSL. We use Stripe for our credit card transactions, meaning your card details are never transmitted to us.</p>
+      </div>
+      <div class="col-md-5">
+        <h3>What payment methods do you accept?</h3>
+        <p>We accept Visa, MasterCard, and American Express.</p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-5 col-md-offset-1">
+        <h3>Got more questions?</h3>
+        <p>Hit us up on <a href="mailto:support@hostr.co?subject=Hostr%20Pro%20Question">support@hostr.co</a> and we'll be happy to answer them.</p>
+      </div>
+    </div>
+  </section>
+
+  <% include footer.ejs %>
+  <script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-66209-2', 'hostr.co');
+  ga('require', 'displayfeatures');
+  ga('send', 'pageview');
+  </script>
+  </body>
+</html>

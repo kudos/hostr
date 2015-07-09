@@ -1,0 +1,37 @@
+<app-header></app-header>
+
+<section class="container admin">
+  <div class="row">
+    <div class="col-sm-2">
+      <ul class="nav nav-pills nav-stacked">
+        <li><a href="/account">Account</a>
+        </li>
+        <li class="active"><a href="#=/billin">Billing</a>
+        </li>
+      </ul>
+    </div>
+    <div class="col-sm-10">
+      <div class="holder">
+        <table class="table" width="100%">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Product</th>
+              <th class="amount">Amount</th>
+            </tr>
+          </thead>
+          <tr ng-repeat="transaction in transactions">
+            <td>{{transaction.date | date : "d MMM yy"}}</td>
+            <td>{{transaction.description}}</td>
+            <td align="right">${{transaction.amount}}.00</td>
+          </tr>
+        </table>
+        <div ng-hide="transactions.length > 0" style="text-align:center;min-height: 300px;">
+          You have no billing history. You should <a href="/pro">check out Pro</a> right now!
+        <div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<app-footer></app-footer>

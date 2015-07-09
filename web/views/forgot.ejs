@@ -1,0 +1,61 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Password Reset | Hostr &bull; Instant Sharing</title>
+    <meta name="description" content="Share anything instantly. From screenshots to zip files to anything else, for free!">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="/images/favicon.png">
+    <link href='//fonts.googleapis.com/css?family=Lato:300,400' rel='stylesheet' type='text/css'>
+    <link href='//fonts.googleapis.com/css?family=Open+Sans:400,300,600' rel='stylesheet' type='text/css'>
+    <link href='/styles/style.css' rel='stylesheet' type='text/css'>
+</head>
+<body>
+
+  <section class="container header clearfix">
+      <a href="/"><img class="logo img-responsive" src="/images/logo_dark.png" height="21" width="26" alt=""></a>
+  </section>
+
+  <section class="container user-form clearfix">
+      <p class="lead">Reset your Hostr password.</p>
+      <% if(typeof message !== 'undefined') { %>
+        <div class="alert alert-success alert-signin">
+          <%= message %>
+        </div>
+      <% } %>
+      <div class="holder">
+          <form role="form" action="/forgot<%= token ? '/' + token : '' %>" method="post">
+
+              <% if(typeof error !== 'undefined') { %>
+                <div class="alert alert-danger">
+                  <%= error %>
+                </div>
+              <% } %>
+              <div class="form-group">
+                <% if (token) { %>
+                  <label for="inputEmail">New password</label>
+                  <input type="password" name="password" class="form-control input-lg" id="inputPassword" placeholder="Enter your new password">
+                <% } else { %>
+                  <label for="inputEmail">Email address</label>
+                  <input type="email" name="email" class="form-control input-lg" id="inputEmail" placeholder="Enter the email you signed up with">
+                <% } %>
+              </div>
+              <button type="submit" class="btn btn-block btn-signup">Reset</button>
+          </form>
+      </div>
+      <p class="trail">Actually, I remember it. <a href="/signin">Let me sign in.</a></p>
+  </section>
+
+
+  <% include footer.ejs %>
+  <script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-66209-2', 'hostr.co');
+  ga('require', 'displayfeatures');
+  ga('send', 'pageview');
+  </script>
+  </body>
+</html>

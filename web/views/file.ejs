@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= file.name %> - Hostr, download and share anything.</title>
+    <meta content='Hostr' property='og:site_name'>
+    <meta content='https://hostr.co/<%=file.id %>' property='og:url'>
+    <meta content='<%= file.name %>' property='og:title'>
+    <meta content="Get free file hosting, and cloud sharing on Hostr." property='og:description'>
+    <% if (file.width) { %>
+      <meta name="description" content="<%= file.name %> - Get free file hosting, and cloud sharing on Hostr.">
+      <meta content='https://hostr.co/file/970/<%=file.id %>/<%=file.name %>' property='og:image'>
+    <% } else { %>
+      <meta name="description" content="Download <%= file.name %> fast and free from Hostr - Get free file hosting, and cloud sharing with Hostr." property='og:description'>
+    <% } %>
+    <link rel="icon" type="image/png" href="/images/favicon.png">
+    <link href='//fonts.googleapis.com/css?family=Lato:300' rel='stylesheet' type='text/css'>
+    <link href='//fonts.googleapis.com/css?family=Open+Sans:400,600' rel='stylesheet' type='text/css'>
+    <link href='/styles/app.css' rel='stylesheet' type='text/css'>
+    <% if(file.width > 280 && file.height > 150) { %>
+    <meta name="twitter:card" content="photo">
+    <meta name="twitter:site" content="@gethostr">
+    <meta name="twitter:title" content="<%= file.name%>">
+    <meta name="twitter:image" content="<%= baseURL %>/file/970/<%=file.id %>/<%=file.name %>">
+    <meta name="twitter:image:width" content="<%= file.width %>">
+    <meta name="twitter:image:height" content="<%= file.height %>">
+    <% } %>
+  </head>
+  <body>
+    <div id="dropdown-overlay"></div>
+    <section class="container header clearfix ng-scope">
+      <div class="logo pull-left">
+        <a href="/"><img src="/images/logo-dark-r.png" height="22" width="26" alt=""></a>
+      </div>
+      <div class="menu" id="menu">
+        <img src="/images/menu-retina.png" height="6" width="24" alt="" class="dots">
+
+        <div class="dropdown" id="dropdown">
+          <div class="file-info">
+            <% if (file.width) { %><a href="/file/<%=file.id %>/<%=file.name %>" target="_blank">Original File <span class="dimensions">(<%=file.width%>x<%=file.height%>)</span></a><% } %>
+            <div class="meta">
+              <div class="date"><%= file.readableAdded %></div>
+              <span class="filesize"><%= file.readableSize %></span>
+              <span class="num-downloads"><%=(file.downloads|0).toLocaleString() %> <% if (file.width) { %>views<% } else { %>downloads<% } %></span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <% if (file.width) { %><span class="filename"><%=file.name %></span><% } %>
+
+    </section>
+    <% if (file.width) { %>
+    <section class="container image-preview">
+      <img class="img-responsive" src="/file/970/<%=file.id %>/<%=file.name %>">
+    </section>
+    <% } %>
+
+    <% if (!file.width) { %>
+    <section class="container file-preview">
+      <span class="file-icon"></span>
+      <span class="filename"><%=file.name %><span class="filetype"></span></span>
+
+      <form action="/file/<%=file.id %>/<%=file.name %>" class="form-group form-group-lg" method="get" onsubmit="this.submit()">
+        <% if (file.malware) { %>
+        <div class="file-alert">
+          <p>This file has been identified as likely being <strong>malware</strong>, proceed with caution.</p>
+          <p><label for="alert">Type "I want to download malware" in the box below to proceed.</label></p>
+          <p class="agree"><input type="text" id="alert" name="alert" class="form-control" />
+        </div>
+        <% } else { %>
+        <div class="file-warning">
+          <p>This file has been scanned for viruses but may still not be safe.</p>
+          <p class="agree"><label for="warning"><input type="checkbox" id="warning" name="warning"> I understand and want to download</label>
+        </div>
+        <% } %>
+        <button type="submit" class="btn btn-download btn-lg" id="download">Download</button>
+      </form>
+    </section>
+    <% } %>
+
+    <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+    ga('create', 'UA-66209-2', 'hostr.co');
+    ga('require', 'displayfeatures');
+    ga('send', 'pageview');
+    </script>
+    <script>
+      var menu = document.getElementById("menu");
+      var dropdownOverlay = document.getElementById("dropdown-overlay")
+      var dropdown = document.getElementById("dropdown");
+      var toggleMenu = function() {
+        if (dropdown.style.display == "block") {
+          dropdown.style.display = "none";
+          dropdownOverlay.style.display = "none";
+        } else {
+          dropdown.style.display = "block";
+          dropdownOverlay.style.display = "block";
+        }
+      }
+      if (menu.addEventListener) {
+        menu.addEventListener('click', function(evt) {
+          toggleMenu();
+        });
+        dropdownOverlay.addEventListener('click', function(evt) {
+          toggleMenu();
+        });
+      }
+
+      var download = document.getElementById('download');
+      var warning = document.getElementById('warning');
+      if (warning) {
+        var warningToggle = function(evt) {
+          if (warning.checked) {
+            download.disabled = false;
+          } else {
+            download.disabled = true;
+          }
+        };
+        if (!warning.checked) {
+          download.disabled = true;
+        }
+        if (warning.addEventListener) {
+          warning.addEventListener("change", warningToggle);
+        } else {
+          warning.attachEvent("onchange", warningToggle);
+        }
+
+      }
+      var alert = document.getElementById('alert');
+      if (alert) {
+        var alertToggle = function(evt) {
+          if (alert.value.toLowerCase().indexOf("i want to download malware") >= 0) {
+            download.disabled = false;
+          } else {
+            download.disabled = true;
+          }
+        };
+        if (alert.value.toLowerCase() != "i want to download malware") {
+          download.disabled = true;
+        }
+        if (alert.addEventListener) {
+          alert.addEventListener("keyup", alertToggle);
+        } else {
+          alert.attachEvent("onkeyup", alertToggle);
+        }
+
+      }
+    </script>
+  </body>
+</html>
