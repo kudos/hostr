@@ -4,7 +4,7 @@ import co from 'co';
 import passwords from 'passwords';
 
 import debugname from 'debug';
-const debug = debugname('hostr-api:file');
+const debug = debugname('hostr-api:user');
 
 const redisUrl = process.env.REDIS_URL || process.env.REDISTOGO_URL || 'redis://localhost:6379';
 
@@ -57,10 +57,10 @@ export function* settings() {
 
 export function* events() {
   const pubsub = redis.connect(redisUrl);
-  pubsub.on('message', function(channel, message) {
+  pubsub.on('message', (channel, message) => {
     this.websocket.send(message);
-  }.bind(this));
-  pubsub.on('ready', function () {
+  });
+  pubsub.on('ready', () => {
     this.websocket.on('message', co.wrap(function* (message) {
       let json;
       try{
@@ -76,9 +76,9 @@ export function* events() {
       } else {
         this.websocket.send('Invalid authentication token.');
       }
-    }));
-  }.bind(this));
-  this.on('close', function() {
+    }.bind(this)));
+  });
+  this.websocket.on('close', () => {
     debug('Socket closed');
     pubsub.quit();
   });

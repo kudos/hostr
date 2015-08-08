@@ -15,7 +15,7 @@ const debug = debugname('hostr-api:file');
 
 const redisUrl = process.env.REDIS_URL || process.env.REDISTOGO_URL || 'redis://localhost:6379';
 
-const fileHost = process.env.FILE_HOST || 'https://localhost:4040';
+const fileHost = process.env.FILE_HOST || 'http://localhost:4040';
 
 const storePath = process.env.STORE_PATH || path.join(process.env.HOME, '.hostr', 'uploads');
 
@@ -105,7 +105,7 @@ export function* post(next) {
 
     percentComplete = Math.floor(receivedSize * 100 / expectedSize);
     if (percentComplete > lastPercent && lastTick < Date.now() - 1000) {
-      const progressEvent = `{type: 'file-progress', data: {id: ${fileId}, complete: ${percentComplete}}}`;
+      const progressEvent = `{"type": "file-progress", "data": {"id": "${fileId}", "complete": ${percentComplete}}}`;
       this.redis.publish('/file/' + fileId, progressEvent);
       this.redis.publish('/user/' + this.user.id, progressEvent);
       lastTick = Date.now();
@@ -116,10 +116,10 @@ export function* post(next) {
   });
 
   // Fire an event to let the frontend map the GUID it sent to the real ID. Allows immediate linking to the file
-  let acceptedEvent = `{type: 'file-accepted', data: {id: ${fileId}, guid: ${tempGuid}, href: ${fileHost}/${fileId}}}`;
+  let acceptedEvent = `{"type": "file-accepted", "data": {"id": "${fileId}", "guid": "${tempGuid}", "href": "${fileHost}/${fileId}"}}`;
   this.redis.publish('/user/' + this.user.id, acceptedEvent);
   // Fire final upload progress event so users know it's now processing
-  const completeEvent = `{type: 'file-progress', data: {id: ${fileId}, complete: 100}}`;
+  const completeEvent = `{"type": "file-progress", "data": {"id": "${fileId}", "complete": 100}}`;
   this.redis.publish('/file/' + fileId, completeEvent);
   this.redis.publish('/user/' + this.user.id, completeEvent);
 
@@ -160,7 +160,7 @@ export function* post(next) {
   yield Files.updateOne({_id: fileId}, {$set: dbFile});
 
   // Fire upload complete event
-  const addedEvent = `{type: 'file-added', data: ${formattedFile}}`;
+  const addedEvent = `{"type": "file-added", "data": ${JSON.stringify(formattedFile)}}`;
   this.redis.publish('/file/' + fileId, addedEvent);
   this.redis.publish('/user/' + this.user.id, addedEvent);
   this.status = 201;
@@ -246,14 +246,14 @@ export function* del(id) {
 
 export function* events() {
   const pubsub = redis.connect(redisUrl);
-  pubsub.on('ready', function() {
+  pubsub.on('ready', () => {
     pubsub.subscribe(this.path);
-  }.bind(this));
+  });
 
-  pubsub.on('message', function(channel, message) {
+  pubsub.on('message', (channel, message) => {
     this.websocket.send(message);
-  }.bind(this));
-  this.on('close', function() {
+  });
+  this.websocket.on('close', function() {
     pubsub.quit();
   });
 }

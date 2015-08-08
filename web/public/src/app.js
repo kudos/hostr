@@ -22,7 +22,7 @@ var app = angular.module('hostr', [
 
 app.factory('FileService', ['$resource', '$cacheFactory', FileService.factory]);
 app.factory('UserService', ['$resource', UserService.factory]);
-app.factory('EventService', ['$rootScope', ReconnectingWebSocket, EventService.factory]);
+app.factory('EventService', ['$rootScope', 'WebSocket', EventService.factory]);
 app.factory('TransactionService', ['$resource', '$cacheFactory', TransactionService.factory]);
 app.factory('SettingService', ['$http', SettingService.factory]);
 
@@ -38,7 +38,6 @@ app.directive('searchShortcut', ['$document', searchShortcut]);
 app.directive('stripeSubscribe', ['$http', stripeSubscribe]);
 
 app.config(['$routeProvider', '$locationProvider', '$httpProvider', '$tooltipProvider', function($routeProvider, $locationProvider, $httpProvider, $tooltipProvider) {
-
   $tooltipProvider.defaults.template = '/jspm_packages/npm/angular-strap@2.1.2/src/tooltip/tooltip.tpl.html';
 
   if (typeof window.user !== 'undefined') {

@@ -1,5 +1,4 @@
 import path from 'path';
-import spdy from 'spdy';
 import koa from 'koa';
 import route from 'koa-route';
 import views from 'koa-views';
@@ -153,18 +152,9 @@ app.use(route.get('/updaters/mac/changelog', function() {
 }));
 
 if (!module.parent) {
-  if (process.env.LOCALHOST_KEY) {
-    spdy.createServer({
-      key: process.env.LOCALHOST_KEY,
-      cert: process.env.LOCALHOST_CRT
-    }, app.callback()).listen(4041, function() {
-      debug('Koa SPDY server listening on port ' + (process.env.PORT || 4041));
-    });
-  } else {
-    app.listen(process.env.PORT || 4041, function() {
-      debug('Koa HTTP server listening on port ' + (process.env.PORT || 4041));
-    });
-  }
+  app.listen(process.env.PORT || 4041, function() {
+    debug('Koa HTTP server listening on port ' + (process.env.PORT || 4041));
+  });
 }
 
 export default app;

@@ -129,6 +129,7 @@ app.use(auth);
 
 app.use(route.get('/user', user.get));
 app.use(route.get('/user/token', user.token));
+app.use(route.get('/token', user.token));
 app.use(route.get('/user/transaction', user.transaction));
 app.use(route.post('/user/settings', user.settings));
 app.use(route.get('/file', file.list));

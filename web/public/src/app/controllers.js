@@ -1,5 +1,5 @@
 export class FilesController {
-  constructor($scope, UserService, files) {
+  constructor($scope, UserService, EventService, files) {
     $scope.$root.user = UserService.get();
     files.$promise.then(function() {
       $scope.$root.loadingView = false;
@@ -22,7 +22,7 @@ export class FilesController {
     };
   }
 }
-FilesController.$inject = ['$scope', 'UserService', 'files'];
+FilesController.$inject = ['$scope', 'UserService', 'EventService', 'files'];
 
 export class FileController {
   constructor ($scope, $rootScope, $routeParams, ReconnectingWebSocket, file) {
