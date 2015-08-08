@@ -5,12 +5,12 @@
   "version": "0.0.0",
   "private": true,
   "engines": {
-    "iojs": "^2.5.0",
+    "iojs": "^3.0.0",
     "npm": "^3.2.0"
   },
   "scripts": {
     "build": "npm run build-js && npm run build-sass",
-    "build-js": "babel -D -m system -d web/public/build web/public/src",
+    "build-js": "babel -D -m system -d web/public/build -i web/public web/public/src",
     "build-sass": "node-sass -r -o web/public/styles/ web/public/styles/",
     "cover": "istanbul cover _mocha -- --require babel/register test/**/*.spec.js",
     "init": "node --require babel/register init.js",
@@ -60,9 +60,7 @@
     "redis": "0.12.1",
     "redis-url": "~1.2.1",
     "s3-upload-stream": "^1.0.7",
-    "spdy": "~1.32.4",
     "stripe": "^3.7.0",
-    "supertest": "~1.0.1",
     "swig": "^1.4.2",
     "virustotal.js": "~0.3.1"
   },
@@ -71,6 +69,7 @@
     "istanbul": "^0.3.17",
     "mocha": "~2.2.5",
     "nodemon": "~1.4.0",
+    "supertest": "~1.0.1",
     "tmp": "0.0.26"
   },
   "jspm": {
