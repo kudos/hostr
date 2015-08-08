@@ -5,7 +5,7 @@
   "version": "0.0.0",
   "private": true,
   "engines": {
-    "iojs": "^3.0.0",
+    "iojs": "^2.5.0",
     "npm": "^3.2.0"
   },
   "scripts": {
