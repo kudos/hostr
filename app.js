@@ -5,7 +5,6 @@ import websockify from 'koa-websocket';
 import redis from 'redis-url';
 import coRedis from 'co-redis';
 import co from 'co';
-import spdy from 'spdy';
 import api from './api/app';
 import { events as fileEvents } from './api/routes/file';
 import { events as userEvents } from './api/routes/user';

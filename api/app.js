@@ -1,4 +1,3 @@
-import spdy from 'spdy';
 import koa from 'koa';
 import route from 'koa-route';
 import websockify from 'koa-websocket';
