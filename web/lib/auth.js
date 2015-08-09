@@ -2,7 +2,7 @@ import crypto from 'crypto';
 import passwords from 'passwords';
 import uuid from 'node-uuid';
 import views from 'co-views';
-const render = views('views', { default: 'ejs'});
+const render = views(__dirname + '/../views', { default: 'ejs'});
 import debugname from 'debug';
 const debug = debugname('hostr-web:auth');
 import { Mandrill } from 'mandrill-api/mandrill';
@@ -131,9 +131,9 @@ export function* sendResetToken(ctx, email) {
       'token': token,
       'created': Math.round(new Date().getTime() / 1000)
     });
-    const html = yield this.render('email/inlined/forgot', {forgotUrl: this.locals.baseUrl + '/forgot/' + token});
+    const html = yield render('email/inlined/forgot', {forgotUrl: process.env.BASE_URL + '/forgot/' + token});
     const text = `It seems you've forgotten your password :(
-Visit  ${ctx.locals.baseUrl + '/forgot/' + token} to set a new one.
+Visit  ${process.env.BASE_URL + '/forgot/' + token} to set a new one.
 `;
     mandrill.messages.send({message: {
       html: html,

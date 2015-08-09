@@ -18,6 +18,11 @@
 
   <section class="container user-form clearfix">
       <p class="lead">Sign up to Hostr.</p>
+      <% if(typeof message !== 'undefined') { %>
+        <div class="alert alert-success alert-signin">
+          <%= message %>
+        </div>
+      <% } %>
       <div class="holder">
           <form role="form" action="/signup" method="post">
             <% if(typeof error !== 'undefined') { %>
