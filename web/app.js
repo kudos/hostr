@@ -25,6 +25,7 @@ const objectId = mongodb().ObjectId;
 import debugname from 'debug';
 const debug = debugname('hostr-web');
 import stats from 'koa-statsd';
+import StatsD from 'statsy';
 
 if (process.env.SENTRY_DSN) {
   const ravenClient = new raven.Client(process.env.SENTRY_DSN);
@@ -35,9 +36,13 @@ const redisUrl = process.env.REDIS_URL || process.env.REDISTOGO_URL || 'redis://
 
 const app = koa();
 
-if (process.env.STATSD_HOST) {
-  app.use(stats({prefix: 'hostr-web', host: process.env.STATSD_HOST}));
-}
+let statsdOpts = {prefix: 'hostr-web', host: process.env.STATSD_HOST || 'localhost'};
+let statsd = new StatsD(statsdOpts);
+app.use(function*(next) {
+  this.statsd = statsd;
+  yield next;
+});
+app.use(stats(statsdOpts));
 
 app.use(errors({template: path.join(__dirname, 'public', '404.html')}));
 

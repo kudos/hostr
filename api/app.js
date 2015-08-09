@@ -16,6 +16,7 @@ import * as file from './routes/file';
 import debugname from 'debug';
 const debug = debugname('hostr-api');
 import stats from 'koa-statsd';
+import StatsD from 'statsy';
 
 if (process.env.SENTRY_DSN) {
   const ravenClient = new raven.Client(process.env.SENTRY_DSN);
@@ -26,9 +27,13 @@ const app = websockify(koa());
 
 const redisUrl = process.env.REDIS_URL || process.env.REDISTOGO_URL || 'redis://localhost:6379';
 
-if (process.env.STATSD_HOST) {
-  app.use(stats({prefix: 'hostr-api', host: process.env.STATSD_HOST}));
-}
+let statsdOpts = {prefix: 'hostr-api', host: process.env.STATSD_HOST || 'localhost'};
+let statsd = new StatsD(statsdOpts);
+app.use(function*(next) {
+  this.statsd = statsd;
+  yield next;
+});
+app.use(stats(statsdOpts));
 
 app.use(logger());
 
@@ -96,6 +101,7 @@ app.use(function* (next){
     }
   } catch (err) {
     if (err.status === 401) {
+      this.statsd.incr('auth.failure', 1);
       this.set('WWW-Authenticate', 'Basic');
       this.status = 401;
       this.body = err.message;
@@ -142,18 +148,9 @@ app.use(route.put('/file/:id', file.put));
 app.use(route.delete('/file/:id', file.del));
 
 if (!module.parent) {
-  if (process.env.LOCALHOST_KEY) {
-    spdy.createServer({
-      key: process.env.LOCALHOST_KEY,
-      cert: process.env.LOCALHOST_CRT
-    }, app.callback()).listen(4042, function() {
-      debug('Koa SPDY server listening on port ' + (process.env.PORT || 4042));
-    });
-  } else {
-    app.listen(process.env.PORT || 4042, function() {
-      debug('Koa HTTP server listening on port ' + (process.env.PORT || 4042));
-    });
-  }
+  app.listen(process.env.PORT || 4042, function() {
+    debug('Koa HTTP server listening on port ' + (process.env.PORT || 4042));
+  });
 }
 
 export default app;

@@ -189,5 +189,7 @@ export function* activateUser(ctx, code) {
   if (user) {
     Users.updateOne({_id: user._id}, {'$unset': {activationCode: ''}});
     yield setupSession(ctx, user);
+  } else {
+    return false;
   }
 }

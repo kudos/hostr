@@ -4,13 +4,15 @@ export function* signin() {
   if (!this.request.body.email) {
     return yield this.render('signin');
   }
-
+  this.statsd.incr('auth.attempt', 1);
   const user = yield authenticate(this, this.request.body.email, this.request.body.password);
   if(!user) {
+    this.statsd.incr('auth.failure', 1);
     return yield this.render('signin', {error: 'Invalid login details'});
   } else if (user.activationCode) {
     return yield this.render('signin', {error: 'Your account hasn\'t been activated yet. Check your for an activation email.'});
   } else {
+    this.statsd.incr('auth.success', 1);
     yield setupSession(this, user);
     this.redirect('/');
   }
@@ -37,6 +39,7 @@ export function* signup() {
   } catch (e) {
     return yield this.render('signup', {error: e.message});
   }
+  this.statsd.incr('auth.signup', 1);
   return yield this.render('signup', {message: 'Thanks for signing up, we\'ve sent you an email to activate your account.'});
 }
 
@@ -47,10 +50,11 @@ export function* forgot(token) {
   if (this.request.body.email) {
     var email = this.request.body.email;
     yield sendResetToken(this, email);
+    this.statsd.incr('auth.reset.request', 1);
     return yield this.render('forgot', {message: 'We\'ve sent an email with a link to reset your password. Be sure to check your spam folder if you it doesn\'t appear within a few minutes', token: null});
   } else if (token && this.request.body.password) {
     if (this.request.body.password.length < 7) {
-      return this.render('forgot', {error: 'Password needs to be at least 7 characters long.', token: token});
+      return yield this.render('forgot', {error: 'Password needs to be at least 7 characters long.', token: token});
     }
     const tokenUser = yield validateResetToken(this, token);
     var userId = tokenUser._id;
@@ -58,10 +62,12 @@ export function* forgot(token) {
     yield Reset.remove({_id: userId});
     const user = yield Users.findOne({_id: userId});
     yield setupSession(this, user);
+    this.statsd.incr('auth.reset.success', 1);
     this.redirect('/');
   } else if (token.length) {
     const tokenUser = yield validateResetToken(this, token);
     if (!tokenUser) {
+      this.statsd.incr('auth.reset.fail', 1);
       return yield this.render('forgot', {error: 'Invalid password reset token. It might be expired, or has already been used.', token: null});
     } else {
       return yield this.render('forgot', {token: token});
@@ -73,6 +79,7 @@ export function* forgot(token) {
 
 
 export function* logout() {
+  this.statsd.incr('auth.logout', 1);
   this.cookies.set('r', {expires: new Date(1), path: '/'});
   this.session = null;
   this.redirect('/');
@@ -80,6 +87,8 @@ export function* logout() {
 
 
 export function* activate(code) {
-  yield activateUser(this, code);
+  if (yield activateUser(this, code)) {
+    this.statsd.incr('auth.activation', 1);
+  }
   this.redirect('/');
 }

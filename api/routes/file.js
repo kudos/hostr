@@ -44,6 +44,9 @@ export function* post(next) {
   const count = yield Files.count({owner: this.user.id, 'time_added': {'$gt': Math.ceil(Date.now() / 1000) - 86400}});
   const userLimit = this.user.daily_upload_allowance;
   const underLimit = (count < userLimit || userLimit === 'unlimited');
+  if (!underLimit) {
+    this.statsd.incr('file.overlimit', 1);
+  }
   this.assert(underLimit, 400, `{
     "error": {
       "message": "Daily upload limits (${this.user.daily_upload_allowance}) exceeded.",
@@ -56,8 +59,14 @@ export function* post(next) {
   upload.filename = upload.filename.replace(/[^a-zA-Z0-9\.\-\_\s]/g, '').replace(/\s+/g, '');
   const fileId = yield hostrId(Files);
 
+  // Fire an event to let the frontend map the GUID it sent to the real ID. Allows immediate linking to the file
+  let acceptedEvent = `{"type": "file-accepted", "data": {"id": "${fileId}", "guid": "${tempGuid}", "href": "${fileHost}/${fileId}"}}`;
+  this.redis.publish('/user/' + this.user.id, acceptedEvent);
+  this.statsd.incr('file.upload.accepted', 1);
+
   const uploadPromise = new Promise((resolve, reject) => {
     upload.on('error', () => {
+      this.statsd.incr('file.upload.error', 1);
       reject();
     });
 
@@ -115,13 +124,11 @@ export function* post(next) {
     md5sum.update(data);
   });
 
-  // Fire an event to let the frontend map the GUID it sent to the real ID. Allows immediate linking to the file
-  let acceptedEvent = `{"type": "file-accepted", "data": {"id": "${fileId}", "guid": "${tempGuid}", "href": "${fileHost}/${fileId}"}}`;
-  this.redis.publish('/user/' + this.user.id, acceptedEvent);
   // Fire final upload progress event so users know it's now processing
   const completeEvent = `{"type": "file-progress", "data": {"id": "${fileId}", "complete": 100}}`;
   this.redis.publish('/file/' + fileId, completeEvent);
   this.redis.publish('/user/' + this.user.id, completeEvent);
+  this.statsd.incr('file.upload.complete', 1);
 
   const dbFile = {
     _id: fileId,
@@ -171,6 +178,9 @@ export function* post(next) {
     process.nextTick(function*() {
       debug('Malware Scan');
       const { positive, result } = yield malware(dbFile);
+      if (positive) {
+        this.statsd.incr('file.malware', 1);
+      }
       yield Files.updateOne({_id: fileId}, {'$set': {malware: positive, virustotal: result}});
     });
   } else {
@@ -209,7 +219,7 @@ export function* list() {
   };
 
   const userFiles = yield Files.find({owner: this.user.id, status: status}, queryOptions).toArray();
-
+  this.statsd.incr('file.list', 1);
   this.body = userFiles.map(formatFile);
 }
 
@@ -221,6 +231,7 @@ export function* get(id) {
   this.assert(file, 404, '{"error": {"message": "File not found", "code": 604}}');
   const user = yield Users.findOne({_id: file.owner});
   this.assert(user && !user.banned, 404, '{"error": {"message": "File not found", "code": 604}}');
+  this.statsd.incr('file.get', 1);
   this.body = formatFile(file);
 }
 
@@ -240,6 +251,7 @@ export function* del(id) {
   const event = {type: 'file-deleted', data: {'id': id}};
   yield this.redis.publish('/user/' + this.user.id, JSON.stringify(event));
   yield this.redis.publish('/file/' + id, JSON.stringify(event));
+  this.statsd.incr('file.delete', 1);
   this.body = '';
 }
 
