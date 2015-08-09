@@ -24,6 +24,7 @@ import mongodb from 'mongodb-promisified';
 const objectId = mongodb().ObjectId;
 import debugname from 'debug';
 const debug = debugname('hostr-web');
+import stats from 'koa-statsd';
 
 if (process.env.SENTRY_DSN) {
   const ravenClient = new raven.Client(process.env.SENTRY_DSN);
@@ -33,6 +34,10 @@ if (process.env.SENTRY_DSN) {
 const redisUrl = process.env.REDIS_URL || process.env.REDISTOGO_URL || 'redis://localhost:6379';
 
 const app = koa();
+
+if (process.env.STATSD_HOST) {
+  app.use(stats({prefix: 'hostr-web', host: process.env.STATSD_HOST}));
+}
 
 app.use(errors({template: path.join(__dirname, 'public', '404.html')}));
 

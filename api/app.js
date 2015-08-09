@@ -15,6 +15,7 @@ import * as user from './routes/user';
 import * as file from './routes/file';
 import debugname from 'debug';
 const debug = debugname('hostr-api');
+import stats from 'koa-statsd';
 
 if (process.env.SENTRY_DSN) {
   const ravenClient = new raven.Client(process.env.SENTRY_DSN);
@@ -24,6 +25,10 @@ if (process.env.SENTRY_DSN) {
 const app = websockify(koa());
 
 const redisUrl = process.env.REDIS_URL || process.env.REDISTOGO_URL || 'redis://localhost:6379';
+
+if (process.env.STATSD_HOST) {
+  app.use(stats({prefix: 'hostr-api', host: process.env.STATSD_HOST}));
+}
 
 app.use(logger());
 
