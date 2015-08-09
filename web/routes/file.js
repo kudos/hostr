@@ -16,10 +16,17 @@ const userAgentCheck = function(userAgent) {
   return userAgent.match(/^(wget|curl|vagrant)/i);
 };
 
+const hotlinkCheck = function(file, userAgent, referrer) {
+  debug(file, userAgent, referrer);
+  return !userAgentCheck(userAgent) && !file.width && !(referrer.match(/^https:\/\/hostr.co/) || referrer.match(/^http:\/\/localhost:4040/))
+};
+
 export function* get(id, name, size) {
-  debug('%s, %s, %s', id, name, size);
   const file = yield this.db.Files.findOne({_id: id, 'file_name': name, 'status': 'active'});
   this.assert(file, 404);
+  if (hotlinkCheck(file, this.headers['user-agent'], this.headers['referer'])) {
+    this.redirect('/' + id);
+  }
   let localPath = path.join(storePath, file._id[0], file._id + '_' + file.file_name);
   let remotePath = path.join(file._id[0], file._id + '_' + file.file_name);
   if (size > 0) {
@@ -50,7 +57,7 @@ export function* landing(id, next) {
   const file = yield this.db.Files.findOne({_id: id});
   this.assert(file, 404);
   if(userAgentCheck(this.headers['user-agent'])) {
-    return direct(file._id, file.file_name);
+    return yield get.call(this, file._id, file.file_name);
   }
 
   const formattedFile = formatFile(file);
