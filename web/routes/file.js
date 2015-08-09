@@ -65,6 +65,7 @@ export function* get(id, name, size) {
   }
 
   this.set('Content-type', type);
+  this.set('Content-length', file.file_size);
   this.set('Expires', new Date(2020, 1).toISOString());
   this.set('Cache-control', 'max-age=2592000');
 
