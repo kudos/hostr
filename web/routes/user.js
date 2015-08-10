@@ -2,15 +2,17 @@ import { authenticate, setupSession, signup as signupUser, activateUser, sendRes
 
 export function* signin() {
   if (!this.request.body.email) {
-    return yield this.render('signin');
+    return yield this.render('signin', {csrf: this.csrf});
   }
   this.statsd.incr('auth.attempt', 1);
+  this.assertCsrf(this.request.body._csrf);
+
   const user = yield authenticate(this, this.request.body.email, this.request.body.password);
   if(!user) {
     this.statsd.incr('auth.failure', 1);
-    return yield this.render('signin', {error: 'Invalid login details'});
+    return yield this.render('signin', {error: 'Invalid login details', csrf: this.csrf});
   } else if (user.activationCode) {
-    return yield this.render('signin', {error: 'Your account hasn\'t been activated yet. Check your for an activation email.'});
+    return yield this.render('signin', {error: 'Your account hasn\'t been activated yet. Check your for an activation email.', csrf: this.csrf});
   } else {
     this.statsd.incr('auth.success', 1);
     yield setupSession(this, user);
@@ -21,15 +23,17 @@ export function* signin() {
 
 export function* signup() {
   if (!this.request.body.email) {
-    return yield this.render('signup');
+    return yield this.render('signup', {csrf: this.csrf});
   }
 
+  this.assertCsrf(this.request.body._csrf);
+
   if (this.request.body.email !== this.request.body.confirm_email) {
-    return yield this.render('signup', {error: 'Emails do not match.'});
+    return yield this.render('signup', {error: 'Emails do not match.', csrf: this.csrf});
   } else if (this.request.body.email && !this.request.body.terms) {
-    return yield this.render('signup', {error: 'You must agree to the terms of service.'});
+    return yield this.render('signup', {error: 'You must agree to the terms of service.', csrf: this.csrf});
   } else if (this.request.body.password && this.request.body.password.length < 7) {
-    return yield this.render('signup', {error: 'Password must be at least 7 characters long.'});
+    return yield this.render('signup', {error: 'Password must be at least 7 characters long.', csrf: this.csrf});
   }
   const ip = this.headers['x-real-ip'] || this.ip;
   const email = this.request.body.email;
@@ -37,7 +41,7 @@ export function* signup() {
   try {
     yield signupUser(this, email, password, ip);
   } catch (e) {
-    return yield this.render('signup', {error: e.message});
+    return yield this.render('signup', {error: e.message, csrf: this.csrf});
   }
   this.statsd.incr('auth.signup', 1);
   return yield this.render('signup', {message: 'Thanks for signing up, we\'ve sent you an email to activate your account.'});
@@ -48,14 +52,16 @@ export function* forgot(token) {
   const Reset = this.db.Reset;
   const Users = this.db.Users;
   if (this.request.body.email) {
+    this.assertCsrf(this.request.body._csrf);
     var email = this.request.body.email;
     yield sendResetToken(this, email);
     this.statsd.incr('auth.reset.request', 1);
-    return yield this.render('forgot', {message: 'We\'ve sent an email with a link to reset your password. Be sure to check your spam folder if you it doesn\'t appear within a few minutes', token: null});
+    return yield this.render('forgot', {message: 'We\'ve sent an email with a link to reset your password. Be sure to check your spam folder if you it doesn\'t appear within a few minutes', token: null, csrf: this.csrf});
   } else if (token && this.request.body.password) {
     if (this.request.body.password.length < 7) {
-      return yield this.render('forgot', {error: 'Password needs to be at least 7 characters long.', token: token});
+      return yield this.render('forgot', {error: 'Password needs to be at least 7 characters long.', token: token, csrf: this.csrf});
     }
+    this.assertCsrf(this.request.body._csrf);
     const tokenUser = yield validateResetToken(this, token);
     var userId = tokenUser._id;
     yield updatePassword(this, userId, this.request.body.password);
@@ -68,12 +74,12 @@ export function* forgot(token) {
     const tokenUser = yield validateResetToken(this, token);
     if (!tokenUser) {
       this.statsd.incr('auth.reset.fail', 1);
-      return yield this.render('forgot', {error: 'Invalid password reset token. It might be expired, or has already been used.', token: null});
+      return yield this.render('forgot', {error: 'Invalid password reset token. It might be expired, or has already been used.', token: null, csrf: this.csrf});
     } else {
-      return yield this.render('forgot', {token: token});
+      return yield this.render('forgot', {token: token, csrf: this.csrf});
     }
   } else {
-    return yield this.render('forgot', {token: null});
+    return yield this.render('forgot', {token: null, csrf: this.csrf});
   }
 }
 

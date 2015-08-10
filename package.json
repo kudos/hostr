@@ -38,6 +38,7 @@
     "koa": "~0.21.0",
     "koa-bodyparser": "~2.0.0",
     "koa-compress": "~1.0.8",
+    "koa-csrf": "^2.3.0",
     "koa-favicon": "~1.2.0",
     "koa-file-server": "~2.3.1",
     "koa-generic-session": "~1.9.0",

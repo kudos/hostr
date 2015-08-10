@@ -17,7 +17,7 @@ const userAgentCheck = function(userAgent) {
 };
 
 const hotlinkCheck = function(file, userAgent, referrer) {
-  return !userAgentCheck(userAgent) && !file.width && !(referrer.match(/^https:\/\/hostr.co/) || referrer.match(/^http:\/\/localhost:4040/))
+  return !userAgentCheck(userAgent) && !file.width && (!referrer || !(referrer.match(/^https:\/\/hostr.co/) || referrer.match(/^http:\/\/localhost:4040/)))
 };
 
 export function* get(id, name, size) {

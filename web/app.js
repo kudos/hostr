@@ -1,5 +1,6 @@
 import path from 'path';
 import koa from 'koa';
+import csrf from 'koa-csrf';
 import route from 'koa-route';
 import views from 'koa-views';
 import logger from 'koa-logger';
@@ -35,6 +36,8 @@ if (process.env.SENTRY_DSN) {
 const redisUrl = process.env.REDIS_URL || process.env.REDISTOGO_URL || 'redis://localhost:6379';
 
 const app = koa();
+
+csrf(app);
 
 let statsdOpts = {prefix: 'hostr-web', host: process.env.STATSD_HOST || 'localhost'};
 let statsd = new StatsD(statsdOpts);

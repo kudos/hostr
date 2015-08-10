@@ -25,7 +25,7 @@
       <% } %>
       <div class="holder">
           <form role="form" action="/forgot<%= token ? '/' + token : '' %>" method="post">
-
+              <input type="hidden" name="_csrf" value="<%= csrf %>" />
               <% if(typeof error !== 'undefined') { %>
                 <div class="alert alert-danger">
                   <%= error %>
