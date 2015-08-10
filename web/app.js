@@ -37,8 +37,6 @@ const redisUrl = process.env.REDIS_URL || process.env.REDISTOGO_URL || 'redis://
 
 const app = koa();
 
-csrf(app);
-
 let statsdOpts = {prefix: 'hostr-web', host: process.env.STATSD_HOST || 'localhost'};
 let statsd = new StatsD(statsdOpts);
 app.use(function*(next) {

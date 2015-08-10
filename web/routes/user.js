@@ -5,7 +5,6 @@ export function* signin() {
     return yield this.render('signin', {csrf: this.csrf});
   }
   this.statsd.incr('auth.attempt', 1);
-  this.assertCsrf(this.request.body._csrf);
 
   const user = yield authenticate(this, this.request.body.email, this.request.body.password);
   if(!user) {
@@ -25,8 +24,6 @@ export function* signup() {
   if (!this.request.body.email) {
     return yield this.render('signup', {csrf: this.csrf});
   }
-
-  this.assertCsrf(this.request.body._csrf);
 
   if (this.request.body.email !== this.request.body.confirm_email) {
     return yield this.render('signup', {error: 'Emails do not match.', csrf: this.csrf});
@@ -52,7 +49,6 @@ export function* forgot(token) {
   const Reset = this.db.Reset;
   const Users = this.db.Users;
   if (this.request.body.email) {
-    this.assertCsrf(this.request.body._csrf);
     var email = this.request.body.email;
     yield sendResetToken(this, email);
     this.statsd.incr('auth.reset.request', 1);
@@ -61,7 +57,6 @@ export function* forgot(token) {
     if (this.request.body.password.length < 7) {
       return yield this.render('forgot', {error: 'Password needs to be at least 7 characters long.', token: token, csrf: this.csrf});
     }
-    this.assertCsrf(this.request.body._csrf);
     const tokenUser = yield validateResetToken(this, token);
     var userId = tokenUser._id;
     yield updatePassword(this, userId, this.request.body.password);
