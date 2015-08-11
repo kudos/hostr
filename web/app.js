@@ -148,24 +148,27 @@ app.use(route.post('/pro/create', pro.create));
 app.use(route.post('/pro/cancel', pro.cancel));
 
 app.use(route.get('/:id', file.landing));
-app.use(route.get('/download/:id/:name', function(id) {
+app.use(route.get('/download/:id/:name', function* (id) {
   this.redirect('/' + id);
 }));
 app.use(route.get('/file/:id/:name', file.get));
 app.use(route.get('/files/:id/:name', file.get));
 app.use(route.get('/file/:size/:id/:name', file.resized));
 
-app.use(route.get('/updaters/mac', function() {
+app.use(route.get('/updaters/mac', function* () {
   this.redirect('/updaters/mac.xml');
 }));
-app.use(route.get('/updaters/mac/changelog', function() {
-  this.render('mac-update-changelog');
+app.use(route.get('/updaters/mac/changelog', function* () {
+  yield this.render('mac-update-changelog');
 }));
 
 if (!module.parent) {
   app.listen(process.env.PORT || 4041, function() {
     debug('Koa HTTP server listening on port ' + (process.env.PORT || 4041));
   });
+  setInterval(function() {
+    debug('%sMB', process.memoryUsage().rss / 1024 / 1024);
+  }, 10000);
 }
 
 export default app;

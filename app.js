@@ -11,7 +11,6 @@ import { events as userEvents } from './api/routes/user';
 import web from './web/app';
 import { init as storageInit } from './lib/storage';
 
-
 import debugname from 'debug';
 const debug = debugname('hostr');
 
@@ -48,6 +47,9 @@ if (!module.parent) {
   app.listen(process.env.PORT || 4040, function() {
     debug('Koa HTTP server listening on port ' + (process.env.PORT || 4040));
   });
+  setInterval(function() {
+    debug('%sMB', process.memoryUsage().rss / 1024 / 1024);
+  }, 10000);
 }
 
-module.exports = app;
+export default app;

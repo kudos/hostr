@@ -151,6 +151,9 @@ if (!module.parent) {
   app.listen(process.env.PORT || 4042, function() {
     debug('Koa HTTP server listening on port ' + (process.env.PORT || 4042));
   });
+  setInterval(function() {
+    debug('%sMB', process.memoryUsage().rss / 1024 / 1024);
+  }, 10000);
 }
 
 export default app;
