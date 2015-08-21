@@ -1023,8 +1023,46 @@ a {
   }
 }
 
-.error-page {
-  background: none;
+.error {
+  // color: #96a9b3;
+}
+
+.error h1, .error h2 {
+  font-weight: 100;
+}
+
+.error .main h1 {
+  font-size: 2em;
+  margin-bottom: 20px;
+}
+
+.error h2 {
+  color: #b6c7d0;
+  font-size: 4em;
+  margin-top: 0px;
+  margin-bottom: 20px;
+}
+
+.error .col-md-12 {
+  margin-top: -1px;
+}
+
+.error a {
+  color: #96a9b3;
+}
+
+.error-logo {
+  position: absolute;
+  top: 50px;
+  left: 15px;
+}
+
+.vertical-center {
+  min-height: 100%;  /* Fallback for browsers do NOT support vh unit */
+  min-height: 100vh; /* These two lines are counted as one :-)       */
+
+  display: flex;
+  align-items: center;
 }
 
 .stats {

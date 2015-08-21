@@ -3,7 +3,9 @@ import ngRoute from 'angular/route';
 import ngResource from 'angular/resource';
 import ReconnectingWebSocket from 'angular-reconnecting-websocket';
 import ngDimensions from 'angular-strap/dist/modules/dimensions';
+import ngStrapCore from 'angular-strap/dist/modules/compiler';
 import ngTooltip from 'angular-strap/dist/modules/tooltip';
+import ngTooltipTemplate from 'angular-strap/dist/modules/tooltip.tpl';
 
 import { FilesController, FileController, AccountController, ProController, BillingController } from './app/controllers';
 import { appHeader, appFooter, menuDropdown, searchShortcut, stripeSubscribe } from './app/directives';
@@ -17,6 +19,7 @@ var app = angular.module('hostr', [
   'ngRoute',
   'ngResource',
   'reconnectingWebSocket',
+  'mgcrea.ngStrap.core',
   'mgcrea.ngStrap.tooltip'
 ]);
 
@@ -38,7 +41,6 @@ app.directive('searchShortcut', ['$document', searchShortcut]);
 app.directive('stripeSubscribe', ['$http', stripeSubscribe]);
 
 app.config(['$routeProvider', '$locationProvider', '$httpProvider', '$tooltipProvider', function($routeProvider, $locationProvider, $httpProvider, $tooltipProvider) {
-  $tooltipProvider.defaults.template = '/jspm_packages/npm/angular-strap@2.1.2/src/tooltip/tooltip.tpl.html';
 
   if (typeof window.user !== 'undefined') {
     $httpProvider.defaults.headers.common.Authorization = ':' + window.user.token;

@@ -6,7 +6,7 @@
   "private": true,
   "engines": {
     "iojs": "^2.5.0",
-    "npm": "^3.2.0"
+    "npm": "^3.3.0"
   },
   "scripts": {
     "build": "npm run build-js && npm run build-sass",
@@ -17,8 +17,9 @@
     "jspm": "jspm install",
     "start": "npm run build && babel-node app.js",
     "test": "mongo hostr test/fixtures/mongo-user.js test/fixtures/mongo-file.js && mocha -r babel/register test/api test/web",
-    "watch": "nodemon -x \"babel-node\" app.js",
-    "watch-js": "babel -D -w -m system -d web/public/build web/public/src",
+    "watch": "parallelshell \"npm run watch-js\" \"npm run watch-server\" \"npm run watch-sass\"",
+    "watch-js": "babel -Dw -m system -d web/public/build web/public/src",
+    "watch-server": "nodemon -x \"babel-node\" app.js",
     "watch-sass": "node-sass -w -r -o web/public/styles/ web/public/styles/"
   },
   "dependencies": {
@@ -28,18 +29,17 @@
     "co": "~4.6.0",
     "co-busboy": "~1.3.0",
     "co-redis": "~1.2.1",
-    "co-views": "~1.0.0",
+    "co-views": "~2.0.0",
     "debug": "~2.2.0",
     "ejs": "~2.3.2",
     "gm": "~1.18.1",
-    "heapdump": "^0.3.7",
-    "http-errors": "^1.3.1",
-    "jspm": "~0.16.0-beta.3",
+    "http-errors": "~1.3.1",
+    "jspm": "~0.16.0",
     "kcors": "~1.0.1",
     "koa": "~0.21.0",
     "koa-bodyparser": "~2.0.1",
     "koa-compress": "~1.0.8",
-    "koa-csrf": "^2.3.0",
+    "koa-csrf": "~2.3.0",
     "koa-favicon": "~1.2.0",
     "koa-file-server": "~2.3.1",
     "koa-generic-session": "~1.9.0",
@@ -47,7 +47,7 @@
     "koa-mount": "~1.3.0",
     "koa-redis": "~1.0.0",
     "koa-route": "~2.4.2",
-    "koa-statsd": "0.0.2",
+    "koa-statsd": "~0.0.2",
     "koa-views": "~3.1.0",
     "koa-websocket": "~1.0.0",
     "mandrill-api": "~1.0.45",
@@ -60,19 +60,20 @@
     "passwords": "~1.3.0",
     "pretty-error": "~1.2.0",
     "raven": "~0.8.1",
-    "redis": "0.12.1",
+    "redis": "~0.12.1",
     "redis-url": "~1.2.1",
     "s3-upload-stream": "~1.0.7",
-    "statsy": "^0.2.0",
-    "stripe": "~3.7.0",
+    "statsy": "~0.2.0",
+    "stripe": "~3.7.1",
     "swig": "~1.4.2",
     "virustotal.js": "~0.3.1"
   },
   "devDependencies": {
-    "eslint": "~1.1.0",
+    "eslint": "~1.2.0",
     "istanbul": "~0.3.18",
     "mocha": "~2.2.5",
     "nodemon": "~1.4.1",
+    "parallelshell": "~2.0.0",
     "supertest": "~1.0.1",
     "tmp": "~0.0.27"
   },
@@ -93,9 +94,9 @@
       "zeroclipboard": "npm:zeroclipboard@~2.2.0"
     },
     "devDependencies": {
-      "babel": "npm:babel-core@^5.8.5",
-      "babel-runtime": "npm:babel-runtime@^5.8.5",
-      "core-js": "npm:core-js@~1.0.0"
+      "babel": "npm:babel-core@^5.8.22",
+      "babel-runtime": "npm:babel-runtime@^5.8.20",
+      "core-js": "npm:core-js@^1.1.0"
     }
   }
 }
