@@ -1,23 +1,15 @@
 import path from 'path';
-import koa from 'koa';
+import Router from 'koa-router';
 import csrf from 'koa-csrf';
-import route from 'koa-route';
 import views from 'koa-views';
 import stats from 'koa-statsd';
-import logger from 'koa-logger';
-import favicon from 'koa-favicon';
-import redisStore from 'koa-redis';
-import compress from 'koa-compress';
-import bodyparser from 'koa-bodyparser';
+import redis from '../lib/redis';
+import koaRedis from 'koa-redis'
 import session from 'koa-generic-session';
-import staticHandler from 'koa-file-server';
 import co from 'co';
-import raven from 'raven';
 import StatsD from 'statsy';
 // waiting for PR to be merged, can remove swig dependency when done
 import errors from '../lib/koa-error';
-import mongo from '../lib/mongo';
-import redis from '../lib/redis';
 import * as index from './routes/index';
 import * as file from './routes/file';
 import * as pro from './routes/pro';
@@ -26,35 +18,24 @@ import * as user from './routes/user';
 import debugname from 'debug';
 const debug = debugname('hostr-web');
 
-if (process.env.SENTRY_DSN) {
-  const ravenClient = new raven.Client(process.env.SENTRY_DSN);
-  ravenClient.patchGlobal();
-}
-
-const redisUrl = process.env.REDIS_URL || process.env.REDISTOGO_URL || 'redis://localhost:6379';
-
-const app = koa();
+const router = new Router();
+router.use(errors({template: path.join(__dirname, 'public', '404.html')}));
 
 let statsdOpts = {prefix: 'hostr-web', host: process.env.STATSD_HOST || 'localhost'};
 let statsd = new StatsD(statsdOpts);
-app.use(function*(next) {
+router.use(function* (next) {
   this.statsd = statsd;
   yield next;
 });
-app.use(stats(statsdOpts));
+router.use(stats(statsdOpts));
 
-app.use(errors({template: path.join(__dirname, 'public', '404.html')}));
+router.use(session({
+  store: koaRedis({client: redis().client})
+}));
 
-app.use(function*(next){
-  this.set('Server', 'Nintendo 64');
-  if(this.req.headers['x-forwarded-proto'] === 'http'){
-    return this.redirect('https://' + this.request.headers.host + this.request.url);
-  }
-  yield next;
-});
-
-app.use(function*(next){
+router.use(function* (next){
   this.state = {
+    session: this.session,
     apiURL: process.env.API_URL,
     baseURL: process.env.BASE_URL,
     stripePublic: process.env.STRIPE_PUBLIC_KEY
@@ -62,70 +43,49 @@ app.use(function*(next){
   yield next;
 });
 
-app.use(mongo());
-app.use(redis());
-app.use(compress());
-app.use(bodyparser());
-app.use(favicon(path.join(__dirname, 'public/images/favicon.png')));
-app.use(staticHandler({root: path.join(__dirname, 'public'), maxage: 31536000000}));
-app.use(logger());
-app.use(views('views', {
+router.use(views('views', {
   default: 'ejs'
 }));
 
-app.keys = [process.env.KEYS || 'INSECURE'];
-app.use(session({
-  store: redisStore({client: redis().client})
-}));
+router.get('/', index.main);
+router.get('/account', index.main);
+router.get('/billing', index.main);
+router.get('/pro', index.main);
 
-app.use(route.get('/', index.main));
-app.use(route.get('/account', index.main));
-app.use(route.get('/billing', index.main));
-app.use(route.get('/pro', index.main));
+router.get('/signin', user.signin);
+router.post('/signin', user.signin);
+router.get('/signup', user.signup);
+router.post('/signup', user.signup);
+router.get('/logout', user.logout);
+router.post('/logout', user.logout);
+router.get('/forgot', user.forgot);
+router.get('/forgot/:token', user.forgot);
+router.post('/forgot/:token', user.forgot);
+router.post('/forgot', user.forgot);
+router.get('/activate/:code', user.activate);
 
-app.use(route.get('/signin', user.signin));
-app.use(route.post('/signin', user.signin));
-app.use(route.get('/signup', user.signup));
-app.use(route.post('/signup', user.signup));
-app.use(route.get('/logout', user.logout));
-app.use(route.post('/logout', user.logout));
-app.use(route.get('/forgot', user.forgot));
-app.use(route.get('/forgot/:token', user.forgot));
-app.use(route.post('/forgot/:token', user.forgot));
-app.use(route.post('/forgot', user.forgot));
-app.use(route.get('/activate/:code', user.activate));
+router.get('/terms', index.staticPage);
+router.get('/privacy', index.staticPage);
+router.get('/pricing', index.staticPage);
+router.get('/apps', index.staticPage);
+router.get('/stats', index.staticPage);
 
-app.use(route.get('/terms', index.staticPage));
-app.use(route.get('/privacy', index.staticPage));
-app.use(route.get('/pricing', index.staticPage));
-app.use(route.get('/apps', index.staticPage));
-app.use(route.get('/stats', index.staticPage));
+router.post('/pro/create', pro.create);
+router.post('/pro/cancel', pro.cancel);
 
-app.use(route.post('/pro/create', pro.create));
-app.use(route.post('/pro/cancel', pro.cancel));
-
-app.use(route.get('/:id', file.landing));
-app.use(route.get('/download/:id/:name', function* (id) {
+router.get('/:id', file.landing);
+router.get('/file/:id/:name', file.get);
+router.get('/file/:size/:id/:name', file.get);
+router.get('/files/:id/:name', file.get);
+router.get('/download/:id/:name', function* (id) {
   this.redirect('/' + id);
-}));
-app.use(route.get('/file/:id/:name', file.get));
-app.use(route.get('/files/:id/:name', file.get));
-app.use(route.get('/file/:size/:id/:name', file.resized));
+});
 
-app.use(route.get('/updaters/mac', function* () {
+router.get('/updaters/mac', function* () {
   this.redirect('/updaters/mac.xml');
-}));
-app.use(route.get('/updaters/mac/changelog', function* () {
+});
+router.get('/updaters/mac/changelog', function* () {
   yield this.render('mac-update-changelog');
-}));
+});
 
-if (!module.parent) {
-  app.listen(process.env.PORT || 4041, function() {
-    debug('Koa HTTP server listening on port ' + (process.env.PORT || 4041));
-  });
-  setInterval(function() {
-    debug('%sMB', process.memoryUsage().rss / 1024 / 1024);
-  }, 10000);
-}
-
-export default app;
+export default router;

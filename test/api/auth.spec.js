@@ -1,5 +1,5 @@
 import { agent } from 'supertest';
-import app from '../../api/app';
+import app from '../../app';
 
 const request = agent(app.listen());
 
@@ -8,7 +8,7 @@ describe('hostr-api auth', function(){
   describe('with no credentials', function(){
     it('should `throw` 401', function(done){
       request
-        .get('/user')
+        .get('/api/user')
         .expect(401, done);
     });
   });
@@ -16,18 +16,19 @@ describe('hostr-api auth', function(){
   describe('with invalid credentials', function(){
     it('should `throw` 401', function(done){
       request
-        .get('/user')
+        .get('/api/user')
         .auth('user', 'invalid password')
         .expect(401, done);
     });
   });
 
   describe('with valid credentials', function(){
-    it('should call the next middleware', function(done){
+    it('should 404', function(done){
       request
-        .get('/')
+        .get('/api/')
         .auth('test@hostr.co', 'test-password')
-        .expect(200, done);
+        .expect('Content-type', /application\/json/)
+        .expect(404, done);
     });
   });
 });

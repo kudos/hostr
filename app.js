@@ -1,31 +1,53 @@
+import path from 'path';
 import koa from 'koa';
 import mount from 'koa-mount';
 import route from 'koa-route';
+import logger from 'koa-logger';
+import Router from 'koa-router';
+import serve from 'koa-static';
+import favicon from 'koa-favicon';
+import compress from 'koa-compress';
+import bodyparser from 'koa-bodyparser';
 import websockify from 'koa-websocket';
+import raven from 'raven';
+import mongo from './lib/mongo';
 import redis from './lib/redis';
 import co from 'co';
 import api from './api/app';
-import { events as fileEvents } from './api/routes/file';
-import { events as userEvents } from './api/routes/user';
 import web from './web/app';
 import { init as storageInit } from './lib/storage';
+storageInit();
 
 import debugname from 'debug';
 const debug = debugname('hostr');
 
-storageInit();
+if (process.env.SENTRY_DSN) {
+  const ravenClient = new raven.Client(process.env.SENTRY_DSN);
+  ravenClient.patchGlobal();
+}
 
 const app = websockify(koa());
-
 app.keys = [process.env.KEYS || 'INSECURE'];
 
-app.ws.use(redis());
+app.use(function* (next){
+  this.set('Server', 'Nintendo 64');
+  if(this.req.headers['x-forwarded-proto'] === 'http'){
+    return this.redirect('https://' + this.req.headers.host + this.req.url);
+  }
+  yield next;
+});
 
-app.ws.use(route.all('/api/user', userEvents));
-app.ws.use(route.all('/api/file/:id', fileEvents));
+app.use(mongo());
+app.use(redis());
+app.use(logger());
+app.use(compress());
+app.use(bodyparser());
 
-app.use(mount('/api', api));
-app.use(mount('/', web));
+app.use(favicon(path.join(__dirname, 'web/public/images/favicon.png')));
+app.use(serve(path.join(__dirname, 'web/public/'), {maxage: 31536000000}));
+
+app.use(api.prefix('/api').routes());
+app.use(web.prefix('').routes());
 
 if (!module.parent) {
   app.listen(process.env.PORT || 4040, function() {

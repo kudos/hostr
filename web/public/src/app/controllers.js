@@ -34,7 +34,7 @@ export class FileController {
       $rootScope.pageTitle = ' - ' + file.name;
       if (file.status === 'uploading') {
         file.percent = 0;
-        var ws = new ReconnectingWebSocket('wss://' + window.location.hostname + window.settings.api + '/file/' + file.id);
+        var ws = new ReconnectingWebSocket(window.settings.apiURL.replace(/^http/, 'ws') + '/file/' + file.id);
         ws.onmessage = function (msg) {
           var evt = JSON.parse(msg.data);
           $rootScope.$broadcast(evt.type, evt.data);

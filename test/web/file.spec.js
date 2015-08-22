@@ -1,19 +1,16 @@
-import web from '../../web/app';
-import api from '../../api/app';
 import assert from 'assert';
 import { agent } from 'supertest';
+import app from '../../app';
 
-const request = agent(web.listen());
-
-const apiRequest = agent(api.listen());
+const request = agent(app.listen());
 
 let file = {};
 describe('setup hostr-web file', function() {
   describe('when POSTing a file to /file', function() {
     it('should receive a new file object', function(done) {
       this.timeout(30000);
-      apiRequest
-        .post('/file')
+      request
+        .post('/api/file')
         .attach('file', 'test/fixtures/utah-arches.jpg')
         .auth('test@hostr.co', 'test-password')
         .expect(201)

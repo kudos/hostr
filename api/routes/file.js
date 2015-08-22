@@ -224,10 +224,10 @@ export function* list() {
 }
 
 
-export function* get(id) {
+export function* get() {
   const Files = this.db.Files;
   const Users = this.db.Users;
-  const file = yield Files.findOne({_id: id, status: {'$in': ['active', 'uploading']}});
+  const file = yield Files.findOne({_id: this.params.id, status: {'$in': ['active', 'uploading']}});
   this.assert(file, 404, '{"error": {"message": "File not found", "code": 604}}');
   const user = yield Users.findOne({_id: file.owner});
   this.assert(user && !user.banned, 404, '{"error": {"message": "File not found", "code": 604}}');
@@ -236,22 +236,23 @@ export function* get(id) {
 }
 
 
-export function* put(id) {
+export function* put() {
   if (this.request.body.trashed) {
     const Files = this.db.Files;
     const status = this.request.body.trashed ? 'trashed' : 'active';
-    yield Files.updateOne({'_id': id, owner: this.user.id}, {$set: {status: status}}, {w: 1});
+    yield Files.updateOne({'_id': this.params.id, owner: this.user.id}, {$set: {status: status}}, {w: 1});
   }
 }
 
 
-export function* del(id) {
+export function* del() {
   const Files = this.db.Files;
-  yield Files.updateOne({'_id': id, owner: this.user.id}, {$set: {status: 'deleted'}}, {w: 1});
-  const event = {type: 'file-deleted', data: {'id': id}};
+  yield Files.updateOne({'_id': this.params.id, owner: this.db.ObjectId(this.user.id)}, {$set: {status: 'deleted'}}, {w: 1});
+  const event = {type: 'file-deleted', data: {'id': this.params.id}};
   yield this.redis.publish('/user/' + this.user.id, JSON.stringify(event));
-  yield this.redis.publish('/file/' + id, JSON.stringify(event));
+  yield this.redis.publish('/file/' + this.params.id, JSON.stringify(event));
   this.statsd.incr('file.delete', 1);
+  this.status = 204;
   this.body = '';
 }
 

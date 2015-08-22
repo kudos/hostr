@@ -7,11 +7,12 @@ import debugname from 'debug';
 const debug = debugname('hostr-web:auth');
 import { Mandrill } from 'mandrill-api/mandrill';
 const mandrill = new Mandrill(process.env.MANDRILL_KEY);
+import mongo from '../../lib/mongo';
 
-export function* authenticate(ctx, email, password) {
-  const Users = ctx.db.Users;
-  const Logins = ctx.db.Logins;
-  const remoteIp = ctx.headers['x-real-ip'] || ctx.ip;
+export function* authenticate(email, password) {
+  const Users = this.db.Users;
+  const Logins = this.db.Logins;
+  const remoteIp = this.headers['x-real-ip'] || this.ip;
 
   if (!password || password.length < 6){
     debug('No password, or password too short');
@@ -45,10 +46,10 @@ export function* authenticate(ctx, email, password) {
 }
 
 
-export function* setupSession(ctx, user) {
+export function* setupSession(user) {
   debug('Setting up session');
   const token = uuid.v4();
-  yield ctx.redis.set(token, user._id, 'EX', 604800);
+  yield this.redis.set(token, user._id, 'EX', 604800);
 
   const sessionUser = {
     'id': user._id,
@@ -67,19 +68,19 @@ export function* setupSession(ctx, user) {
     sessionUser.dailyUploadAllowance = 'unlimited';
   }
 
-  ctx.session.user = sessionUser;
-  if (ctx.request.body.remember && ctx.request.body.remember === 'on') {
-    const Remember = ctx.db.Remember;
+  this.session.user = sessionUser;
+  if (this.request.body.remember && this.request.body.remember === 'on') {
+    const Remember = this.db.Remember;
     var rememberToken = uuid();
     Remember.save({_id: rememberToken, 'user_id': user.id, created: new Date().getTime()});
-    ctx.cookies.set('r', rememberToken, { maxAge: 1209600000, httpOnly: true});
+    this.cookies.set('r', rememberToken, { maxAge: 1209600000, httpOnly: true});
   }
   debug('Session set up');
 }
 
 
-export function* signup(ctx, email, password, ip) {
-  const Users = ctx.db.Users;
+export function* signup(email, password, ip) {
+  const Users = this.db.Users;
   const existingUser = yield Users.findOne({email: email, status: {'$ne': 'deleted'}});
   if (existingUser) {
     debug('Email already in use.');
@@ -120,9 +121,9 @@ ${process.env.BASE_URL + '/activate/' + user.activationCode}
 }
 
 
-export function* sendResetToken(ctx, email) {
-  const Users = ctx.db.Users;
-  const Reset = ctx.db.Reset;
+export function* sendResetToken(email) {
+  const Users = this.db.Users;
+  const Reset = this.db.Reset;
   const user = yield Users.findOne({email: email});
   if (user) {
     var token = uuid.v4();
@@ -155,40 +156,40 @@ Visit  ${process.env.BASE_URL + '/forgot/' + token} to set a new one.
 }
 
 
-export function* fromToken(ctx, token) {
-  const Users = ctx.db.Users;
-  const reply = yield ctx.redis.get(token);
+export function* fromToken(token) {
+  const Users = this.db.Users;
+  const reply = yield this.redis.get(token);
   return yield Users.findOne({_id: reply});
 }
 
 
-export function* fromCookie(ctx, cookie) {
-  const Remember = ctx.db.Remember;
-  const Users = ctx.db.Users;
+export function* fromCookie(cookie) {
+  const Remember = this.db.Remember;
+  const Users = this.db.Users;
   const remember = yield Remember.findOne({_id: cookie});
   return yield Users.findOne({_id: remember.user_id});
 }
 
 
-export function* validateResetToken(ctx) {
-  const Reset = ctx.db.Reset;
-  return yield Reset.findOne({token: ctx.params.id});
+export function* validateResetToken() {
+  const Reset = this.db.Reset;
+  return yield Reset.findOne({token: this.params.id});
 }
 
 
-export function* updatePassword(ctx, userId, password) {
-  const Users = ctx.db.Users;
+export function* updatePassword(userId, password) {
+  const Users = this.db.Users;
   const cryptedPassword = yield passwords.crypt(password);
   yield Users.update({_id: userId}, {'$set': {'salted_password': cryptedPassword}});
 }
 
 
-export function* activateUser(ctx, code) {
-  const Users = ctx.db.Users;
+export function* activateUser(code) {
+  const Users = this.db.Users;
   const user = yield Users.findOne({activationCode: code});
   if (user) {
     Users.updateOne({_id: user._id}, {'$unset': {activationCode: ''}});
-    yield setupSession(ctx, user);
+    yield setupSession(this, user);
   } else {
     return false;
   }
