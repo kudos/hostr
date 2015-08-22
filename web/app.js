@@ -3,6 +3,7 @@ import koa from 'koa';
 import csrf from 'koa-csrf';
 import route from 'koa-route';
 import views from 'koa-views';
+import stats from 'koa-statsd';
 import logger from 'koa-logger';
 import favicon from 'koa-favicon';
 import redisStore from 'koa-redis';
@@ -14,19 +15,17 @@ import co from 'co';
 import redis from 'redis-url';
 import coRedis from 'co-redis';
 import raven from 'raven';
+import StatsD from 'statsy';
 // waiting for PR to be merged, can remove swig dependency when done
 import errors from '../lib/koa-error';
-import mongoConnect from '../config/mongo';
+import mongo from '../lib/mongo';
 import * as index from './routes/index';
 import * as file from './routes/file';
 import * as pro from './routes/pro';
 import * as user from './routes/user';
-import mongodb from 'mongodb-promisified';
-const objectId = mongodb().ObjectId;
+
 import debugname from 'debug';
 const debug = debugname('hostr-web');
-import stats from 'koa-statsd';
-import StatsD from 'statsy';
 
 if (process.env.SENTRY_DSN) {
   const ravenClient = new raven.Client(process.env.SENTRY_DSN);
@@ -76,24 +75,7 @@ co(function*() {
   debug(err);
 });
 
-let mongoConnecting = false;
-const mongoDeferred = {};
-mongoDeferred.promise = new Promise(function(resolve, reject) {
-  mongoDeferred.resolve = resolve;
-  mongoDeferred.reject = reject;
-});
-
-function* getMongo() {
-  if (!mongoConnecting) {
-    mongoConnecting = true;
-    const db = yield mongoConnect();
-    mongoDeferred.resolve(db);
-    return db;
-  } else {
-    return mongoDeferred.promise;
-  }
-}
-
+app.use(mongo());
 app.use(compress());
 app.use(bodyparser());
 app.use(favicon(path.join(__dirname, 'public/images/favicon.png')));
@@ -104,7 +86,6 @@ app.use(views('views', {
 }));
 
 app.use(function* setupConnections(next){
-  this.db = yield getMongo();
   this.redis = coRedisConn;
   yield next;
 });
