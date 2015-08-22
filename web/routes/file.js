@@ -68,6 +68,12 @@ export function* get() {
   this.set('Expires', new Date(2020, 1).toISOString());
   this.set('Cache-control', 'max-age=2592000');
 
+  this.db.Files.updateOne(
+    {_id: file._id},
+    {'$set': {'last_accessed': Math.ceil(Date.now()/1000)}, '$inc': {downloads: 1}},
+    {w:0}
+  );
+
   this.body = yield hostrFileStream(localPath, remotePath);
 }
 
