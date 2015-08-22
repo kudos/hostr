@@ -39,7 +39,7 @@ module.exports = function* (next) {
   this.assert(!user.activationCode, 401, '{"error": {"message": "Account has not been activated.", "code": 603}}');
 
   const uploadedTotal = yield Files.count({owner: user._id, status: {'$ne': 'deleted'}});
-  const uploadedToday = yield Files.count({'owner': user._id, 'time_added': {'$gt': Date.now()}});
+  const uploadedToday = yield Files.count({owner: user._id, 'time_added': {'$gt': Math.ceil(Date.now()/1000)-86400}});
 
   const normalisedUser = {
     'id': user._id,

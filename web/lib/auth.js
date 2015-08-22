@@ -58,7 +58,7 @@ export function* setupSession(user) {
     'maxFileSize': 20971520,
     'joined': user.joined,
     'plan': user.type || 'Free',
-    'uploadsToday': 0,
+    'uploadsToday': yield this.db.Files.count({owner: user._id, 'time_added': {'$gt': Math.ceil(Date.now()/1000)-86400}}),
     'token': token,
     'md5': crypto.createHash('md5').update(user.email).digest('hex')
   };
