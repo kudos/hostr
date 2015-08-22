@@ -11,12 +11,12 @@ const debug = debugname('hostr-api');
 const router = new Router();
 
 let statsdOpts = {prefix: 'hostr-api', host: process.env.STATSD_HOST || 'localhost'};
+router.use(stats(statsdOpts));
 let statsd = new StatsD(statsdOpts);
 router.use(function*(next) {
   this.statsd = statsd;
   yield next;
 });
-router.use(stats(statsdOpts));
 
 router.use(cors({
   origin: '*',

@@ -3,9 +3,7 @@ import Router from 'koa-router';
 import csrf from 'koa-csrf';
 import views from 'koa-views';
 import stats from 'koa-statsd';
-import redis from '../lib/redis';
-import koaRedis from 'koa-redis'
-import session from 'koa-generic-session';
+import * as redis from '../lib/redis';
 import co from 'co';
 import StatsD from 'statsy';
 // waiting for PR to be merged, can remove swig dependency when done
@@ -22,18 +20,16 @@ const router = new Router();
 router.use(errors({template: path.join(__dirname, 'public', '404.html')}));
 
 let statsdOpts = {prefix: 'hostr-web', host: process.env.STATSD_HOST || 'localhost'};
+router.use(stats(statsdOpts));
 let statsd = new StatsD(statsdOpts);
 router.use(function* (next) {
   this.statsd = statsd;
   yield next;
 });
-router.use(stats(statsdOpts));
 
-router.use(session({
-  store: koaRedis({client: redis().client})
-}));
+router.use(redis.sessionStore());
 
-router.use(function* (next){
+router.use(function* (next) {
   this.state = {
     session: this.session,
     apiURL: process.env.API_URL,

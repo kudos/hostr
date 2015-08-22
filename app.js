@@ -9,9 +9,10 @@ import favicon from 'koa-favicon';
 import compress from 'koa-compress';
 import bodyparser from 'koa-bodyparser';
 import websockify from 'koa-websocket';
+import helmet from 'koa-helmet';
 import raven from 'raven';
 import mongo from './lib/mongo';
-import redis from './lib/redis';
+import * as redis from './lib/redis';
 import co from 'co';
 import api from './api/app';
 import web from './web/app';
@@ -29,6 +30,8 @@ if (process.env.SENTRY_DSN) {
 const app = websockify(koa());
 app.keys = [process.env.KEYS || 'INSECURE'];
 
+app.use(helmet());
+
 app.use(function* (next){
   this.set('Server', 'Nintendo 64');
   if(this.req.headers['x-forwarded-proto'] === 'http'){
@@ -38,7 +41,7 @@ app.use(function* (next){
 });
 
 app.use(mongo());
-app.use(redis());
+app.use(redis.middleware());
 app.use(logger());
 app.use(compress());
 app.use(bodyparser());

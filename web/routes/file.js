@@ -45,7 +45,7 @@ export function* get() {
     localPath = path.join(storePath, file._id[0], this.params.size, file._id + '_' + file.file_name);
     remotePath = path.join(this.params.size, file._id + '_' + file.file_name);
   }
-  console.log(localPath);
+
   if (file.malware) {
     this.statsd.incr('file.malware.download', 1);
   }
@@ -82,7 +82,7 @@ export function* landing() {
     this.params.name = file.file_name;
     return yield get.call(this);
   }
-  console.log('incr')
+
   this.statsd.incr('file.landing', 1);
   const formattedFile = formatFile(file);
   yield this.render('file', {file: formattedFile});
