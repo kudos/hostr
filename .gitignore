@@ -8,3 +8,5 @@ npm-debug.log
 web/public/build
 web/public/styles/*.css
 *.gz
+minigun*.json
+test*.json
