@@ -7,11 +7,10 @@ import compress from 'koa-compress';
 import bodyparser from 'koa-bodyparser';
 import cors from 'kcors';
 import co from 'co';
-import redis from 'redis-url';
-import coRedis from 'co-redis';
 import raven from 'raven';
 import auth from './lib/auth';
 import mongo from '../lib/mongo';
+import redis from '../lib/redis';
 import * as user from './routes/user';
 import * as file from './routes/file';
 import debugname from 'debug';
@@ -25,7 +24,13 @@ if (process.env.SENTRY_DSN) {
 
 const app = websockify(koa());
 
-const redisUrl = process.env.REDIS_URL || process.env.REDISTOGO_URL || 'redis://localhost:6379';
+app.use(function* (next){
+  this.set('Server', 'Nintendo 64');
+  if(this.req.headers['x-forwarded-proto'] === 'http'){
+    return this.redirect('https://' + this.req.headers.host + this.req.url);
+  }
+  yield next;
+});
 
 let statsdOpts = {prefix: 'hostr-api', host: process.env.STATSD_HOST || 'localhost'};
 let statsd = new StatsD(statsdOpts);
@@ -42,34 +47,10 @@ app.use(cors({
   credentials: true
 }));
 
-app.use(function* (next){
-  this.set('Server', 'Nintendo 64');
-  if(this.req.headers['x-forwarded-proto'] === 'http'){
-    return this.redirect('https://' + this.req.headers.host + this.req.url);
-  }
-  yield next;
-});
-
-const redisConn = redis.connect(redisUrl);
-let coRedisConn = {};
-
-co(function*() {
-  coRedisConn = coRedis(redisConn);
-  coRedisConn.on('error', function (err) {
-    debug('Redis error ' + err);
-  });
-}).catch(function(err) {
-  console.error(err);
-});
-
 app.use(mongo());
-
-function* setupConnections(next){
-  this.redis = coRedisConn;
-  yield next;
-}
-app.ws.use(setupConnections);
-app.use(setupConnections);
+app.use(redis());
+app.ws.use(mongo());
+app.ws.use(redis());
 
 app.use(route.get('/', function* (){
   this.status = 200;

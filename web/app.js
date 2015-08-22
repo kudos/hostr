@@ -12,13 +12,12 @@ import bodyparser from 'koa-bodyparser';
 import session from 'koa-generic-session';
 import staticHandler from 'koa-file-server';
 import co from 'co';
-import redis from 'redis-url';
-import coRedis from 'co-redis';
 import raven from 'raven';
 import StatsD from 'statsy';
 // waiting for PR to be merged, can remove swig dependency when done
 import errors from '../lib/koa-error';
 import mongo from '../lib/mongo';
+import redis from '../lib/redis';
 import * as index from './routes/index';
 import * as file from './routes/file';
 import * as pro from './routes/pro';
@@ -63,19 +62,8 @@ app.use(function*(next){
   yield next;
 });
 
-const redisConn = redis.connect(redisUrl);
-let coRedisConn = {};
-
-co(function*() {
-  coRedisConn = coRedis(redisConn);
-  coRedisConn.on('error', function (err) {
-    debug('Redis error ' + err);
-  });
-}).catch(function(err) {
-  debug(err);
-});
-
 app.use(mongo());
+app.use(redis());
 app.use(compress());
 app.use(bodyparser());
 app.use(favicon(path.join(__dirname, 'public/images/favicon.png')));
@@ -85,22 +73,10 @@ app.use(views('views', {
   default: 'ejs'
 }));
 
-app.use(function* setupConnections(next){
-  this.redis = coRedisConn;
-  yield next;
-});
-
 app.keys = [process.env.KEYS || 'INSECURE'];
 app.use(session({
-  store: redisStore({client: redisConn})
+  store: redisStore({client: redis().client})
 }));
-
-app.use(function* objectIdSession(next) {
-  if (this.session.user) {
-    this.session.user.id = objectId(this.session.user.id);
-  }
-  yield next;
-});
 
 app.use(route.get('/', index.main));
 app.use(route.get('/account', index.main));

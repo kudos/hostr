@@ -2,8 +2,7 @@ import koa from 'koa';
 import mount from 'koa-mount';
 import route from 'koa-route';
 import websockify from 'koa-websocket';
-import redis from 'redis-url';
-import coRedis from 'co-redis';
+import redis from './lib/redis';
 import co from 'co';
 import api from './api/app';
 import { events as fileEvents } from './api/routes/file';
@@ -20,22 +19,7 @@ const app = websockify(koa());
 
 app.keys = [process.env.KEYS || 'INSECURE'];
 
-const redisUrl = process.env.REDIS_URL || process.env.REDISTOGO_URL || 'redis://localhost:6379';
-
-let coRedisConn = {};
-
-co(function*() {
-  coRedisConn = coRedis(redis.connect(redisUrl));
-  coRedisConn.on('error', function (err) {
-    debug('Redis error ' + err);
-  });
-}).catch(function(err) {
-  console.error(err);
-});
-app.ws.use(function*(next) {
-  this.redis = coRedisConn;
-  yield next;
-});
+app.ws.use(redis());
 
 app.ws.use(route.all('/api/user', userEvents));
 app.ws.use(route.all('/api/file/:id', fileEvents));
