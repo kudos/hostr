@@ -12,7 +12,7 @@ describe('hostr-api user', function() {
         .get('/api/user')
         .auth('test@hostr.co', 'test-password')
         .expect(function(response) {
-          assert(response.body.id === '54fd04a37675bcd06213eac8');
+          assert(response.body.email === 'test@hostr.co');
         })
         .expect(200)
         .end(done);
