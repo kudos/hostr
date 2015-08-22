@@ -4,8 +4,9 @@ export function* signin() {
   if (!this.request.body.email) {
     return yield this.render('signin', {csrf: this.csrf});
   }
-  this.statsd.incr('auth.attempt', 1);
 
+  this.statsd.incr('auth.attempt', 1);
+  this.assertCSRF(this.request.body);
   const user = yield authenticate.call(this, this.request.body.email, this.request.body.password);
   if(!user) {
     this.statsd.incr('auth.failure', 1);
@@ -25,6 +26,7 @@ export function* signup() {
     return yield this.render('signup', {csrf: this.csrf});
   }
 
+  this.assertCSRF(this.request.body);
   if (this.request.body.email !== this.request.body.confirm_email) {
     return yield this.render('signup', {error: 'Emails do not match.', csrf: this.csrf});
   } else if (this.request.body.email && !this.request.body.terms) {
@@ -41,13 +43,19 @@ export function* signup() {
     return yield this.render('signup', {error: e.message, csrf: this.csrf});
   }
   this.statsd.incr('auth.signup', 1);
-  return yield this.render('signup', {message: 'Thanks for signing up, we\'ve sent you an email to activate your account.'});
+  return yield this.render('signup', {message: 'Thanks for signing up, we\'ve sent you an email to activate your account.', csrf: ''});
 }
 
 
-export function* forgot(token) {
+export function* forgot() {
   const Reset = this.db.Reset;
   const Users = this.db.Users;
+  if (this.request.body) {
+    return yield this.render('forgot', {token: null, csrf: this.csrf});
+  }
+  const token = this.params.token;
+
+  this.assertCSRF(this.request.body);
   if (this.request.body.email) {
     var email = this.request.body.email;
     yield sendResetToken.call(this, email);
@@ -87,9 +95,12 @@ export function* logout() {
 }
 
 
-export function* activate(code) {
+export function* activate() {
+  const code = this.params.code;
   if (yield activateUser.call(this, code)) {
     this.statsd.incr('auth.activation', 1);
+    this.redirect('/');
+  } else {
+    this.throw(400);
   }
-  this.redirect('/');
 }

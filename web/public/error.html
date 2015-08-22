@@ -21,9 +21,18 @@
       </div>
       <div class='row vertical-center'>
         <div class='col-md-12'>
-          <h2>500</h2>
-          <h1>Sorry, It looks like you've hit an unexpected error.</h1>
-          <p class="lead">Refreshing might fix the problem. If not, sit tight! We're on it!</p>
+          <h2>{{ status }}</h2>
+          {% if status >= 500 %}
+          <h1>{{ error }}</h1>
+          <p>Refreshing might fix the problem. If not, sit tight! We're on it!</p>
+          {% elseif status === 404 %}
+          <h1>Sorry, it looks like the file you asked for is gone.</h1>
+          <a href='/'>Take Me Home</a>
+          {% else %}
+          <h1>{{ error }}</h1>
+          <a href='/'>Take Me Home</a>
+          {% endif %}
+          </p>
         </div>
       </div>
     </div>

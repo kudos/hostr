@@ -65,6 +65,7 @@ export function* create() {
 }
 
 export function* cancel() {
+  this.assertCSRF();
   const Users = this.db.Users;
   const user = yield Users.findOne({_id: this.session.user.id});
 
