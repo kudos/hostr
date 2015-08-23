@@ -16,7 +16,7 @@
     "init": "babel-node -e \"require('./lib/storage')();\"",
     "jspm": "jspm install",
     "start": "npm run build && babel-node app.js",
-    "test": "mongo hostr test/fixtures/mongo-user.js test/fixtures/mongo-file.js && mocha -r babel/register test/api test/web",
+    "test": "mongo hostr test/fixtures/mongo-*.js && mocha -r babel/register  test/**/*.spec.js",
     "watch": "parallelshell \"npm run watch-js\" \"npm run watch-sass\" \"npm run watch-server\"",
     "watch-js": "babel -Dw -m system -d web/public/build web/public/src",
     "watch-server": "nodemon -x \"babel-node\" app.js",
