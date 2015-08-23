@@ -46,6 +46,7 @@ router.use('/*',function* (next) {
     } else {
       if (!err.status) {
         debug(err);
+        this.raven.captureError(err);
         throw err;
       } else {
         this.status = err.status;
@@ -72,5 +73,9 @@ router.delete('/file/:id', auth, file.del);
 router.get('/(.*)', function* () {
   this.throw(404);
 });
+
+export const ws = new Router();
+
+ws.all('/user', user.events);
 
 export default router;

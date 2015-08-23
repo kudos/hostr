@@ -65,16 +65,23 @@ export function* events() {
       let json;
       try{
         json = JSON.parse(message);
-      } catch(e) {
+      } catch(err) {
         debug('Invalid JSON for socket auth');
         this.websocket.send('Invalid authentication message. Bad JSON?');
+        this.raven.captureError(err);
       }
-      const reply = yield this.redis.get(json.authorization);
-      if (reply) {
-        pubsub.subscribe('/user/' + reply);
-        debug('Subscribed to: /user/%s', reply);
-      } else {
-        this.websocket.send('Invalid authentication token.');
+      try {
+        const reply = yield this.redis.get(json.authorization);
+        if (reply) {
+          pubsub.subscribe('/user/' + reply);
+          this.websocket.send('{"status":"active"}');
+          debug('Subscribed to: /user/%s', reply);
+        } else {
+          this.websocket.send('Invalid authentication token.');
+        }
+      } catch(err) {
+        debug(err);
+        this.raven.captureError(err);
       }
     }.bind(this)));
   });

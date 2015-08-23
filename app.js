@@ -15,6 +15,7 @@ import mongo from './lib/mongo';
 import * as redis from './lib/redis';
 import co from 'co';
 import api from './api/app';
+import { ws } from './api/app';
 import web from './web/app';
 import { init as storageInit } from './lib/storage';
 storageInit();
@@ -22,13 +23,21 @@ storageInit();
 import debugname from 'debug';
 const debug = debugname('hostr');
 
+const app = websockify(koa());
+app.keys = [process.env.KEYS || 'INSECURE'];
+
 if (process.env.SENTRY_DSN) {
   const ravenClient = new raven.Client(process.env.SENTRY_DSN);
   ravenClient.patchGlobal();
+  app.use(function* (next) {
+    this.raven = ravenClient;
+    yield next;
+  });
+  app.ws.use(function* (next) {
+    this.raven = ravenClient;
+    yield next;
+  });
 }
-
-const app = websockify(koa());
-app.keys = [process.env.KEYS || 'INSECURE'];
 
 app.use(helmet());
 
@@ -37,7 +46,14 @@ app.use(function* (next){
   if(this.req.headers['x-forwarded-proto'] === 'http'){
     return this.redirect('https://' + this.req.headers.host + this.req.url);
   }
-  yield next;
+  try {
+    yield next;
+  } catch (err) {
+    if (!err.statusCode) {
+      this.raven.captureError(err);
+    }
+    throw err;
+  }
 });
 
 app.use(mongo());
@@ -51,6 +67,9 @@ app.use(serve(path.join(__dirname, 'web/public/'), {maxage: 31536000000}));
 
 app.use(api.prefix('/api').routes());
 app.use(web.prefix('').routes());
+
+app.ws.use(redis.middleware());
+app.ws.use(ws.prefix('/api').routes());
 
 if (!module.parent) {
   app.listen(process.env.PORT || 4040, function() {

@@ -17,6 +17,7 @@ import debugname from 'debug';
 const debug = debugname('hostr-web');
 
 const router = new Router();
+
 router.use(errors({template: path.join(__dirname, 'public', 'error.html')}));
 
 let statsdOpts = {prefix: 'hostr-web', host: process.env.STATSD_HOST || 'localhost'};
