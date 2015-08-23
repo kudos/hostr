@@ -4,67 +4,29 @@
 
 ### Runtimes
 
-Acquire [iojs](https://iojs.org) somehow, using [nvm](https://github.com/creationix/nvm), [n](https://github.com/tj/n). Or if you don't have or want regular node installed globally just use homebrew `brew install iojs && brew link iojs --force`.
+Currently tested and runs on iojs 2.5.0, probably works on earlier releases and on node. Does yet not work on iojs > 3 due to the NAN changes introduced.
 
 ### Dependencies
 
 You'll need `graphicsmagick` for image thumbnailing, everything else is taken care of by an `npm install`.
 
-### Databases
+### Enviroment Variable Configuration
 
-You'll need Redis for session and pubsub and MongoDB for persistent storage, `brew install redis mongodb`.
+`AWS_ACCESS_KEY_ID`
 
-### Configuration
+`AWS_SECRET_ACCESS_KEY`
 
-Configuration is all sucked in from the environment.
+`AWS_BUCKET`
 
-##### AWS
-
-File are always uploaded to S3, but they can optionally be written do disk and cached locally.
-
-`AWS_ACCESS_KEY_ID` **required**
-
-`AWS_SECRET_ACCESS_KEY` **required**
-
-`AWS_BUCKET` **required**
-
-##### Email
-
-`MANDRILL_KEY` **required**
+`MANDRILL_KEY`
 
 `EMAIL_FROM` - defaults to `nobody@example.com`
-
-##### Databases
 
 `REDIS_URL` - defaults to `redis://localhost:6379`
 
 `MONGO_URL` - defaults to `mongodb://localhost:27017/hostr`
 
-The database connections default to connecting locally if an env variable isn't found. The following indexes are required.
-
-```js
-db.remember.ensureIndex({"created":1}, {expireAfterSeconds: 2592000})
-```
-
-```js
-db.file.ensureIndex({"owner" : 1, "status" : 1, "time_added" : -1});
-```
-
-##### Local cache
-
-`LOCAL_CACHE` - defaults to `false`.
-
-`LOCAL_PATH` - defaults to `~/.hostr/uploads`. if `LOCAL_CACHE` is `true` will store files locally and not just on S3/GCS.
-
-##### SPDY
-
-If you want to use SPDY, add an SSL key and cert.
-
-`LOCALHOST_KEY`
-
-`LOCALHOST_CRT`
-
-##### App
+`LOCAL_PATH` - defaults to `~/.hostr/uploads`.
 
 `BASE_URL` - defaults to `https://localhost:4040`
 
@@ -90,12 +52,20 @@ You'll also need to add Heroku Redis and a MongoDB addon.
 
 ### Start the app
 
-`npm start` or to live reload `npm run watch`
+```
+$ npm start
+```
+
+This will install and build the frontend too.
 
 ### Run the tests
 
-`npm test`
+```
+$ npm test
+```
+
+Running the tests will also set the indexes required for Mongo.
 
 ## Licence
 
-The code is MIT licenced, the brand is not. This applies to the logo, name and colour scheme.
+My primary motivation is to get to work on Hostr in public. Contributions are welcome and all Javascript is MIT licenced, however the brand is not. The brand includes the name, logo images, CSS and marketing HTML.
