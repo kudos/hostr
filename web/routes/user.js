@@ -1,4 +1,6 @@
 import { authenticate, setupSession, signup as signupUser, activateUser, sendResetToken, validateResetToken, updatePassword } from '../lib/auth';
+import debugname from 'debug';
+const debug = debugname('hostr-web:user');
 
 export function* signin() {
   if (!this.request.body.email) {
@@ -50,30 +52,22 @@ export function* signup() {
 export function* forgot() {
   const Reset = this.db.Reset;
   const Users = this.db.Users;
-  if (this.request.body) {
-    return yield this.render('forgot', {token: null, csrf: this.csrf});
-  }
   const token = this.params.token;
 
-  this.assertCSRF(this.request.body);
-  if (this.request.body.email) {
-    var email = this.request.body.email;
-    yield sendResetToken.call(this, email);
-    this.statsd.incr('auth.reset.request', 1);
-    return yield this.render('forgot', {message: 'We\'ve sent an email with a link to reset your password. Be sure to check your spam folder if you it doesn\'t appear within a few minutes', token: null, csrf: this.csrf});
-  } else if (token && this.request.body.password) {
+  if (this.request.body.password) {
     if (this.request.body.password.length < 7) {
       return yield this.render('forgot', {error: 'Password needs to be at least 7 characters long.', token: token, csrf: this.csrf});
     }
+    this.assertCSRF(this.request.body);
     const tokenUser = yield validateResetToken.call(this, token);
     var userId = tokenUser._id;
     yield updatePassword.call(this, userId, this.request.body.password);
-    yield Reset.remove({_id: userId});
+    yield Reset.deleteOne({_id: userId});
     const user = yield Users.findOne({_id: userId});
     yield setupSession.call(this, user);
     this.statsd.incr('auth.reset.success', 1);
     this.redirect('/');
-  } else if (token.length) {
+  } else if (token) {
     const tokenUser = yield validateResetToken.call(this, token);
     if (!tokenUser) {
       this.statsd.incr('auth.reset.fail', 1);
@@ -81,8 +75,18 @@ export function* forgot() {
     } else {
       return yield this.render('forgot', {token: token, csrf: this.csrf});
     }
+  } else if (this.request.body.email) {
+    this.assertCSRF(this.request.body);
+    try {
+      var email = this.request.body.email;
+      yield sendResetToken.call(this, email);
+      this.statsd.incr('auth.reset.request', 1);
+      return yield this.render('forgot', {message: 'We\'ve sent an email with a link to reset your password. Be sure to check your spam folder if you it doesn\'t appear within a few minutes', token: null, csrf: this.csrf});
+    } catch (error) {
+      debug(error);
+    }
   } else {
-    return yield this.render('forgot', {token: null, csrf: this.csrf});
+    yield this.render('forgot', {token: null, csrf: this.csrf});
   }
 }
 

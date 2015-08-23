@@ -84,7 +84,7 @@ export function* signup(email, password, ip) {
   const existingUser = yield Users.findOne({email: email, status: {'$ne': 'deleted'}});
   if (existingUser) {
     debug('Email already in use.');
-    return 'Email already in use.';
+    throw new Error('Email already in use.');
   }
   const cryptedPassword = yield passwords.crypt(password);
   var user = {
@@ -151,7 +151,7 @@ Visit  ${process.env.BASE_URL + '/forgot/' + token} to set a new one.
       ]
     }});
   } else {
-    return 'There was an error looking up your email address.';
+    throw new Error('There was an error looking up your email address.');
   }
 }
 
@@ -180,7 +180,7 @@ export function* validateResetToken() {
 export function* updatePassword(userId, password) {
   const Users = this.db.Users;
   const cryptedPassword = yield passwords.crypt(password);
-  yield Users.update({_id: userId}, {'$set': {'salted_password': cryptedPassword}});
+  yield Users.updateOne({_id: userId}, {'$set': {'salted_password': cryptedPassword}});
 }
 
 
