@@ -32,24 +32,24 @@ export function* staticPage(next) {
     this.session.user.token = token;
     yield this.render('index', {user: this.session.user});
   } else {
-    switch(this.originalUrl) {
-      case '/terms':
-        yield this.render('terms');
-        break;
-      case '/privacy':
-        yield this.render('privacy');
-        break;
-      case '/pricing':
-        yield this.render('pricing');
-        break;
-      case '/apps':
-        yield this.render('apps');
-        break;
-      case '/stats':
-        yield this.render('index', {user: {}});
-        break;
-      default:
-        yield next;
+    switch (this.originalUrl) {
+    case '/terms':
+      yield this.render('terms');
+      break;
+    case '/privacy':
+      yield this.render('privacy');
+      break;
+    case '/pricing':
+      yield this.render('pricing');
+      break;
+    case '/apps':
+      yield this.render('apps');
+      break;
+    case '/stats':
+      yield this.render('index', {user: {}});
+      break;
+    default:
+      yield next;
     }
   }
 }

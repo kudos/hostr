@@ -10,16 +10,15 @@ export function* signin() {
   this.statsd.incr('auth.attempt', 1);
   this.assertCSRF(this.request.body);
   const user = yield authenticate.call(this, this.request.body.email, this.request.body.password);
-  if(!user) {
+  if (!user) {
     this.statsd.incr('auth.failure', 1);
     return yield this.render('signin', {error: 'Invalid login details', csrf: this.csrf});
   } else if (user.activationCode) {
     return yield this.render('signin', {error: 'Your account hasn\'t been activated yet. Check your for an activation email.', csrf: this.csrf});
-  } else {
-    this.statsd.incr('auth.success', 1);
-    yield setupSession.call(this, user);
-    this.redirect('/');
   }
+  this.statsd.incr('auth.success', 1);
+  yield setupSession.call(this, user);
+  this.redirect('/');
 }
 
 
@@ -60,7 +59,7 @@ export function* forgot() {
     }
     this.assertCSRF(this.request.body);
     const tokenUser = yield validateResetToken.call(this, token);
-    var userId = tokenUser._id;
+    const userId = tokenUser._id;
     yield updatePassword.call(this, userId, this.request.body.password);
     yield Reset.deleteOne({_id: userId});
     const user = yield Users.findOne({_id: userId});
@@ -72,13 +71,12 @@ export function* forgot() {
     if (!tokenUser) {
       this.statsd.incr('auth.reset.fail', 1);
       return yield this.render('forgot', {error: 'Invalid password reset token. It might be expired, or has already been used.', token: null, csrf: this.csrf});
-    } else {
-      return yield this.render('forgot', {token: token, csrf: this.csrf});
     }
+    return yield this.render('forgot', {token: token, csrf: this.csrf});
   } else if (this.request.body.email) {
     this.assertCSRF(this.request.body);
     try {
-      var email = this.request.body.email;
+      const email = this.request.body.email;
       yield sendResetToken.call(this, email);
       this.statsd.incr('auth.reset.request', 1);
       return yield this.render('forgot', {message: 'We\'ve sent an email with a link to reset your password. Be sure to check your spam folder if you it doesn\'t appear within a few minutes', token: null, csrf: this.csrf});

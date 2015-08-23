@@ -1,39 +1,35 @@
-import fs from 'fs';
 import path from 'path';
 import mime from 'mime-types';
 import hostrFileStream from '../../lib/hostr-file-stream';
 import { formatFile } from '../../lib/format';
 
-import debugname from 'debug';
-const debug = debugname('hostr-web:file');
-
 const storePath = process.env.STORE_PATH || path.join(process.env.HOME, '.hostr', 'uploads');
 
-const userAgentCheck = function(userAgent) {
-  if (!userAgent){
+function userAgentCheck(userAgent) {
+  if (!userAgent) {
     return false;
   }
   return userAgent.match(/^(wget|curl|vagrant)/i);
-};
+}
 
-const hotlinkCheck = function(file, userAgent, referrer) {
-  return !userAgentCheck(userAgent) && !file.width && (!referrer || !(referrer.match(/^https:\/\/hostr.co/) || referrer.match(/^http:\/\/localhost:4040/)))
-};
+function hotlinkCheck(file, userAgent, referrer) {
+  return !userAgentCheck(userAgent) && !file.width && (!referrer || !(referrer.match(/^https:\/\/hostr.co/) || referrer.match(/^http:\/\/localhost:4040/)));
+}
 
 export function* get() {
   const file = yield this.db.Files.findOne({_id: this.params.id, 'file_name': this.params.name, 'status': 'active'});
   this.assert(file, 404);
 
-  if (hotlinkCheck(file, this.headers['user-agent'], this.headers['referer'])) {
+  if (hotlinkCheck(file, this.headers['user-agent'], this.headers.referer)) {
     return this.redirect('/' + file._id);
   }
 
-  if (!file.width && this.request.query.warning != 'on') {
+  if (!file.width && this.request.query.warning !== 'on') {
     return this.redirect('/' + file._id);
   }
 
   if (file.malware) {
-    let alert = this.request.query.alert;
+    const alert = this.request.query.alert;
     if (!alert || !alert.match(/i want to download malware/i)) {
       return this.redirect('/' + file._id);
     }
@@ -70,9 +66,9 @@ export function* get() {
 
   if (!this.params.size || (this.params.size && this.params.size > 150)) {
     this.db.Files.updateOne(
-      {_id: file._id},
-      {'$set': {'last_accessed': Math.ceil(Date.now()/1000)}, '$inc': {downloads: 1}},
-      {w:0}
+      {'_id': file._id},
+      {'$set': {'last_accessed': Math.ceil(Date.now() / 1000)}, '$inc': {downloads: 1}},
+      {'w': 0}
     );
   }
 
@@ -86,7 +82,7 @@ export function* resized() {
 export function* landing() {
   const file = yield this.db.Files.findOne({_id: this.params.id, status: 'active'});
   this.assert(file, 404);
-  if(userAgentCheck(this.headers['user-agent'])) {
+  if (userAgentCheck(this.headers['user-agent'])) {
     this.params.name = file.file_name;
     return yield get.call(this);
   }

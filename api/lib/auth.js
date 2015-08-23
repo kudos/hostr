@@ -7,7 +7,7 @@ const debug = debugname('hostr-api:auth');
 
 const badLoginMsg = '{"error": {"message": "Incorrect login details.", "code": 607}}';
 
-module.exports = function* (next) {
+export default function* (next) {
   const Users = this.db.Users;
   const Files = this.db.Files;
   const Logins = this.db.Logins;
@@ -20,7 +20,6 @@ module.exports = function* (next) {
     debug('Token found');
     user = yield Users.findOne({'_id': objectID(userToken)});
   } else {
-
     const authUser = auth(this);
     this.assert(authUser, 401, badLoginMsg);
     const remoteIp = this.req.headers['x-real-ip'] || this.req.connection.remoteAddress;
@@ -39,7 +38,7 @@ module.exports = function* (next) {
   this.assert(!user.activationCode, 401, '{"error": {"message": "Account has not been activated.", "code": 603}}');
 
   const uploadedTotal = yield Files.count({owner: user._id, status: {'$ne': 'deleted'}});
-  const uploadedToday = yield Files.count({owner: user._id, 'time_added': {'$gt': Math.ceil(Date.now()/1000)-86400}});
+  const uploadedToday = yield Files.count({owner: user._id, 'time_added': {'$gt': Math.ceil(Date.now() / 1000) - 86400}});
 
   const normalisedUser = {
     'id': user._id,
@@ -48,10 +47,10 @@ module.exports = function* (next) {
     'file_count': uploadedTotal,
     'max_filesize': user.type === 'Pro' ? 524288000 : 20971520,
     'plan': user.type || 'Free',
-    'uploads_today': uploadedToday
+    'uploads_today': uploadedToday,
   };
   this.response.set('Daily-Uploads-Remaining', user.type === 'Pro' ? 'unlimited' : 15 - uploadedToday);
   this.user = normalisedUser;
   debug('Authenticated user: ' + this.user.email);
   yield next;
-};
+}

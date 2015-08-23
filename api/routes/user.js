@@ -8,28 +8,28 @@ const debug = debugname('hostr-api:user');
 
 const redisUrl = process.env.REDIS_URL || process.env.REDISTOGO_URL || 'redis://localhost:6379';
 
-export function* get (){
+export function* get() {
   this.body = this.user;
 }
 
-export function* token(){
+export function* token() {
   const token = uuid.v4(); // eslint-disable-line no-shadow
   yield this.redis.set(token, this.user.id, 'EX', 86400);
   this.body = {token: token};
 }
 
-export function* transaction(){
+export function* transaction() {
   const Transactions = this.db.Transactions;
   const transactions = yield Transactions.find({'user_id': this.user.id}).toArray();
 
-  this.body = transactions.map(function(transaction) { // eslint-disable-line no-shadow
+  this.body = transactions.map((transaction) => { // eslint-disable-line no-shadow
     const type = transaction.paypal ? 'paypal' : 'direct';
     return {
       id: transaction._id,
       amount: transaction.paypal ? transaction.amount : transaction.amount / 100,
       date: transaction.date,
       description: transaction.desc,
-      type: type
+      type: type,
     };
   });
 }
@@ -61,9 +61,9 @@ export function* events() {
     this.websocket.send(message);
   });
   pubsub.on('ready', () => {
-    this.websocket.on('message', co.wrap(function* (message) {
+    this.websocket.on('message', co.wrap(function* wsMessage(message) {
       let json;
-      try{
+      try {
         json = JSON.parse(message);
       } catch(err) {
         debug('Invalid JSON for socket auth');

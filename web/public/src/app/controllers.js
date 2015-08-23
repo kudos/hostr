@@ -1,17 +1,17 @@
 export class FilesController {
   constructor($scope, UserService, EventService, files) {
     $scope.$root.user = UserService.get();
-    files.$promise.then(function() {
+    files.$promise.then(() => {
       $scope.$root.loadingView = false;
     });
     $scope.header = 'full';
     if (!$scope.$root.files) {
       $scope.$root.files = files;
     }
-    $scope.remove = function(file) {
-      $scope.$root.files.some(function(existingFile, index) {
+    $scope.remove = (file) => {
+      $scope.$root.files.some((existingFile, index) => {
         if (file.id === existingFile.id) {
-          file.$remove(function() {
+          file.$remove(() => {
             $scope.$root.showDropdown = false;
             $scope.$root.files.splice(index, 1);
           });
@@ -25,8 +25,8 @@ export class FilesController {
 FilesController.$inject = ['$scope', 'UserService', 'EventService', 'files'];
 
 export class FileController {
-  constructor ($scope, $rootScope, $routeParams, ReconnectingWebSocket, file) {
-    file.$promise.then(function() {
+  constructor($scope, $rootScope, $routeParams, ReconnectingWebSocket, file) {
+    file.$promise.then(() => {
       $scope.$root.loadingView = false;
       $scope.header = 'small';
       $scope.file = file;
@@ -34,25 +34,25 @@ export class FileController {
       $rootScope.pageTitle = ' - ' + file.name;
       if (file.status === 'uploading') {
         file.percent = 0;
-        var ws = new ReconnectingWebSocket(window.settings.apiURL.replace(/^http/, 'ws') + '/file/' + file.id);
-        ws.onmessage = function (msg) {
-          var evt = JSON.parse(msg.data);
+        const ws = new ReconnectingWebSocket(window.settings.apiURL.replace(/^http/, 'ws') + '/file/' + file.id);
+        ws.onmessage = (msg) => {
+          const evt = JSON.parse(msg.data);
           $rootScope.$broadcast(evt.type, evt.data);
         };
-        ws.onopen = function() {
+        ws.onopen = () => {
           ws.send(JSON.stringify({authorization: window.user.token}));
         };
-        $rootScope.$on('file-progress', function(evt, data) {
+        $rootScope.$on('file-progress', (evt, data) => {
           $scope.file.percent = data.complete;
         });
-        $rootScope.$on('file-added', function(evt, data) {
+        $rootScope.$on('file-added', (evt, data) => {
           $scope.file = data;
         });
-        $rootScope.$on('file-accepted', function(evt, data) {
+        $rootScope.$on('file-accepted', (evt, data) => {
           $scope.file = data;
         });
       }
-    }, function() {
+    }, () => {
       $rootScope.navError = true;
       $scope.$root.loadingView = false;
     });
@@ -61,15 +61,15 @@ export class FileController {
 FileController.$inject = ['$scope', '$rootScope', '$routeParams', 'WebSocket',  'file'];
 
 export class ProController {
-  constructor ($scope, $http, UserService) {
+  constructor($scope, $http, UserService) {
     $scope.$root.loadingView = false;
     $scope.user = UserService.get();
     $scope.header = 'full';
-    $scope.cancel = function() {
-      $http.post('/pro/cancel').success(function() {
+    $scope.cancel = () => {
+      $http.post('/pro/cancel').success(() => {
         window.location.reload(true);
-      }).error(function(data) {
-        console.log(new Error(data));
+      }).error((data) => {
+        console.error(new Error(data));
       });
     };
   }
@@ -77,17 +77,17 @@ export class ProController {
 ProController.$inject = ['$scope', '$http', 'UserService'];
 
 export class AccountController {
-  constructor ($scope, UserService, SettingService) {
+  constructor($scope, UserService, SettingService) {
     $scope.$root.loadingView = false;
     $scope.$root.user = UserService.get();
-    $scope.submit = function(form) {
+    $scope.submit = (form) => {
       $scope.updated = false;
       $scope.error = false;
-      SettingService.update(form).then(function() {
+      SettingService.update(form).then(() => {
         $scope.updated = true;
         delete $scope.user.new_password;
         delete $scope.user.current_password;
-      }, function(response) {
+      }, (response) => {
         $scope.error = response.data.error.message;
       });
     };
@@ -96,7 +96,7 @@ export class AccountController {
 AccountController.$inject = ['$scope', 'UserService', 'SettingService'];
 
 export class BillingController {
-  constructor ($scope, UserService, TransactionService) {
+  constructor($scope, UserService, TransactionService) {
     $scope.$root.loadingView = false;
     $scope.$root.user = UserService.get();
     $scope.transactions = TransactionService.query();

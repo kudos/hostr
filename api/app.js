@@ -10,20 +10,20 @@ const debug = debugname('hostr-api');
 
 const router = new Router();
 
-let statsdOpts = {prefix: 'hostr-api', host: process.env.STATSD_HOST || 'localhost'};
+const statsdOpts = {prefix: 'hostr-api', host: process.env.STATSD_HOST || 'localhost'};
 router.use(stats(statsdOpts));
-let statsd = new StatsD(statsdOpts);
-router.use(function*(next) {
+const statsd = new StatsD(statsdOpts);
+router.use(function* statsMiddleware(next) {
   this.statsd = statsd;
   yield next;
 });
 
 router.use(cors({
   origin: '*',
-  credentials: true
+  credentials: true,
 }));
 
-router.use('/*',function* (next) {
+router.use('/*', function* authMiddleware(next) {
   try {
     yield next;
     if (this.response.status === 404 && !this.response.body) {
@@ -35,13 +35,13 @@ router.use('/*',function* (next) {
       this.set('WWW-Authenticate', 'Basic');
       this.status = 401;
       this.body = err.message;
-    } else if(err.status === 404) {
+    } else if (err.status === 404) {
       this.status = 404;
       this.body = {
         error: {
           message: 'File not found',
-          code: 604
-        }
+          code: 604,
+        },
       };
     } else {
       if (!err.status) {
@@ -70,7 +70,7 @@ router.delete('/file/:id', auth, file.del);
 router.delete('/file/:id', auth, file.del);
 
 // Hack, if no route matches here, router does not dispatch at all
-router.get('/(.*)', function* () {
+router.get('/(.*)', function* errorMiddleware() {
   this.throw(404);
 });
 

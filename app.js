@@ -1,9 +1,6 @@
 import path from 'path';
 import koa from 'koa';
-import mount from 'koa-mount';
-import route from 'koa-route';
 import logger from 'koa-logger';
-import Router from 'koa-router';
 import serve from 'koa-static';
 import favicon from 'koa-favicon';
 import compress from 'koa-compress';
@@ -13,7 +10,6 @@ import helmet from 'koa-helmet';
 import raven from 'raven';
 import mongo from './lib/mongo';
 import * as redis from './lib/redis';
-import co from 'co';
 import api from './api/app';
 import { ws } from './api/app';
 import web from './web/app';
@@ -27,11 +23,11 @@ app.keys = [process.env.KEYS || 'INSECURE'];
 if (process.env.SENTRY_DSN) {
   const ravenClient = new raven.Client(process.env.SENTRY_DSN);
   ravenClient.patchGlobal();
-  app.use(function* (next) {
+  app.use(function* ravenMiddleware(next) {
     this.raven = ravenClient;
     yield next;
   });
-  app.ws.use(function* (next) {
+  app.ws.use(function* ravenWsMiddleware(next) {
     this.raven = ravenClient;
     yield next;
   });
@@ -39,9 +35,9 @@ if (process.env.SENTRY_DSN) {
 
 app.use(helmet());
 
-app.use(function* (next){
+app.use(function* errorMiddleware(next) {
   this.set('Server', 'Nintendo 64');
-  if(this.req.headers['x-forwarded-proto'] === 'http'){
+  if (this.req.headers['x-forwarded-proto'] === 'http') {
     return this.redirect('https://' + this.req.headers.host + this.req.url);
   }
   try {
@@ -70,7 +66,7 @@ app.ws.use(redis.middleware());
 app.ws.use(ws.prefix('/api').routes());
 
 if (!module.parent) {
-  app.listen(process.env.PORT || 4040, function() {
+  app.listen(process.env.PORT || 4040, function listen() {
     debug('Koa HTTP server listening on port ' + (process.env.PORT || 4040));
   });
 }

@@ -11,56 +11,56 @@ function guid() {
 }
 
 export default function dropzone(FileService, $cacheFactory) {
-  var dropOverlay = document.getElementById('filedrop-overlay');
-  var dropzoneEl;
-  var errorTimeout;
-  return function($scope) {
-    $scope.$on('$viewContentLoaded', function() {
+  const dropOverlay = document.getElementById('filedrop-overlay');
+  let dropzoneEl;
+  let errorTimeout;
+  return ($scope) => {
+    $scope.$on('$viewContentLoaded', () => {
       if (!dropzoneEl) {
         $scope.$root.uploadingFiles = [];
-        var clickable = [].slice.call(document.querySelectorAll('.choose-file'));
+        const clickable = [].slice.call(document.querySelectorAll('.choose-file'));
 
         dropzoneEl = new Dropzone(document.body, {
-            url: window.settings.apiURL + '/file',
-            maxFilesize: window.user.maxFileSize / 1024 / 1024,
-            maxThumbnailFilesize: 5,
-            thumbnailWidth: 150,
-            thumbnailHeight: 98,
-            parallelUploads: 1,
-            uploadMultiple: false,
-            clickable: clickable.length ? clickable : false,
-            autoDiscover: false,
-            headers: {'Authorization': ':' + window.user.token},
-            previewsContainer: false
+          url: window.settings.apiURL + '/file',
+          maxFilesize: window.user.maxFileSize / 1024 / 1024,
+          maxThumbnailFilesize: 5,
+          thumbnailWidth: 150,
+          thumbnailHeight: 98,
+          parallelUploads: 1,
+          uploadMultiple: false,
+          clickable: clickable.length ? clickable : false,
+          autoDiscover: false,
+          headers: {'Authorization': ':' + window.user.token},
+          previewsContainer: false,
         });
-        dropzoneEl.on('thumbnail', function(file, thumbnail){
+        dropzoneEl.on('thumbnail', (file, thumbnail) => {
           file.thumbnail = thumbnail;
           $scope.$apply();
         });
-        dropzoneEl.on('addedfile', function(file){
-          var id = guid();
+        dropzoneEl.on('addedfile', (file) => {
+          const id = guid();
           file.guid = id;
           $scope.$root.uploadingFiles.push(file);
           $scope.$apply();
         });
-        dropzoneEl.on('sending', function(file, xhr) {
+        dropzoneEl.on('sending', (file, xhr) => {
           xhr.setRequestHeader('hostr-guid', file.guid);
         });
-        dropzoneEl.on('uploadprogress', function(file, progress) {
+        dropzoneEl.on('uploadprogress', (file, progress) => {
           $scope.$root.progress = {
             name: file.name,
             percent: progress,
-            status: 'Uploading'
+            status: 'Uploading',
           };
           if (progress === 100) {
             $scope.$root.progress.status = 'Processing';
           }
           $scope.$apply();
         });
-        dropzoneEl.on('complete', function(file){
+        dropzoneEl.on('complete', (file) => {
           delete $scope.$root.progress;
           $scope.$apply();
-          $scope.$root.uploadingFiles.some(function(uploadingFile, index) {
+          $scope.$root.uploadingFiles.some((uploadingFile, index) => {
             if (uploadingFile.guid === file.guid) {
               $scope.$root.uploadingFiles.splice(index, 1);
               $scope.$apply();
@@ -69,11 +69,10 @@ export default function dropzone(FileService, $cacheFactory) {
             return false;
           });
         });
-        dropzoneEl.on('error', function(evt, error){
+        dropzoneEl.on('error', (evt, error) => {
           if (error.error) {
             $scope.$root.uploadError = 'Error uploading file: ' + evt.name + '. ' + error.error.message;
-          }
-          else if (evt.name) {
+          } else if (evt.name) {
             $scope.$root.uploadError = 'Error uploading file: ' + evt.name + '. ' + error;
           } else {
             if (error[0] !== '<') {
@@ -82,33 +81,33 @@ export default function dropzone(FileService, $cacheFactory) {
           }
           $scope.$apply();
           clearTimeout(errorTimeout);
-          errorTimeout = setTimeout(function() {
+          errorTimeout = setTimeout(() => {
             $scope.$root.uploadError = '';
             $scope.$apply();
           }, 5000);
         });
 
-        var addFile = function(newFile) {
-          if (!$scope.$root.files.some(function (file) {
-              return file.id === newFile.id;
-            })) {
-            var cache = $cacheFactory.get('files-cache');
+        const addFile = (newFile) => {
+          if (!$scope.$root.files.some((file) => {
+            return file.id === newFile.id;
+          })) {
+            const cache = $cacheFactory.get('files-cache');
             cache.removeAll();
-            var file = new FileService(newFile);
+            const file = new FileService(newFile);
             $scope.$root.files.unshift(file);
             $scope.$root.user.uploads_today++;
             $scope.$apply();
           }
         };
 
-        dropzoneEl.on('success', function(file, response){
+        dropzoneEl.on('success', (file, response) => {
           addFile(response);
         });
-        $scope.$on('file-added', function(event, data){
+        $scope.$on('file-added', (event, data) => {
           addFile(data);
         });
-        $scope.$on('file-accepted', function(event, data){
-          $scope.$root.uploadingFiles.some(function(file) {
+        $scope.$on('file-accepted', (event, data) => {
+          $scope.$root.uploadingFiles.some((file) => {
             if (file.guid === data.guid) {
               file.id = data.id;
               file.href = data.href;
@@ -117,33 +116,33 @@ export default function dropzone(FileService, $cacheFactory) {
             }
           });
         });
-        $scope.$on('file-deleted', function(evt, data) {
-          $scope.$root.files.forEach(function(file, index) {
-            if(data.id === file.id) {
+        $scope.$on('file-deleted', (evt, data) => {
+          $scope.$root.files.forEach((file, index) => {
+            if (data.id === file.id) {
               delete $scope.$root.files[index];
               $scope.$digest();
             }
           });
         });
 
-        document.body.addEventListener('dragenter', function(){
+        document.body.addEventListener('dragenter', () => {
           dropOverlay.style.display = 'block';
         });
 
-        dropOverlay.addEventListener('dragleave', function(event){
+        dropOverlay.addEventListener('dragleave', (event) => {
           if (event.target.outerText !== 'Drop files to upload' || event.x === 0) {
             dropOverlay.style.display = 'none';
           }
         });
 
-        dropOverlay.addEventListener('drop', function(){
+        dropOverlay.addEventListener('drop', () => {
           dropOverlay.style.display = 'none';
         });
       } else {
-        var clicker = [].slice.call(document.querySelectorAll('.choose-file'));
+        const clicker = [].slice.call(document.querySelectorAll('.choose-file'));
         if (clicker) {
-          clicker.forEach(function(el) {
-            el.addEventListener('click', function() {
+          clicker.forEach((el) => {
+            el.addEventListener('click', () => {
               return dropzoneEl.hiddenFileInput.click();
             });
           });

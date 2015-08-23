@@ -1,72 +1,92 @@
 export class FileService {
-	constructor($resource, $cacheFactory) {
-    var cache = $cacheFactory('files-cache');
-    return $resource(window.settings.apiURL + '/file/:id', {id: '@id'}, {
-      query: {method: 'GET', isArray: true, cache: cache,
-        params: {perpage: 0, all: true}
+  constructor($resource, $cacheFactory) {
+    const cache = $cacheFactory('files-cache');
+    return $resource(window.settings.apiURL + '/file/:id', {
+      id: '@id',
+    }, {
+      query: {
+        method: 'GET',
+        isArray: true,
+        cache: cache,
+        params: {
+          perpage: 0,
+          all: true,
+        },
       },
-      delete: {method: 'DELETE', isArray: true, cache: cache}
+      delete: {
+        method: 'DELETE',
+        isArray: true,
+        cache: cache,
+      },
     });
-	}
+  }
 
-	static factory($resource, $cacheFactory) {
+  static factory($resource, $cacheFactory) {
     return new FileService($resource, $cacheFactory);
   }
 }
 
 export class UserService {
-	constructor($resource) {
-		return $resource(window.settings.apiURL + '/user');
-	}
+  constructor($resource) {
+    return $resource(window.settings.apiURL + '/user');
+  }
 
-	static factory($resource) {
+  static factory($resource) {
     return new UserService($resource);
   }
 }
 
 export class EventService {
-	constructor($rootScope, ReconnectingWebSocket) {
-		if (window.user && WebSocket) {
-      let ws = new ReconnectingWebSocket('wss' + window.settings.apiURL.replace('https', '').replace('http', '') + '/user');
-      ws.onmessage = function (msg) {
-        var evt = JSON.parse(msg.data);
+  constructor($rootScope, ReconnectingWebSocket) {
+    if (window.user && WebSocket) {
+      const ws = new ReconnectingWebSocket('wss' + window.settings.apiURL.replace('https', '').replace('http', '') + '/user');
+      ws.onmessage = (msg) => {
+        const evt = JSON.parse(msg.data);
         $rootScope.$broadcast(evt.type, evt.data);
       };
-      ws.onopen = function() {
-        ws.send(JSON.stringify({authorization: window.user.token}));
+      ws.onopen = () => {
+        ws.send(JSON.stringify({
+          authorization: window.user.token,
+        }));
       };
     }
     return true;
-	}
+  }
 
-	static factory($rootScope, ReconnectingWebSocket) {
-		return new EventService($rootScope, ReconnectingWebSocket);
-	}
+  static factory($rootScope, ReconnectingWebSocket) {
+    return new EventService($rootScope, ReconnectingWebSocket);
+  }
 }
 
 export class TransactionService {
-	constructor ($resource, $cacheFactory) {
-    var cache = $cacheFactory('transaction-cache');
-    return $resource(window.settings.apiURL + '/user/transaction/:id', {id: '@id'}, {
-      query: {method: 'GET', isArray: true, cache: cache}
+  constructor($resource, $cacheFactory) {
+    const cache = $cacheFactory('transaction-cache');
+    return $resource(window.settings.apiURL + '/user/transaction/:id', {
+      id: '@id',
+    }, {
+      query: {
+        method: 'GET',
+        isArray: true,
+        cache: cache,
+      },
     });
   }
 
-	static factory($resource, $cacheFactory) {
+  static factory($resource, $cacheFactory) {
     return new TransactionService($resource, $cacheFactory);
   }
 }
 
 export class SettingService {
-	constructor ($http) {
-    var service = {};
-    service.update = function(data) {
+  constructor($http) {
+    const service = {};
+    service.update = (data) => {
       return $http.post(window.settings.apiURL + '/user/settings', data);
     };
     return service;
   }
 
-	static factory($http) {
+  static factory($http) {
     return new SettingService($http);
   }
 }

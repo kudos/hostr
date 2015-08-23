@@ -4,7 +4,6 @@ import csrf from 'koa-csrf';
 import views from 'koa-views';
 import stats from 'koa-statsd';
 import * as redis from '../lib/redis';
-import co from 'co';
 import StatsD from 'statsy';
 // waiting for PR to be merged, can remove swig dependency when done
 import errors from '../lib/koa-error';
@@ -13,29 +12,26 @@ import * as file from './routes/file';
 import * as pro from './routes/pro';
 import * as user from './routes/user';
 
-import debugname from 'debug';
-const debug = debugname('hostr-web');
-
 const router = new Router();
 
 router.use(errors({template: path.join(__dirname, 'public', 'error.html')}));
 
-let statsdOpts = {prefix: 'hostr-web', host: process.env.STATSD_HOST || 'localhost'};
+const statsdOpts = {prefix: 'hostr-web', host: process.env.STATSD_HOST || 'localhost'};
 router.use(stats(statsdOpts));
-let statsd = new StatsD(statsdOpts);
-router.use(function* (next) {
+const statsd = new StatsD(statsdOpts);
+router.use(function* statsMiddleware(next) {
   this.statsd = statsd;
   yield next;
 });
 
 router.use(redis.sessionStore());
 
-router.use(function* (next) {
+router.use(function* stateMiddleware(next) {
   this.state = {
     session: this.session,
     apiURL: process.env.API_URL,
     baseURL: process.env.BASE_URL,
-    stripePublic: process.env.STRIPE_PUBLIC_KEY
+    stripePublic: process.env.STRIPE_PUBLIC_KEY,
   };
   yield next;
 });
@@ -43,7 +39,7 @@ router.use(function* (next) {
 router.use(csrf());
 
 router.use(views('views', {
-  default: 'ejs'
+  default: 'ejs',
 }));
 
 router.get('/', index.main);
@@ -76,14 +72,14 @@ router.get('/:id', file.landing);
 router.get('/file/:id/:name', file.get);
 router.get('/file/:size/:id/:name', file.get);
 router.get('/files/:id/:name', file.get);
-router.get('/download/:id/:name', function* (id) {
+router.get('/download/:id/:name', function* downloadRedirect(id) {
   this.redirect('/' + id);
 });
 
-router.get('/updaters/mac', function* () {
+router.get('/updaters/mac', function* macUpdater() {
   this.redirect('/updaters/mac.xml');
 });
-router.get('/updaters/mac/changelog', function* () {
+router.get('/updaters/mac/changelog', function* macChangelog() {
   yield this.render('mac-update-changelog');
 });
 

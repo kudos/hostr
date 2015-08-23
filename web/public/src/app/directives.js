@@ -9,7 +9,7 @@ export function appHeader() {
       scope.userMD5 = window.user.md5;
       scope.email = window.user.email;
       scope.pro = (window.user.type === 'Pro');
-    }
+    },
   };
 }
 
@@ -23,19 +23,19 @@ export function appFooter() {
       scope.userMD5 = window.user.md5;
       scope.email = window.user.email;
       scope.pro = (window.user.type === 'Pro');
-    }
+    },
   };
 }
 
 
 export function menuDropdown() {
-  return function($scope, element) {
+  return ($scope, element) => {
     $scope.$root.overlayClick = function overlayClick() {
       $scope.$root.showDropdown = false;
       $('.dropdown').hide();
     };
-    var activeDropdown = $(element).find('.dropdown');
-    element.on('click', function(e) {
+    const activeDropdown = $(element).find('.dropdown');
+    element.on('click', (e) => {
       if (activeDropdown.not(':visible').length > 0) {
         $('.dropdown').hide();
         $scope.$root.showDropdown = true;
@@ -50,10 +50,10 @@ export function menuDropdown() {
 }
 
 
-export function searchShortcut ($document) {
-  return function($scope, element) {
-    $document.bind('keypress', function(event) {
-      if(event.which === 47) {
+export function searchShortcut($document) {
+  return ($scope, element) => {
+    $document.bind('keypress', (event) => {
+      if (event.which === 47) {
         if (['INPUT', 'TEXTAREA'].indexOf(document.activeElement.tagName) < 0) {
           element[0].focus();
           event.preventDefault();
@@ -68,21 +68,23 @@ export function stripeSubscribe($http) {
   const handler = window.StripeCheckout.configure({
     key: window.settings.stripePublic,
     image: '/images/stripe-128.png',
-    token: function(token) {
-      $http.post('/pro/create', {stripeToken: token})
-      .success(function(data) {
+    token: (token) => {
+      $http.post('/pro/create', {
+        stripeToken: token,
+      })
+      .success((data) => {
         if (data.status === 'active') {
           window.user.plan = 'Pro';
           window.location.reload(true);
         }
       })
-      .error(function() {
-        alert('Error upgrading your account');
+      .error(() => {
+        console.error('Error upgrading your account');
       });
-    }
+    },
   });
-  return function(scope, element) {
-    element.on('click', function() {
+  return (scope, element) => {
+    element.on('click', () => {
       // Open Checkout with further options
       handler.open({
         name: 'Hostr',
@@ -91,7 +93,7 @@ export function stripeSubscribe($http) {
         amount: 600,
         currency: 'USD',
         panelLabel: 'Subscribe {{amount}}',
-        billingAddress: false
+        billingAddress: false,
       });
     });
   };

@@ -60,7 +60,7 @@ export function* post(next) {
   const fileId = yield hostrId(Files);
 
   // Fire an event to let the frontend map the GUID it sent to the real ID. Allows immediate linking to the file
-  let acceptedEvent = `{"type": "file-accepted", "data": {"id": "${fileId}", "guid": "${tempGuid}", "href": "${fileHost}/${fileId}"}}`;
+  const acceptedEvent = `{"type": "file-accepted", "data": {"id": "${fileId}", "guid": "${tempGuid}", "href": "${fileHost}/${fileId}"}}`;
   this.redis.publish('/user/' + this.user.id, acceptedEvent);
   this.statsd.incr('file.upload.accepted', 1);
 
@@ -82,20 +82,20 @@ export function* post(next) {
   upload.pipe(s3Upload(key));
 
   const thumbsPromises = [
-    new Promise((resolve, reject) => {
+    new Promise((resolve) => {
       const small = gm(upload).resize(150, 150, '>').stream();
       small.pipe(fs.createWriteStream(path.join(storePath, fileId[0], '150', fileId + '_' + upload.filename)));
       small.pipe(s3Upload(path.join('150', fileId + '_' + upload.filename))).on('finish', resolve);
     }),
-    new Promise((resolve, reject) => {
+    new Promise((resolve) => {
       const medium = gm(upload).resize(970, '>').stream();
       medium.pipe(fs.createWriteStream(path.join(storePath, fileId[0], '970', fileId + '_' + upload.filename)));
       medium.pipe(s3Upload(path.join('970', fileId + '_' + upload.filename))).on('finish', resolve);
-    })
+    }),
   ];
 
 
-  let dimensionsPromise = new Promise((resolve, reject) => {
+  const dimensionsPromise = new Promise((resolve, reject) => {
     gm(upload).size((err, size) => {
       if (err) {
         reject(err);
@@ -142,7 +142,7 @@ export function* post(next) {
     status: 'active',
     'last_accessed': null,
     s3: false,
-    type: sniff(upload.filename)
+    type: sniff(upload.filename),
   };
 
   yield Files.insertOne(dbFile);
@@ -175,7 +175,7 @@ export function* post(next) {
 
   if (process.env.VIRUSTOTAL) {
     // Check in the background
-    process.nextTick(function*() {
+    process.nextTick(function* malwareScan() {
       debug('Malware Scan');
       const { positive, result } = yield malware(dbFile);
       if (positive) {
@@ -202,20 +202,20 @@ export function* list() {
   let limit = 20;
   if (this.request.query.perpage === '0') {
     limit = false;
-  } else if(this.request.query.perpage > 0) {
-    limit = parseInt(this.request.query.perpage / 1);
+  } else if (this.request.query.perpage > 0) {
+    limit = parseInt(this.request.query.perpage / 1, 10);
   }
 
   let skip = 0;
   if (this.request.query.page) {
-    skip = parseInt(this.request.query.page - 1) * limit;
+    skip = parseInt(this.request.query.page - 1, 10) * limit;
   }
 
   const queryOptions = {
     limit: limit, skip: skip, sort: [['time_added', 'desc']],
     hint: {
-      owner: 1, status: 1, 'time_added': -1
-    }
+      owner: 1, status: 1, 'time_added': -1,
+    },
   };
 
   const userFiles = yield Files.find({owner: this.user.id, status: status}, queryOptions).toArray();
@@ -266,7 +266,7 @@ export function* events() {
   pubsub.on('message', (channel, message) => {
     this.websocket.send(message);
   });
-  this.websocket.on('close', function() {
+  this.websocket.on('close', () => {
     pubsub.quit();
   });
 }

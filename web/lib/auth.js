@@ -7,14 +7,13 @@ import debugname from 'debug';
 const debug = debugname('hostr-web:auth');
 import { Mandrill } from 'mandrill-api/mandrill';
 const mandrill = new Mandrill(process.env.MANDRILL_KEY);
-import mongo from '../../lib/mongo';
 
 export function* authenticate(email, password) {
   const Users = this.db.Users;
   const Logins = this.db.Logins;
   const remoteIp = this.headers['x-real-ip'] || this.ip;
 
-  if (!password || password.length < 6){
+  if (!password || password.length < 6) {
     debug('No password, or password too short');
     return new Error('Invalid login details');
   }
@@ -33,11 +32,10 @@ export function* authenticate(email, password) {
       login.successful = true;
       yield Logins.updateOne({_id: login._id}, login);
       return user;
-    } else {
-      debug('Password invalid');
-      login.successful = false;
-      yield Logins.updateOne({_id: login._id}, login);
     }
+    debug('Password invalid');
+    login.successful = false;
+    yield Logins.updateOne({_id: login._id}, login);
   } else {
     debug('Email invalid');
     login.successful = false;
@@ -58,9 +56,9 @@ export function* setupSession(user) {
     'maxFileSize': 20971520,
     'joined': user.joined,
     'plan': user.type || 'Free',
-    'uploadsToday': yield this.db.Files.count({owner: user._id, 'time_added': {'$gt': Math.ceil(Date.now()/1000)-86400}}),
+    'uploadsToday': yield this.db.Files.count({owner: user._id, 'time_added': {'$gt': Math.ceil(Date.now() / 1000) - 86400}}),
     'token': token,
-    'md5': crypto.createHash('md5').update(user.email).digest('hex')
+    'md5': crypto.createHash('md5').update(user.email).digest('hex'),
   };
 
   if (sessionUser.plan === 'Pro') {
@@ -71,7 +69,7 @@ export function* setupSession(user) {
   this.session.user = sessionUser;
   if (this.request.body.remember && this.request.body.remember === 'on') {
     const Remember = this.db.Remember;
-    var rememberToken = uuid();
+    const rememberToken = uuid();
     Remember.save({_id: rememberToken, 'user_id': user.id, created: new Date().getTime()});
     this.cookies.set('r', rememberToken, { maxAge: 1209600000, httpOnly: true});
   }
@@ -87,12 +85,12 @@ export function* signup(email, password, ip) {
     throw new Error('Email already in use.');
   }
   const cryptedPassword = yield passwords.crypt(password);
-  var user = {
+  const user = {
     email: email,
     'salted_password': cryptedPassword,
     joined: Math.round(new Date().getTime() / 1000),
     'signup_ip': ip,
-    activationCode: uuid()
+    activationCode: uuid(),
   };
   Users.insertOne(user);
 
@@ -112,11 +110,11 @@ ${process.env.BASE_URL + '/activate/' + user.activationCode}
     'from_name': 'Jonathan from Hostr',
     to: [{
       email: user.email,
-      type: 'to'
+      type: 'to',
     }],
     'tags': [
-      'user-activation'
-    ]
+      'user-activation',
+    ],
   }});
 }
 
@@ -126,11 +124,11 @@ export function* sendResetToken(email) {
   const Reset = this.db.Reset;
   const user = yield Users.findOne({email: email});
   if (user) {
-    var token = uuid.v4();
+    const token = uuid.v4();
     Reset.save({
       '_id': user._id,
       'token': token,
-      'created': Math.round(new Date().getTime() / 1000)
+      'created': Math.round(new Date().getTime() / 1000),
     });
     const html = yield render('email/inlined/forgot', {forgotUrl: process.env.BASE_URL + '/forgot/' + token});
     const text = `It seems you've forgotten your password :(
@@ -144,11 +142,11 @@ Visit  ${process.env.BASE_URL + '/forgot/' + token} to set a new one.
       'from_name': 'Jonathan from Hostr',
       to: [{
         email: user.email,
-        type: 'to'
+        type: 'to',
       }],
       'tags': [
-        'password-reset'
-      ]
+        'password-reset',
+      ],
     }});
   } else {
     throw new Error('There was an error looking up your email address.');

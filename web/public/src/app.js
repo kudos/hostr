@@ -1,11 +1,11 @@
 import angular from 'angular';
-import ngRoute from 'angular/route';
-import ngResource from 'angular/resource';
-import ReconnectingWebSocket from 'angular-reconnecting-websocket';
-import ngDimensions from 'angular-strap/dist/modules/dimensions';
-import ngStrapCore from 'angular-strap/dist/modules/compiler';
-import ngTooltip from 'angular-strap/dist/modules/tooltip';
-import ngTooltipTemplate from 'angular-strap/dist/modules/tooltip.tpl';
+import 'angular/route';
+import 'angular/resource';
+import 'angular-reconnecting-websocket';
+import 'angular-strap/dist/modules/dimensions';
+import 'angular-strap/dist/modules/compiler';
+import 'angular-strap/dist/modules/tooltip';
+import 'angular-strap/dist/modules/tooltip.tpl';
 
 import { FilesController, FileController, AccountController, ProController, BillingController } from './app/controllers';
 import { appHeader, appFooter, menuDropdown, searchShortcut, stripeSubscribe } from './app/directives';
@@ -15,12 +15,12 @@ import { fileSize, direct } from './app/filters';
 import { FileService, UserService, EventService, TransactionService, SettingService } from './app/services';
 
 // Declare app level module which depends on filters, and services
-var app = angular.module('hostr', [
+const app = angular.module('hostr', [
   'ngRoute',
   'ngResource',
   'reconnectingWebSocket',
   'mgcrea.ngStrap.core',
-  'mgcrea.ngStrap.tooltip'
+  'mgcrea.ngStrap.tooltip',
 ]);
 
 app.factory('FileService', ['$resource', '$cacheFactory', FileService.factory]);
@@ -40,21 +40,20 @@ app.directive('lazySrc', ['$window', '$document', lazySrc]);
 app.directive('searchShortcut', ['$document', searchShortcut]);
 app.directive('stripeSubscribe', ['$http', stripeSubscribe]);
 
-app.config(['$routeProvider', '$locationProvider', '$httpProvider', '$tooltipProvider', function($routeProvider, $locationProvider, $httpProvider, $tooltipProvider) {
-
+app.config(['$routeProvider', '$locationProvider', '$httpProvider', ($routeProvider, $locationProvider, $httpProvider) => {
   if (typeof window.user !== 'undefined') {
     $httpProvider.defaults.headers.common.Authorization = ':' + window.user.token;
   }
   $locationProvider.html5Mode(true);
 
-  $httpProvider.interceptors.push(['$q', function($q) {
+  $httpProvider.interceptors.push(['$q', ($q) => {
     return {
-      responseError: function(rejection) {
+      responseError: (rejection) => {
         if (rejection.status === 401) {
           window.location = '/logout';
         }
         return $q.reject(rejection);
-      }
+      },
     };
   }]);
 
@@ -63,66 +62,65 @@ app.config(['$routeProvider', '$locationProvider', '$httpProvider', '$tooltipPro
     controller: FilesController,
     title: ' - Files',
     resolve: {
-      files: ['FileService', function(Files) {
+      files: ['FileService', (Files) => {
         return Files.query();
-      }]
-    }
+      }],
+    },
   })
   .when('/apps', {
     templateUrl: '/build/partials/apps.html',
-    title: ' - Apps for Mac and Windows'
+    title: ' - Apps for Mac and Windows',
   })
   .when('/pro', {
     templateUrl: '/build/partials/pro.html',
     controller: ProController,
-    title: ' - Pro'
+    title: ' - Pro',
   })
   .when('/account', {
     templateUrl: '/build/partials/account.html',
     controller: AccountController,
-    title: ' - Account'
+    title: ' - Account',
   })
   .when('/billing', {
     templateUrl: '/build/partials/billing.html',
     controller: BillingController,
-    title: ' - Billing'
+    title: ' - Billing',
   })
   .when('/terms', {
     templateUrl: '/build/partials/terms.html',
-    title: ' - Terms of Service'
+    title: ' - Terms of Service',
   })
   .when('/privacy', {
     templateUrl: '/build/partials/privacy.html',
-    title: ' - Privacy Policy'
+    title: ' - Privacy Policy',
   })
   .when('/:id', {
     templateUrl: '/build/partials/file.html',
     controller: FileController,
     resolve: {
-      file: ['$route', 'FileService', function($route, Files) {
+      file: ['$route', 'FileService', ($route, Files) => {
         return Files.get({id: $route.current.params.id});
-      }]
-    }
+      }],
+    },
   });
 }]);
 
-app.run(['$location', '$rootScope', function($location, $rootScope) {
-
-  $rootScope.$on('$routeChangeStart', function(e, curr) {
-		if (curr.$$route && curr.$$route.resolve) {
+app.run(['$location', '$rootScope', ($location, $rootScope) => {
+  $rootScope.$on('$routeChangeStart', (e, curr) => {
+    if (curr.$$route && curr.$$route.resolve) {
 			// Show a loading message until promises are resolved
-			$rootScope.loadingView = true;
-		}
-	});
-  $rootScope.$on('$routeChangeSuccess', function (event, current) {
+      $rootScope.loadingView = true;
+    }
+  });
+  $rootScope.$on('$routeChangeSuccess', (event, current) => {
     $rootScope.navError = false;
     $rootScope.pageTitle = current.$$route.title;
   });
-  $rootScope.$on('$routeChangeError', function () {
+  $rootScope.$on('$routeChangeError', () => {
     $rootScope.loadingView = false;
     $rootScope.navError = true;
   });
-  $rootScope.$on('$locationChangeStart', function(event, newUrl) {
+  $rootScope.$on('$locationChangeStart', (event, newUrl) => {
     if (window.ga) {
       window.ga('send', 'pageview', newUrl);
     }

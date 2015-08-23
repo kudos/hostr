@@ -17,7 +17,7 @@ export function* create() {
   const createCustomer = {
     card: stripeToken.id,
     plan: 'usd_monthly',
-    email: this.session.email
+    email: this.session.email,
   };
 
   const customer = yield stripe.customers.create(createCustomer);
@@ -32,7 +32,7 @@ export function* create() {
     'user_id': this.session.user.id,
     amount: customer.subscription.plan.amount,
     desc: customer.subscription.plan.name,
-    date: new Date(customer.subscription.plan.created * 1000)
+    date: new Date(customer.subscription.plan.created * 1000),
   };
 
   yield Transactions.insertOne(transaction);
@@ -40,8 +40,8 @@ export function* create() {
   this.session.user.plan = 'Pro';
   this.body = {status: 'active'};
 
-  let html = yield render('email/inlined/pro');
-  let text = `Hey, thanks for upgrading to Hostr Pro!
+  const html = yield render('email/inlined/pro');
+  const text = `Hey, thanks for upgrading to Hostr Pro!
 
   You've signed up for Hostr Pro Monthly at $6/Month.
 
@@ -56,11 +56,11 @@ export function* create() {
     'from_name': fromName,
     to: [{
       email: this.session.user.email,
-      type: 'to'
+      type: 'to',
     }],
     'tags': [
-      'pro-upgrade'
-    ]
+      'pro-upgrade',
+    ],
   }});
 }
 
