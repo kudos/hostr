@@ -17,8 +17,6 @@ import co from 'co';
 import api from './api/app';
 import { ws } from './api/app';
 import web from './web/app';
-import { init as storageInit } from './lib/storage';
-storageInit();
 
 import debugname from 'debug';
 const debug = debugname('hostr');
