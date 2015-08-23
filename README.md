@@ -3,7 +3,7 @@
 ## About
 Hostr is a project I started almost ten years ago when I set out to learn web development. Since then it's seen over 100,000 signups and served up over 2 billion file downloads.
 
-It has been through many iterations, but in its current incarnation Hostr is built using [Babel](https://babeljs.io/) and [Koa](http://koajs.com/). The frontend is built with Angular, for now.
+It has been through many iterations, but in its current incarnation Hostr uses [Koa](http://koajs.com/) for the backend, [Angular](https://angular.io/) and [JSPM](http://jspm.io) for the frontend, and [Babel](https://babeljs.io/) for both.
 
 ## Getting Started
 
