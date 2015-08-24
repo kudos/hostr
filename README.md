@@ -1,5 +1,7 @@
 # Hostr [![Circle CI](https://circleci.com/gh/kudos/hostr.svg?style=svg&circle-token=1b4dec62afcb7960446edf241a5cf9238b8c20ed)](https://circleci.com/gh/kudos/hostr)
 
+[![Join the chat at https://gitter.im/kudos/hostr](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/kudos/hostr?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 ## About
 Hostr is a project I started almost ten years ago when I set out to learn web development. Since then it's seen over 100,000 signups and served up over 2 billion file downloads.
 
