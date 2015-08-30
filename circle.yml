@@ -1,6 +1,4 @@
 machine:
-  pre:
-    - npm install -g npm@3
   node:
     version: iojs-3.2.0
 
@@ -14,5 +12,8 @@ dependencies:
   cache_directories:
     - node_modules
     - web/public/jspm_packages
+  pre:
+    - npm install -g node-gyp-install
+    - node-gyp-install
   post:
     - npm run jspm
