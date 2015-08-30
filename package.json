@@ -19,7 +19,7 @@
     "test": "mongo hostr test/fixtures/mongo-*.js && mocha -r babel/register test/**/*.spec.js",
     "watch": "parallelshell \"npm run watch-js\" \"npm run watch-sass\" \"npm run watch-server\"",
     "watch-js": "babel -Dw -m system -d web/public/build web/public/src",
-    "watch-server": "nodemon node -r babel/register app.js",
+    "watch-server": "nodemon -r babel/register app.js",
     "watch-sass": "node-sass -w -r -o web/public/styles/ web/public/styles/"
   },
   "dependencies": {
@@ -32,6 +32,7 @@
     "co-views": "~2.1.0",
     "debug": "~2.2.0",
     "ejs": "~2.3.2",
+    "form-data": "^0.2.0",
     "gm": "~1.18.1",
     "http-errors": "~1.3.1",
     "jspm": "~0.16.0",
@@ -54,6 +55,7 @@
     "mime-types": "~2.1.5",
     "moment": "~2.10.6",
     "mongodb-promisified": "~1.0.3",
+    "node-fetch": "^1.3.2",
     "node-sass": "~3.3.0",
     "node-uuid": "~1.4.3",
     "passwords": "~1.3.0",
@@ -63,8 +65,7 @@
     "s3-upload-stream": "~1.0.7",
     "statsy": "~0.2.0",
     "stripe": "~3.7.1",
-    "swig": "~1.4.2",
-    "virustotal.js": "~0.3.1"
+    "swig": "~1.4.2"
   },
   "devDependencies": {
     "babel-eslint": "^4.0.10",

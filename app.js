@@ -17,8 +17,6 @@ import web from './web/app';
 import debugname from 'debug';
 const debug = debugname('hostr');
 
-debug(process.env.COOKIE_KEY);
-
 const app = websockify(koa());
 app.keys = [process.env.COOKIE_KEY];
 

@@ -177,11 +177,13 @@ export function* post(next) {
     // Check in the background
     process.nextTick(function* malwareScan() {
       debug('Malware Scan');
-      const { positive, result } = yield malware(dbFile);
-      if (positive) {
-        this.statsd.incr('file.malware', 1);
+      const result = yield malware(dbFile);
+      if (result) {
+        yield Files.updateOne({_id: fileId}, {'$set': {malware: positive, virustotal: result}});
+        if (result.positive) {
+          this.statsd.incr('file.malware', 1);
+        }
       }
-      yield Files.updateOne({_id: fileId}, {'$set': {malware: positive, virustotal: result}});
     });
   } else {
     debug('Skipping Malware Scan, VIRUSTOTAL env variable not found.');
