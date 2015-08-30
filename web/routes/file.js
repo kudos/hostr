@@ -3,7 +3,7 @@ import mime from 'mime-types';
 import hostrFileStream from '../../lib/hostr-file-stream';
 import { formatFile } from '../../lib/format';
 
-const storePath = process.env.STORE_PATH || path.join(process.env.HOME, '.hostr', 'uploads');
+const storePath = process.env.UPLOAD_STORAGE_PATH;
 
 function userAgentCheck(userAgent) {
   if (!userAgent) {

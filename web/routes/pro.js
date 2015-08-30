@@ -6,8 +6,8 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 import { Mandrill } from 'mandrill-api/mandrill';
 const mandrill = new Mandrill(process.env.MANDRILL_KEY);
 
-const fromEmail = process.env.EMAIL_FROM || 'nobody@example.com';
-const fromName = process.env.EMAIL_NAME || 'Nobody';
+const fromEmail = process.env.EMAIL_FROM;
+const fromName = process.env.EMAIL_NAME;
 
 export function* create() {
   const Users = this.db.Users;

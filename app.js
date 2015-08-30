@@ -17,8 +17,10 @@ import web from './web/app';
 import debugname from 'debug';
 const debug = debugname('hostr');
 
+debug(process.env.COOKIE_KEY);
+
 const app = websockify(koa());
-app.keys = [process.env.KEYS || 'INSECURE'];
+app.keys = [process.env.COOKIE_KEY];
 
 if (process.env.SENTRY_DSN) {
   const ravenClient = new raven.Client(process.env.SENTRY_DSN);

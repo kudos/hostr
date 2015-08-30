@@ -19,39 +19,11 @@ You'll need `graphicsmagick` for image thumbnailing, everything else is taken ca
 
 ### Enviroment Variable Configuration
 
-`AWS_ACCESS_KEY_ID`
-
-`AWS_SECRET_ACCESS_KEY`
-
-`AWS_BUCKET`
-
-`MANDRILL_KEY`
-
-`EMAIL_FROM` - defaults to `nobody@example.com`
-
-`REDIS_URL` - defaults to `redis://localhost:6379`
-
-`MONGO_URL` - defaults to `mongodb://localhost:27017/hostr`
-
-`LOCAL_PATH` - defaults to `~/.hostr/uploads`.
-
-`BASE_URL` - defaults to `https://localhost:4040`
-
-`FILE_HOST` - used by API for absolute file urls, defaults to `$BASE_URL`
-
-`API_URL` - defaults to `/api`
-
-`PORT` - defaults to `4040`.
-
-`VIRUSTOTAL` - API key enables Virustotal integration.
-
-`SENTRY_DSN` - DSN enables Sentry integration.
-
-Additionally, Hostr uses [debug](https://github.com/visionmedia/debug) so you can use the `DEBUG` environment variable something like `DEBUG=hostr*` to get debug output.
+See [`.env.example`](.env.example). Copy it to `.env`, modify and `source .env` for development. [autoenv](https://github.com/kennethreitz/autoenv) is pretty nice for doing this automatically when you `cd` into your work directory.
 
 ### Deploying to Heroku
 
-Because it uses iojs and graphicsmagick runtimes hostr needs an env variable for `BUILDPACK_URL` set to `https://github.com/ddollar/heroku-buildpack-multi.git`.
+Because it uses iojs and graphicsmagick runtimes hostr needs an env variable for `BUILDPACK_URL` set to `https://github.com/ddollar/heroku-buildpack-multi.git` on Heroku.
 
 You'll also need to add Heroku Redis and a MongoDB addon.
 
@@ -64,6 +36,14 @@ $ npm start
 ```
 
 This will install and build the frontend too.
+
+Alternatively
+
+```
+$ npm run watch
+```
+
+Will watch your JS and CSS for changes, rebuild them, and reload the server.
 
 ### Run the tests
 

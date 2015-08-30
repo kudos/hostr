@@ -13,11 +13,11 @@ import { formatFile } from '../../lib/format';
 import debugname from 'debug';
 const debug = debugname('hostr-api:file');
 
-const redisUrl = process.env.REDIS_URL || process.env.REDISTOGO_URL || 'redis://localhost:6379';
+const redisUrl = process.env.REDIS_URL;
 
-const fileHost = process.env.FILE_HOST || 'http://localhost:4040';
+const baseURL = process.env.WEB_BASE_URL;
 
-const storePath = process.env.STORE_PATH || path.join(process.env.HOME, '.hostr', 'uploads');
+const storePath = process.env.UPLOAD_STORAGE_PATH;
 
 export function* post(next) {
   if (!this.request.is('multipart/*')) {
@@ -60,7 +60,7 @@ export function* post(next) {
   const fileId = yield hostrId(Files);
 
   // Fire an event to let the frontend map the GUID it sent to the real ID. Allows immediate linking to the file
-  const acceptedEvent = `{"type": "file-accepted", "data": {"id": "${fileId}", "guid": "${tempGuid}", "href": "${fileHost}/${fileId}"}}`;
+  const acceptedEvent = `{"type": "file-accepted", "data": {"id": "${fileId}", "guid": "${tempGuid}", "href": "${baseURL}/${fileId}"}}`;
   this.redis.publish('/user/' + this.user.id, acceptedEvent);
   this.statsd.incr('file.upload.accepted', 1);
 
@@ -173,7 +173,7 @@ export function* post(next) {
   this.status = 201;
   this.body = formattedFile;
 
-  if (process.env.VIRUSTOTAL) {
+  if (process.env.VIRUSTOTAL_KEY) {
     // Check in the background
     process.nextTick(function* malwareScan() {
       debug('Malware Scan');

@@ -16,7 +16,7 @@ const router = new Router();
 
 router.use(errors({template: path.join(__dirname, 'public', 'error.html')}));
 
-const statsdOpts = {prefix: 'hostr-web', host: process.env.STATSD_HOST || 'localhost'};
+const statsdOpts = {prefix: 'hostr-web', host: process.env.STATSD_HOST};
 router.use(stats(statsdOpts));
 const statsd = new StatsD(statsdOpts);
 router.use(function* statsMiddleware(next) {
@@ -29,8 +29,8 @@ router.use(redis.sessionStore());
 router.use(function* stateMiddleware(next) {
   this.state = {
     session: this.session,
-    apiURL: process.env.API_URL,
-    baseURL: process.env.BASE_URL,
+    baseURL: process.env.WEB_BASE_URL,
+    apiURL: process.env.API_BASE_URL,
     stripePublic: process.env.STRIPE_PUBLIC_KEY,
   };
   yield next;

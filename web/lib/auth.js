@@ -94,11 +94,11 @@ export function* signup(email, password, ip) {
   };
   Users.insertOne(user);
 
-  const html = yield render('email/inlined/activate', {activationUrl: process.env.BASE_URL + '/activate/' + user.activationCode});
+  const html = yield render('email/inlined/activate', {activationUrl: process.env.WEB_BASE_URL + '/activate/' + user.activationCode});
   const text = `Thanks for signing up to Hostr!
 Please confirm your email address by clicking the link below.
 
-${process.env.BASE_URL + '/activate/' + user.activationCode}
+${process.env.WEB_BASE_URL + '/activate/' + user.activationCode}
 
 — Jonathan Cremin, Hostr Founder
 `;
@@ -130,9 +130,9 @@ export function* sendResetToken(email) {
       'token': token,
       'created': Math.round(new Date().getTime() / 1000),
     });
-    const html = yield render('email/inlined/forgot', {forgotUrl: process.env.BASE_URL + '/forgot/' + token});
+    const html = yield render('email/inlined/forgot', {forgotUrl: process.env.WEB_BASE_URL + '/forgot/' + token});
     const text = `It seems you've forgotten your password :(
-Visit  ${process.env.BASE_URL + '/forgot/' + token} to set a new one.
+Visit  ${process.env.WEB_BASE_URL + '/forgot/' + token} to set a new one.
 `;
     mandrill.messages.send({message: {
       html: html,

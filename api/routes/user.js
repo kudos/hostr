@@ -6,7 +6,7 @@ import passwords from 'passwords';
 import debugname from 'debug';
 const debug = debugname('hostr-api:user');
 
-const redisUrl = process.env.REDIS_URL || process.env.REDISTOGO_URL || 'redis://localhost:6379';
+const redisUrl = process.env.REDIS_URL;
 
 export function* get() {
   this.body = this.user;
