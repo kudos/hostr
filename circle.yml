@@ -1,10 +1,6 @@
 machine:
-  services:
-    - docker
   pre:
     - npm install -g npm@3
-  node:
-    version: iojs-2.5.0
 
 test:
   pre:
