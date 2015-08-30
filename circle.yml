@@ -1,6 +1,8 @@
 machine:
   pre:
     - npm install -g npm@3
+  node:
+    version: iojs-3.2.0
 
 test:
   pre:
