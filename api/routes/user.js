@@ -1,5 +1,5 @@
 import uuid from 'node-uuid';
-import redis from 'redis-url';
+import redis from 'redis';
 import co from 'co';
 import passwords from 'passwords';
 
@@ -56,7 +56,7 @@ export function* settings() {
 }
 
 export function* events() {
-  const pubsub = redis.connect(redisUrl);
+  const pubsub = redis.createClient(redisUrl);
   pubsub.on('message', (channel, message) => {
     this.websocket.send(message);
   });

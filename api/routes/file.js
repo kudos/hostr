@@ -2,7 +2,7 @@ import path from 'path';
 import fs from 'fs';
 import crypto from 'crypto';
 import gm from 'gm';
-import redis from 'redis-url';
+import redis from 'redis';
 import parse from 'co-busboy';
 import { upload as s3Upload } from '../../lib/s3';
 import { sniff } from '../../lib/type';
@@ -260,7 +260,7 @@ export function* del() {
 
 
 export function* events() {
-  const pubsub = redis.connect(redisUrl);
+  const pubsub = redis.createClient(redisUrl);
   pubsub.on('ready', () => {
     pubsub.subscribe(this.path);
   });
