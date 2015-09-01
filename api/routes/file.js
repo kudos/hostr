@@ -248,8 +248,7 @@ export function* put() {
 
 
 export function* del() {
-  const Files = this.db.Files;
-  yield Files.updateOne({'_id': this.params.id, owner: this.db.ObjectId(this.user.id)}, {$set: {status: 'deleted'}}, {w: 1});
+  yield this.db.Files.updateOne({'_id': this.params.id, owner: this.db.objectId(this.user.id)}, {$set: {status: 'deleted'}}, {w: 1});
   const event = {type: 'file-deleted', data: {'id': this.params.id}};
   yield this.redis.publish('/user/' + this.user.id, JSON.stringify(event));
   yield this.redis.publish('/file/' + this.params.id, JSON.stringify(event));
