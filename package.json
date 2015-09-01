@@ -91,6 +91,9 @@
       "cferdinandi/smooth-scroll": "github:cferdinandi/smooth-scroll@~5.3.7",
       "dropzone": "npm:dropzone@~4.0.1",
       "jquery": "npm:jquery@~2.1.4",
+      "react": "npm:react@^0.13.3",
+      "react-router": "npm:react-router@^0.13.3",
+      "redux": "npm:redux@^1.0.1",
       "zeroclipboard": "npm:zeroclipboard@~2.2.0"
     },
     "devDependencies": {
