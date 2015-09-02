@@ -1,7 +1,7 @@
 import passwords from 'passwords';
 import auth from 'basic-auth';
 import mongoSetup from 'mongodb-promisified';
-const objectID = mongoSetup().ObjectID;
+const objectID = mongoSetup().objectID;
 import debugname from 'debug';
 const debug = debugname('hostr-api:auth');
 
