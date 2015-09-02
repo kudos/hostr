@@ -1,0 +1,22 @@
+h1 {
+  font-size: 2rem;
+  margin-bottom: 20px;
+  color: lighten($body-bg, 75%);
+}
+
+h2 {
+  font-size: 4rem;
+  margin-top: 0px;
+  margin-bottom: 20px;
+  color: lighten($body-bg, 25%);
+}
+
+.logo {
+  position: absolute;
+  top: 50px;
+  left: 15px;
+}
+
+.col-md-12 {
+  margin-top: -1px;
+}

@@ -6,6 +6,29 @@ html, body {
 
 @import 'variables';
 @import 'bootstrap';
+
+.vertical-center {
+  min-height: 100%; // fallback
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+}
+
+.header-gradient {
+  background: linear-gradient(to bottom, lighten($body-bg, 10%), $body-bg);
+}
+
 .home {
   @import 'home';
+}
+.error {
+  @import 'error';
+}
+.signinup {
+  header {
+    position: absolute;
+    top: 12vh;
+    left: 50%;
+    margin-left: -25px;
+  }
 }

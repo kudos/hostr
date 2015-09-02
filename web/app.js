@@ -5,19 +5,13 @@ import views from 'koa-views';
 import stats from 'koa-statsd';
 import * as redis from '../lib/redis';
 import StatsD from 'statsy';
-// waiting for PR to be merged, can remove swig dependency when done
-import errors from '../lib/koa-error';
+import errors from 'koa-error';
 import * as index from './routes/index';
 import * as file from './routes/file';
 import * as pro from './routes/pro';
 import * as user from './routes/user';
 
-import debugname from 'debug';
-const debug = debugname('hostr:web');
-
 const router = new Router();
-
-router.use(errors({template: path.join(__dirname, 'public', 'error.html')}));
 
 const statsdOpts = {prefix: 'hostr-web', host: process.env.STATSD_HOST};
 router.use(stats(statsdOpts));
@@ -45,18 +39,18 @@ router.use(views('views', {
   default: 'ejs',
 }));
 
-router.get('/', function* marketing() {
-  yield this.render('new');
-});
+// router.get('/', function* marketing() {
+//   yield this.render('new');
+// });
 
 router.get('/account', index.main);
 router.get('/billing', index.main);
 router.get('/pro', index.main);
-
-router.get('/signin', user.signin);
-router.post('/signin', user.signin);
-router.get('/signup', user.signup);
-router.post('/signup', user.signup);
+//
+// router.get('/signin', user.signin);
+// router.post('/signin', user.signin);
+// router.get('/signup', user.signup);
+// router.post('/signup', user.signup);
 router.get('/logout', user.logout);
 router.post('/logout', user.logout);
 router.get('/forgot', user.forgot);

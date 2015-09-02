@@ -17,8 +17,13 @@ import web from './web/app';
 import debugname from 'debug';
 const debug = debugname('hostr');
 
+import { routes } from './web/public/app/src/app';
+import reactHandler from './web/lib/react-handler';
+
 const app = websockify(koa());
 app.keys = [process.env.COOKIE_KEY];
+
+app.use(reactHandler(routes));
 
 if (process.env.SENTRY_DSN) {
   const ravenClient = new raven.Client(process.env.SENTRY_DSN);
