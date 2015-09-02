@@ -1,8 +1,8 @@
 import React from 'react';
-import { Navigation, State, Link } from 'react-router';
+import { State, Link } from 'react-router';
 
 export default React.createClass({
-  mixins: [ Navigation, State ],
+  mixins: [ State ],
   render() {
     return (
       <div className='home'>

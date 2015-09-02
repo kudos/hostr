@@ -2,10 +2,11 @@ import React from 'react';
 import Router, { Route, RouteHandler, DefaultRoute, NotFoundRoute } from 'react-router';
 import { Initializer as GAInitiailizer } from 'react-google-analytics';
 import Head from './views/head';
+import NotFound from './views/notfound';
 import Home from './views/home';
 import Signin from './views/signin';
 import Signup from './views/signup';
-import NotFound from './views/notfound';
+import File from './views/file';
 
 export default class App extends React.Component {
   render() {
@@ -30,6 +31,7 @@ const routes = [
     <NotFoundRoute handler={NotFound}/>
     <Route name='signin' path='/signin' handler={Signin} />
     <Route name='signup' path='/signup' handler={Signup} />
+    <Route name='file' path='/:id' handler={File} />
   </Route>,
 ];
 

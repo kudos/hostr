@@ -19,7 +19,7 @@
     "test": "mongo hostr test/fixtures/mongo-*.js && mocha -r babel/register test/**/*.spec.js",
     "watch": "parallelshell \"npm run watch-js\" \"npm run watch-sass\" \"npm run watch-server\"",
     "watch-js": "babel -Dw -m system -d web/public/app/build web/public/app/src",
-    "watch-server": "nodemon -x 'babel-node' app.js",
+    "watch-server": "nodemon -r babel/register -i web/public/app/build app.js",
     "watch-sass": "node-sass  --include-path web/public/app/jspm_packages/github/twbs/bootstrap@4.0.0-alpha/scss/ -w web/public/app/src/scss/style.scss web/public/app/build/css/style.css"
   },
   "dependencies": {
@@ -63,8 +63,10 @@
     "raven": "~0.8.1",
     "react": "^0.13.3",
     "react-google-analytics": "^0.2.0",
+    "react-redux": "^2.0.0",
     "react-router": "^0.13.3",
     "redis": "~1.0.0",
+    "redux": "^2.0.0",
     "s3-upload-stream": "~1.0.7",
     "statsy": "~0.2.0",
     "stripe": "~3.7.1"
@@ -75,9 +77,11 @@
     "eslint-config-airbnb": "0.0.8",
     "eslint-plugin-react": "^3.3.1",
     "istanbul": "~0.3.18",
+    "jspm-server": "^0.1.8",
     "mocha": "~2.3.0",
     "nodemon": "~1.4.1",
     "parallelshell": "~2.0.0",
+    "redux-devtools": "^2.0.0",
     "supertest": "~1.1.0",
     "tmp": "~0.0.27"
   },
