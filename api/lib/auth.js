@@ -16,7 +16,7 @@ export default function* (next) {
     const userToken = yield this.redis.get(this.req.headers.authorization.substr(1));
     this.assert(userToken, 401, '{"error": {"message": "Invalid token.", "code": 606}}');
     debug('Token found');
-    user = yield Users.findOne({'_id': this.db.objectID(userToken)});
+    user = yield Users.findOne({'_id': this.db.objectId(userToken)});
   } else {
     const authUser = auth(this);
     this.assert(authUser, 401, badLoginMsg);
