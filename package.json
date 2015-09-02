@@ -23,7 +23,7 @@
     "watch-sass": "node-sass  --include-path web/public/app/jspm_packages/github/twbs/bootstrap@4.0.0-alpha/scss/ -w web/public/app/src/scss/style.scss web/public/app/build/css/style.css"
   },
   "dependencies": {
-    "aws-sdk": "~2.1.46",
+    "aws-sdk": "^2.1.49",
     "babel": "~5.8.21",
     "basic-auth": "~1.0.3",
     "co": "~4.6.0",
@@ -75,7 +75,7 @@
     "eslint-config-airbnb": "0.0.8",
     "eslint-plugin-react": "^3.3.1",
     "istanbul": "~0.3.18",
-    "mocha": "~2.2.5",
+    "mocha": "~2.3.0",
     "nodemon": "~1.4.1",
     "parallelshell": "~2.0.0",
     "supertest": "~1.1.0",

@@ -10,8 +10,10 @@ html, body {
 .vertical-center {
   min-height: 100%; // fallback
   min-height: 100vh;
-  display: flex;
-  align-items: center;
+  @media (min-width: 34em) {
+    display: flex;
+    align-items: center;
+  }
 }
 
 .header-gradient {
@@ -23,12 +25,4 @@ html, body {
 }
 .error {
   @import 'error';
-}
-.signinup {
-  header {
-    position: absolute;
-    top: 12vh;
-    left: 50%;
-    margin-left: -25px;
-  }
 }

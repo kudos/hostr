@@ -1,4 +1,4 @@
-import Router from 'koa-router';
+import Router from '../lib/koa-router-monkeypatched';
 import stats from 'koa-statsd';
 import cors from 'kcors';
 import StatsD from 'statsy';

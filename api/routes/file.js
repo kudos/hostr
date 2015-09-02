@@ -79,18 +79,28 @@ export function* post(next) {
   const localStream = fs.createWriteStream(path.join(storePath, key));
 
   upload.pipe(localStream);
-  upload.pipe(s3Upload(key));
+  if (process.env.AWS_BUCKET) {
+    upload.pipe(s3Upload(key));
+  }
 
   const thumbsPromises = [
     new Promise((resolve) => {
       const small = gm(upload).resize(150, 150, '>').stream();
-      small.pipe(fs.createWriteStream(path.join(storePath, fileId[0], '150', fileId + '_' + upload.filename)));
-      small.pipe(s3Upload(path.join('150', fileId + '_' + upload.filename))).on('finish', resolve);
+      if (process.env.AWS_BUCKET) {
+        small.pipe(fs.createWriteStream(path.join(storePath, fileId[0], '150', fileId + '_' + upload.filename)));
+        small.pipe(s3Upload(path.join('150', fileId + '_' + upload.filename))).on('finish', resolve);
+      } else {
+        small.pipe(fs.createWriteStream(path.join(storePath, fileId[0], '150', fileId + '_' + upload.filename))).on('finish', resolve);
+      }
     }),
     new Promise((resolve) => {
       const medium = gm(upload).resize(970, '>').stream();
-      medium.pipe(fs.createWriteStream(path.join(storePath, fileId[0], '970', fileId + '_' + upload.filename)));
-      medium.pipe(s3Upload(path.join('970', fileId + '_' + upload.filename))).on('finish', resolve);
+      if (process.env.AWS_BUCKET) {
+        medium.pipe(fs.createWriteStream(path.join(storePath, fileId[0], '970', fileId + '_' + upload.filename)));
+        medium.pipe(s3Upload(path.join('970', fileId + '_' + upload.filename))).on('finish', resolve);
+      } else {
+        medium.pipe(fs.createWriteStream(path.join(storePath, fileId[0], '970', fileId + '_' + upload.filename))).on('finish', resolve);
+      }
     }),
   ];
 

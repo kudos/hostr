@@ -18,7 +18,7 @@ export default function(routes) {
 
         const App = React.createFactory(Handler);
         const content = React.renderToString(new App());
-
+        this.status = 404;
         this.body = '<!doctype html>\n' + content;
       } else {
         debug('Error: %o', err);
@@ -38,7 +38,6 @@ export default function(routes) {
 
       const App = React.createFactory(Handler);
       const content = React.renderToString(new App());
-      this.status = 200;
       this.body = '<!doctype html>\n' + content;
       break;
     case 'json':

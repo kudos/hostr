@@ -1,17 +1,19 @@
-import path from 'path';
-import Router from 'koa-router';
+import Router from '../lib/koa-router-monkeypatched';
 import csrf from 'koa-csrf';
 import views from 'koa-views';
 import stats from 'koa-statsd';
 import * as redis from '../lib/redis';
 import StatsD from 'statsy';
-import errors from 'koa-error';
 import * as index from './routes/index';
 import * as file from './routes/file';
 import * as pro from './routes/pro';
 import * as user from './routes/user';
 
 const router = new Router();
+
+import { routes } from './public/app/src/app';
+import reactHandler from './lib/react-handler';
+router.use(reactHandler(routes));
 
 const statsdOpts = {prefix: 'hostr-web', host: process.env.STATSD_HOST};
 router.use(stats(statsdOpts));
