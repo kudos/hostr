@@ -66,7 +66,7 @@ app.ws.use(redis.middleware());
 app.ws.use(ws.prefix('/api').routes());
 
 if (!module.parent) {
-  app.listen(process.env.PORT || 4040, function listen() {
+  app.listen(process.env.PORT || 4040, () => {
     debug('Koa HTTP server listening on port ' + (process.env.PORT || 4040));
   });
 }

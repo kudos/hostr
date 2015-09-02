@@ -1,0 +1,67 @@
+.header-gradient {
+  background: linear-gradient(to bottom, lighten($body-bg, 10%), $body-bg);
+}
+
+.vertical-center {
+  min-height: 100%;  /* Fallback for browsers do NOT support vh unit */
+  min-height: 100vh; /* These two lines are counted as one :-)       */
+
+  display: flex;
+  align-items: center;
+}
+
+.menu {
+  position: fixed;
+  top: 2rem;
+  right: 2rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  a {
+    color: lighten($gray-light, 10%);
+    &:hover {
+      text-decoration: none;
+      color: #fff;
+    }
+  }
+}
+
+.logo {
+  margin-top: -0.5rem;
+}
+.name {
+  text-align: right;
+  padding-right: 1rem;
+}
+
+h1 {
+  font-size: 2.7rem;
+  margin-bottom: 0;
+}
+
+.tagline {
+  color: $text-muted;
+  margin-bottom: 0;
+}
+
+.cta {
+  padding-left: 1rem;
+  text-align: left;
+  margin-top: 1rem;
+  .btn {
+    text-transform: uppercase;
+    margin-right: 1rem;
+  }
+
+  color: lighten($gray-light, 10%);
+
+  a {
+    margin-left: 1rem;
+    text-transform: uppercase;
+    color: #fff;
+    &:hover {
+      text-decoration: none;
+      color: darken(#fff, 15%);
+    }
+  }
+
+}

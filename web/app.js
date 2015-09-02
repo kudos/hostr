@@ -12,6 +12,9 @@ import * as file from './routes/file';
 import * as pro from './routes/pro';
 import * as user from './routes/user';
 
+import debugname from 'debug';
+const debug = debugname('hostr:web');
+
 const router = new Router();
 
 router.use(errors({template: path.join(__dirname, 'public', 'error.html')}));
@@ -42,7 +45,10 @@ router.use(views('views', {
   default: 'ejs',
 }));
 
-router.get('/', index.main);
+router.get('/', function* marketing() {
+  yield this.render('new');
+});
+
 router.get('/account', index.main);
 router.get('/billing', index.main);
 router.get('/pro', index.main);
