@@ -83,14 +83,15 @@
   },
   "jspm": {
     "directories": {
-      "baseURL": "web/public",
-      "packages": "web/public/app/jspm_packages"
+      "baseURL": "web/public/app"
     },
-    "configFile": "web/public/app/config.js",
     "dependencies": {
       "react": "npm:react@^0.13.3",
       "react-google-analytics": "npm:react-google-analytics@^0.2.0",
+      "react-redux": "npm:react-redux@^2.0.0",
       "react-router": "npm:react-router@^0.13.3",
+      "redux": "npm:redux@^2.0.0",
+      "redux-devtools": "npm:redux-devtools@^2.0.0",
       "twbs/bootstrap": "github:twbs/bootstrap@^4.0.0-alpha"
     },
     "devDependencies": {
