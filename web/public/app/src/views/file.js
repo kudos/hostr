@@ -25,21 +25,18 @@ const File = React.createClass({
     }
     const file = this.props.file;
     return (
-      <div className='container'>
-        <div className='row'>
-          <div className='col-lg-12'>
-            <div className='logo'>
-              <Link to='home'><img src='/images/logo.png' height='30rem' className='logo' /></Link>
+        <div className='file-view'>
+          <header>
+            <Link to='home' className='pull-right'><img src='/images/dots-three-horizontal.svg' height='30rem' className='logo' /></Link>
+            <Link to='home' className='pull-left'><img src='/images/logo.png' height='30rem' className='logo' /></Link>
+            <h1 className='text-center'>{file.name}</h1>
+          </header>
+          <div className='row'>
+            <div className='col-lg-12'>
+              <img src={file.direct['970x']} />
             </div>
           </div>
         </div>
-        <div className='row'>
-          <div className='col-lg-12 text-center'>
-            <h1>{file.name}</h1>
-            <img src={file.direct['970x']} />
-          </div>
-        </div>
-      </div>
     );
   },
 });

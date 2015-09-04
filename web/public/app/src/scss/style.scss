@@ -26,3 +26,20 @@ html, body {
 .error {
   @import 'error';
 }
+.file-view {
+  width: 100%;
+  text-align: center;
+  header {
+    background: lighten($body-bg, 4%);
+    padding: 1rem 1rem;
+    margin-bottom: 3.5rem;
+  }
+  h1 {
+    font-size: 1rem;
+    line-height: 1.8rem;
+    margin-bottom: 0;
+  }
+  img {
+    color: #ffffff;
+  }
+}
