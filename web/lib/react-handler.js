@@ -1,8 +1,22 @@
 import React from 'react';
+import { createStore } from 'redux';
+import { Provider } from 'react-redux';
 import createHandler from './react-route-handler';
+import reducers from '../public/app/src/reducers';
+import { formatFile } from '../../lib/format';
 
 import debuglog from 'debug';
 const debug = debuglog('hostr:react-handler');
+
+function* renderPage(routes, url, store = createStore(reducers)) {
+  const { Handler, routerState } = yield createHandler(routes, url);
+  const content = React.renderToString(
+    <Provider store={store}>
+      {() => <Handler routerState={routerState} />}
+    </Provider>
+  );
+  return '<!doctype html>\n' + content.replace('</body></html>', `<script>window.STATE = ${JSON.stringify(store.getState())}</script></body></html>`);
+}
 
 export default function(routes) {
   return function* reactMiddleware(next) {
@@ -14,12 +28,8 @@ export default function(routes) {
       debug('caught error');
       if (err.status === 404) {
         debug('it\s a 404');
-        const Handler = yield createHandler(routes, this.request.url);
-
-        const App = React.createFactory(Handler);
-        const content = React.renderToString(new App());
-        this.status = 404;
-        this.body = '<!doctype html>\n' + content;
+        // this.status = 404;
+        // this.body = yield renderPage(routes, this.request.url);
       } else {
         debug('Error: %o', err);
         throw err;
@@ -34,11 +44,13 @@ export default function(routes) {
     switch (this.accepts('html', 'json')) {
     case 'html':
       this.type = 'html';
-      const Handler = yield createHandler(routes, this.request.url);
-
-      const App = React.createFactory(Handler);
-      const content = React.renderToString(new App());
-      this.body = '<!doctype html>\n' + content;
+      const user = this.session.user;
+      let files = [];
+      if (user) {
+        files = yield this.db.Files.find({owner: this.db.objectId(user.id), status: 'active'}).toArray();
+      }
+      const store = createStore(reducers, {user: user, files: files.map(formatFile), uploads: []});
+      this.body = yield renderPage(routes, this.request.url, store);
       break;
     case 'json':
       this.body = {message: 'Page Not Found'};

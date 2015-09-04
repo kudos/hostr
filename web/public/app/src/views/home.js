@@ -1,8 +1,7 @@
 import React from 'react';
 import { State, Link } from 'react-router';
 
-export default React.createClass({
-  mixins: [ State ],
+class Home extends React.Component {
   render() {
     return (
       <div className='home'>
@@ -25,16 +24,44 @@ export default React.createClass({
             </div>
           </header>
         </div>
-        <div className='container'>
-          <section className='row'>
-
-          </section>
-
-          <footer className='row'>
-
-          </footer>
-        </div>
       </div>
     );
+  }
+}
+
+class File extends React.Component {
+  render() {
+    return (
+      <div>
+        <img src={this.props.direct['150x']} />
+        <Link to='file' params={{id: this.props.id}}>{this.props.name}</Link>
+      </div>
+    );
+  }
+}
+
+const Files = React.createClass({
+  mixins: [ State ],
+  render() {
+    return (
+      <div>
+        <ul>
+        {this.props.files.map((item, i) => {
+          return (<File {...item} key={i} />);
+        })}
+        </ul>
+      </div>
+    );
+  },
+});
+
+
+export default React.createClass({
+  mixins: [ State ],
+  render() {
+    if (!this.props.user) {
+      return <Home {...this.props} />;
+    }
+    return <Files {...this.props} />;
   },
 });

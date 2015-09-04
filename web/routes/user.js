@@ -8,7 +8,7 @@ export function* signin() {
   }
 
   this.statsd.incr('auth.attempt', 1);
-  this.assertCSRF(this.request.body);
+  // this.assertCSRF(this.request.body);
   const user = yield authenticate.call(this, this.request.body.email, this.request.body.password);
   if (!user) {
     this.statsd.incr('auth.failure', 1);

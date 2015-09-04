@@ -12,8 +12,8 @@ export default function* (routes, url) {
   });
 
   return new Promise((resolve) => {
-    router.run((Handler) => {
-      resolve(Handler);
+    router.run((Handler, routerState) => {
+      resolve({ Handler, routerState });
     });
   });
 }

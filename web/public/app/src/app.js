@@ -1,47 +1,23 @@
 import React from 'react';
-import Router, { Route, RouteHandler, DefaultRoute, NotFoundRoute } from 'react-router';
-import { Initializer as GAInitiailizer } from 'react-google-analytics';
-import Head from './views/head';
-import NotFound from './views/notfound';
-import Home from './views/home';
-import Signin from './views/signin';
-import Signup from './views/signup';
-import File from './views/file';
-
-export default class App extends React.Component {
-  render() {
-    return (
-      <html>
-        <Head {...this.props} />
-        <body>
-          <RouteHandler {...this.props} />
-          <GAInitiailizer />
-          <script src='/app/jspm_packages/system.js'></script>
-          <script src='/app/config.js'></script>
-          <script dangerouslySetInnerHTML={{__html: 'System.import(\'app\');'}}></script>
-        </body>
-      </html>
-    );
-  }
-}
-
-const routes = [
-  <Route name='home' handler={App} path='/'>
-    <DefaultRoute handler={Home} />
-    <NotFoundRoute handler={NotFound}/>
-    <Route name='signin' path='/signin' handler={Signin} />
-    <Route name='signup' path='/signup' handler={Signup} />
-    <Route name='file' path='/:id' handler={File} />
-  </Route>,
-];
+import { createStore } from 'redux';
+import { Provider } from 'react-redux';
+import Router from 'react-router';
+import { routes } from './containers/App';
+import reducers from './reducers';
 
 if (typeof window !== 'undefined') {
+  const store = createStore(reducers, window.STATE);
   console.info('Time since page started rendering: ' + (Date.now() - timerStart) + 'ms'); // eslint-disable-line no-console
-  Router.run(routes, Router.HistoryLocation, (Handler) => {
-    React.render(<Handler />, document);
+  Router.run(routes, Router.HistoryLocation, (Handler, routerState) => {
+    React.render(
+      <Provider store={store}>
+        {() => <Handler routerState={routerState} />}
+      </Provider>,
+      document
+    );
   });
   ga('create', 'UA-66209-8', 'auto');
   ga('send', 'pageview');
 }
 
-export { routes };
+export default { routes };

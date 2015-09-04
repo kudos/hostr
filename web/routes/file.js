@@ -3,6 +3,14 @@ import mime from 'mime-types';
 import hostrFileStream from '../../lib/hostr-file-stream';
 import { formatFile } from '../../lib/format';
 
+import React from 'react';
+import { createStore } from 'redux';
+import { Provider } from 'react-redux';
+
+import { routes } from '../public/app/src/app';
+import reducers from '../public/app/src/reducers';
+import createHandler from '../lib/react-route-handler';
+
 const storePath = process.env.UPLOAD_STORAGE_PATH;
 
 function userAgentCheck(userAgent) {
@@ -87,7 +95,23 @@ export function* landing() {
     return yield get.call(this);
   }
 
+  const user = this.session.user;
+  let files = [];
+  if (user) {
+    files = yield this.db.Files.find({owner: this.db.objectId(user.id), status: 'active'}).toArray();
+  }
+
+  const store = createStore(reducers, {file: formatFile(file), user, files: files.map(formatFile)});
+
+  const { Handler, routerState } = yield createHandler(routes, this.request.url);
+  let content = React.renderToString(
+    <Provider store={store}>
+      {() => <Handler routerState={routerState} />}
+    </Provider>
+  );
+  content = content.replace('</body></html>', `<script>window.STATE = ${JSON.stringify(store.getState())}</script></body></html>`);
+
+  this.body = '<!doctype html>\n' + content;
+
   this.statsd.incr('file.landing', 1);
-  const formattedFile = formatFile(file);
-  yield this.render('file', {file: formattedFile});
 }

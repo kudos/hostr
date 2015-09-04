@@ -3,6 +3,9 @@ import { State, Link } from 'react-router';
 
 export default React.createClass({
   mixins: [ State ],
+  onSubmit(e) {
+    console.log(this);
+  },
   render() {
     return (
       <div className='home'>
@@ -18,18 +21,18 @@ export default React.createClass({
                 </div>
               </div>
               <div className='col-lg-5'>
-                <form role='form' action='/signin' method='post'>
+                <form role='form' action='/signin' method='post' onSubmit={this.onSubmit}>
                   <div className='form-group'>
                     <label htmlFor='inputEmail'>Email</label>
-                    <input type='email' name='email' className='form-control form-control-lg' id='inputEmail' placeholder='Enter email' tabIndex='1' />
+                    <input ref='email' type='email' name='email' className='form-control form-control-lg' id='inputEmail' placeholder='Enter email' tabIndex='1' />
                   </div>
                   <div className='form-group'>
                     <label htmlFor='inputEmail'>Password &mdash; <a href='/forgot' className='forgot'>Forgot it?</a></label>
-                    <input type='password' name='password' className='form-control form-control-lg' id='inputPassword' placeholder='Password' tabIndex='2' />
+                    <input ref='password' type='password' name='password' className='form-control form-control-lg' id='inputPassword' placeholder='Password' tabIndex='2' />
                   </div>
                   <div className='checkbox'>
                     <label>
-                      <input type='checkbox' name='remember' tabIndex='3' />Remember me on this computer.
+                      <input ref='remember' type='checkbox' name='remember' tabIndex='3' />Remember me on this computer.
                     </label>
                   </div>
                   <button type='submit' className='btn btn-block btn-primary btn-lg' tabIndex='4'>Sign in</button>

@@ -35,7 +35,7 @@ router.use(function* stateMiddleware(next) {
   yield next;
 });
 
-router.use(csrf());
+// router.use(csrf());
 
 router.use(views('views', {
   default: 'ejs',
@@ -50,7 +50,7 @@ router.get('/billing', index.main);
 router.get('/pro', index.main);
 
 // router.get('/signin', user.signin);
-// router.post('/signin', user.signin);
+router.post('/signin', user.signin);
 // router.get('/signup', user.signup);
 // router.post('/signup', user.signup);
 router.get('/logout', user.logout);
@@ -70,7 +70,7 @@ router.get('/stats', index.staticPage);
 router.post('/pro/create', pro.create);
 router.post('/pro/cancel', pro.cancel);
 
-// router.get('/:id', file.landing);
+router.get('/:id', file.landing);
 router.get('/file/:id/:name', file.get);
 router.get('/file/:size/:id/:name', file.get);
 router.get('/files/:id/:name', file.get);
