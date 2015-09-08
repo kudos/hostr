@@ -17,7 +17,7 @@ html, body {
 }
 
 .header-gradient {
-  background: linear-gradient(to bottom, lighten($body-bg, 10%), $body-bg);
+  background: linear-gradient(to bottom, lighten($body-bg, 5%), darken($body-bg, 5%));
 }
 
 .home {

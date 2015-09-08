@@ -5,7 +5,7 @@ node_modules
 jspm_packages
 /coverage/
 npm-debug.log
-web/public/app/build
+web/public/app/build*
 *.gz
 minigun*.json
 test*.json

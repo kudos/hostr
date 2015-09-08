@@ -1,7 +1,10 @@
 import React from 'react';
 import { State, Link } from 'react-router';
+import { connect } from 'react-redux';
+import cookies from 'cookie-dough';
 
 class Home extends React.Component {
+
   render() {
     return (
       <div className='home'>
@@ -42,9 +45,15 @@ class File extends React.Component {
 
 const Files = React.createClass({
   mixins: [ State ],
+  logout(e) {
+    e.preventDefault();
+    cookies().remove('token');
+    location.reload();
+  },
   render() {
     return (
       <div>
+        {this.props.user.email} <a href='/logout' onClick={this.logout}>Logout</a>
         <ul>
         {this.props.files.map((item, i) => {
           return (<File {...item} key={i} />);
@@ -56,7 +65,7 @@ const Files = React.createClass({
 });
 
 
-export default React.createClass({
+const Index = React.createClass({
   mixins: [ State ],
   render() {
     if (!this.props.user) {
@@ -65,3 +74,13 @@ export default React.createClass({
     return <Files {...this.props} />;
   },
 });
+
+function select(state) {
+  return {
+    user: state.user,
+    token: state.token,
+    files: state.files,
+  };
+}
+
+export default connect(select)(Index);

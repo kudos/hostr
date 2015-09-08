@@ -2,6 +2,10 @@ import React, { PropTypes } from 'react';
 import { Route, RouteHandler, DefaultRoute, NotFoundRoute } from 'react-router';
 import { connect } from 'react-redux';
 import { Initializer as GAInitiailizer } from 'react-google-analytics';
+import co from 'co';
+import cookies from 'cookie-dough';
+import * as api from '../lib/api';
+import { setUser, setFiles } from '../actions';
 import Head from '../views/head';
 import NotFound from '../views/notfound';
 import Home from '../views/home';
@@ -10,6 +14,22 @@ import Signup from '../views/signup';
 import File from '../views/file';
 
 class App extends React.Component {
+  componentDidMount() {
+    const token = cookies().get('token');
+    if (token) {
+      co(function* wrap() {
+        try {
+          let response = yield api.getUser();
+          this.props.dispatch(setUser(response.body));
+          response = yield api.getFiles();
+          this.props.dispatch(setFiles(response.body));
+        } catch(error) {
+          console.log(error);
+          cookies().remove('token');
+        }
+      }.bind(this));
+    }
+  }
   render() {
     return (
       <html>
@@ -17,9 +37,6 @@ class App extends React.Component {
         <body>
           <RouteHandler {...this.props} />
           <GAInitiailizer />
-          <script src='/app/jspm_packages/system.js'></script>
-          <script src='/app/config.js'></script>
-          <script dangerouslySetInnerHTML={{__html: 'System.import(\'app\');'}}></script>
         </body>
       </html>
     );

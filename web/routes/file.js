@@ -3,13 +3,11 @@ import mime from 'mime-types';
 import hostrFileStream from '../../lib/hostr-file-stream';
 import { formatFile } from '../../lib/format';
 
-import React from 'react';
 import { createStore } from 'redux';
-import { Provider } from 'react-redux';
 
 import { routes } from '../public/app/src/app';
 import reducers from '../public/app/src/reducers';
-import createHandler from '../lib/react-route-handler';
+import { renderPage } from '../lib/react-handler';
 
 const storePath = process.env.UPLOAD_STORAGE_PATH;
 
@@ -103,15 +101,7 @@ export function* landing() {
 
   const store = createStore(reducers, {file: formatFile(file), user, files: files.map(formatFile)});
 
-  const { Handler, routerState } = yield createHandler(routes, this.request.url);
-  let content = React.renderToString(
-    <Provider store={store}>
-      {() => <Handler routerState={routerState} />}
-    </Provider>
-  );
-  content = content.replace('</body></html>', `<script>window.STATE = ${JSON.stringify(store.getState())}</script></body></html>`);
-
-  this.body = '<!doctype html>\n' + content;
+  this.body = yield renderPage(routes, this.request.url, store);
 
   this.statsd.incr('file.landing', 1);
 }

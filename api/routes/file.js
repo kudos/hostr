@@ -24,6 +24,7 @@ export function* post(next) {
     return yield next;
   }
   const Files = this.db.Files;
+  this.state.user = this.db.objectId(this.state.user);
 
   const expectedSize = this.request.headers['content-length'];
   const tempGuid = this.request.headers['hostr-guid'];
@@ -41,15 +42,15 @@ export function* post(next) {
   const upload = yield parse(this, {autoFields: true, headers: this.request.headers, limits: { files: 1}, highWaterMark: 1000000});
 
   // Check daily upload limit
-  const count = yield Files.count({owner: this.user.id, 'time_added': {'$gt': Math.ceil(Date.now() / 1000) - 86400}});
-  const userLimit = this.user.daily_upload_allowance;
+  const count = yield Files.count({owner: this.state.user, 'time_added': {'$gt': Math.ceil(Date.now() / 1000) - 86400}});
+  const userLimit = this.state.userdaily_upload_allowance;
   const underLimit = (count < userLimit || userLimit === 'unlimited');
   if (!underLimit) {
     this.statsd.incr('file.overlimit', 1);
   }
   this.assert(underLimit, 400, `{
     "error": {
-      "message": "Daily upload limits (${this.user.daily_upload_allowance}) exceeded.",
+      "message": "Daily upload limits (${this.state.userdaily_upload_allowance}) exceeded.",
       "code": 602
     }
   }`);
@@ -61,7 +62,7 @@ export function* post(next) {
 
   // Fire an event to let the frontend map the GUID it sent to the real ID. Allows immediate linking to the file
   const acceptedEvent = `{"type": "file-accepted", "data": {"id": "${fileId}", "guid": "${tempGuid}", "href": "${baseURL}/${fileId}"}}`;
-  this.redis.publish('/user/' + this.user.id, acceptedEvent);
+  this.redis.publish('/user/' + this.state.user, acceptedEvent);
   this.statsd.incr('file.upload.accepted', 1);
 
   const uploadPromise = new Promise((resolve, reject) => {
@@ -117,7 +118,7 @@ export function* post(next) {
 
   upload.on('data', (data) => {
     receivedSize += data.length;
-    if (receivedSize > this.user.max_filesize) {
+    if (receivedSize > this.state.usermax_filesize) {
       fs.unlink(path.join(storePath, key));
       this.throw(413, '{"error": {"message": "The file you tried to upload is too large.", "code": 601}}');
     }
@@ -126,7 +127,7 @@ export function* post(next) {
     if (percentComplete > lastPercent && lastTick < Date.now() - 1000) {
       const progressEvent = `{"type": "file-progress", "data": {"id": "${fileId}", "complete": ${percentComplete}}}`;
       this.redis.publish('/file/' + fileId, progressEvent);
-      this.redis.publish('/user/' + this.user.id, progressEvent);
+      this.redis.publish('/user/' + this.state.user, progressEvent);
       lastTick = Date.now();
     }
     lastPercent = percentComplete;
@@ -137,12 +138,12 @@ export function* post(next) {
   // Fire final upload progress event so users know it's now processing
   const completeEvent = `{"type": "file-progress", "data": {"id": "${fileId}", "complete": 100}}`;
   this.redis.publish('/file/' + fileId, completeEvent);
-  this.redis.publish('/user/' + this.user.id, completeEvent);
+  this.redis.publish('/user/' + this.state.user, completeEvent);
   this.statsd.incr('file.upload.complete', 1);
 
   const dbFile = {
     _id: fileId,
-    owner: this.user.id,
+    owner: this.state.user,
     ip: remoteIp,
     'system_name': fileId,
     'file_name': upload.filename,
@@ -179,7 +180,7 @@ export function* post(next) {
   // Fire upload complete event
   const addedEvent = `{"type": "file-added", "data": ${JSON.stringify(formattedFile)}}`;
   this.redis.publish('/file/' + fileId, addedEvent);
-  this.redis.publish('/user/' + this.user.id, addedEvent);
+  this.redis.publish('/user/' + this.state.user, addedEvent);
   this.status = 201;
   this.body = formattedFile;
 
@@ -203,6 +204,7 @@ export function* post(next) {
 
 export function* list() {
   const Files = this.db.Files;
+  this.state.user = this.db.objectId(this.state.user);
 
   let status = 'active';
   if (this.request.query.trashed) {
@@ -230,7 +232,7 @@ export function* list() {
     },
   };
 
-  const userFiles = yield Files.find({owner: this.user.id, status: status}, queryOptions).toArray();
+  const userFiles = yield Files.find({owner: this.state.user, status: status}, queryOptions).toArray();
   this.statsd.incr('file.list', 1);
   this.body = userFiles.map(formatFile);
 }
@@ -251,16 +253,18 @@ export function* get() {
 export function* put() {
   if (this.request.body.trashed) {
     const Files = this.db.Files;
+    this.state.user = this.db.objectId(this.state.user);
     const status = this.request.body.trashed ? 'trashed' : 'active';
-    yield Files.updateOne({'_id': this.params.id, owner: this.user.id}, {$set: {status: status}}, {w: 1});
+    yield Files.updateOne({'_id': this.params.id, owner: this.state.user}, {$set: {status: status}}, {w: 1});
   }
 }
 
 
 export function* del() {
-  yield this.db.Files.updateOne({'_id': this.params.id, owner: this.db.objectId(this.user.id)}, {$set: {status: 'deleted'}}, {w: 1});
+  this.state.user = this.db.objectId(this.state.user);
+  yield this.db.Files.updateOne({'_id': this.params.id, owner: this.db.objectId(this.state.user)}, {$set: {status: 'deleted'}}, {w: 1});
   const event = {type: 'file-deleted', data: {'id': this.params.id}};
-  yield this.redis.publish('/user/' + this.user.id, JSON.stringify(event));
+  yield this.redis.publish('/user/' + this.state.user, JSON.stringify(event));
   yield this.redis.publish('/file/' + this.params.id, JSON.stringify(event));
   this.statsd.incr('file.delete', 1);
   this.status = 204;

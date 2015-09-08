@@ -1,10 +1,45 @@
 import React from 'react';
-import { State, Link } from 'react-router';
+import { State, Link, Navigation } from 'react-router';
+import { connect } from 'react-redux';
+import * as api from '../lib/api';
+import co from 'co';
+import { setToken, setUser, setFiles } from '../actions';
 
-export default React.createClass({
-  mixins: [ State ],
+const Signin = React.createClass({
+  mixins: [ State, Navigation ],
+  getInitialState() {
+    return {
+      submitable: false,
+      error: {},
+    };
+  },
+  componentDidMount() {
+    this.setState({
+      submitable: true,
+      error: this.state.error,
+    });
+  },
   onSubmit(e) {
-    console.log(this);
+    e.preventDefault();
+    const email = this.refs.email.getDOMNode().value;
+    const password = this.refs.password.getDOMNode().value;
+    co(function* wrap() {
+      try {
+        let response = yield api.getToken(email, password);
+        this.props.dispatch(setToken(response.body.token));
+        response = yield api.getUser();
+        this.props.dispatch(setUser(response.body));
+        response = yield api.getFiles();
+        this.props.dispatch(setFiles(response.body));
+        this.transitionTo('home');
+      } catch(err) {
+        if (err.response && err.response.body) {
+          this.setState({error: err.response.body.error});
+        } else {
+          this.setState({error: {message: 'Something went wrong :('}});
+        }
+      }
+    }.bind(this));
   },
   render() {
     return (
@@ -21,9 +56,9 @@ export default React.createClass({
                 </div>
               </div>
               <div className='col-lg-5'>
-                <form role='form' action='/signin' method='post' onSubmit={this.onSubmit}>
+                <form role='form' onSubmit={this.onSubmit}>
                   <div className='form-group'>
-                    <label htmlFor='inputEmail'>Email</label>
+                    <label htmlFor='inputEmail'>Email</label> {(this.state.error ? this.state.error.message : '')}
                     <input ref='email' type='email' name='email' className='form-control form-control-lg' id='inputEmail' placeholder='Enter email' tabIndex='1' />
                   </div>
                   <div className='form-group'>
@@ -35,7 +70,7 @@ export default React.createClass({
                       <input ref='remember' type='checkbox' name='remember' tabIndex='3' />Remember me on this computer.
                     </label>
                   </div>
-                  <button type='submit' className='btn btn-block btn-primary btn-lg' tabIndex='4'>Sign in</button>
+                  <button type='submit' className='btn btn-block btn-primary btn-lg' tabIndex='4' disabled={!this.state.submitable}>Sign in</button>
                 </form>
               </div>
             </div>
@@ -45,3 +80,12 @@ export default React.createClass({
     );
   },
 });
+
+function select(state) {
+  return {
+    user: state.user,
+    token: state.token,
+  };
+}
+
+export default connect(select)(Signin);

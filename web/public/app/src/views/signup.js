@@ -1,8 +1,48 @@
 import React from 'react';
-import { State, Link } from 'react-router';
+import { State, Link, Navigation } from 'react-router';
+import { connect } from 'react-redux';
+import * as api from '../lib/api';
+import co from 'co';
+import { setToken, setUser, setFiles } from '../actions';
 
-export default React.createClass({
-  mixins: [ State ],
+const Signin = React.createClass({
+  mixins: [ State, Navigation ],
+  getInitialState() {
+    return {
+      submitable: false,
+      error: {},
+    };
+  },
+  componentDidMount() {
+    this.setState({
+      submitable: true,
+      error: this.state.error,
+    });
+  },
+  onSubmit(e) {
+    e.preventDefault();
+    const email = this.refs.email.getDOMNode().value;
+    const password = this.refs.password.getDOMNode().value;
+    const terms = this.refs.terms.getDOMNode().checked;
+    co(function* wrap() {
+      try {
+        yield api.createUser(email, password, terms);
+        let response = yield api.getToken(email, password);
+        this.props.dispatch(setToken(response.body.token));
+        response = yield api.getUser();
+        this.props.dispatch(setUser(response.body));
+        response = yield api.getFiles();
+        this.props.dispatch(setFiles(response.body));
+        this.transitionTo('home');
+      } catch(err) {
+        if (err.response && err.response.body) {
+          this.setState({error: err.response.body.error});
+        } else {
+          this.setState({error: {message: 'Something went wrong :('}});
+        }
+      }
+    }.bind(this));
+  },
   render() {
     return (
       <div className='home'>
@@ -18,25 +58,21 @@ export default React.createClass({
                 </div>
               </div>
               <div className='col-lg-5'>
-                <form role='form' action='/signup' method='post'>
+                <form role='form' onSubmit={this.onSubmit}>
                   <div className='form-group'>
-                    <label htmlFor='inputEmail'>Email</label>
-                    <input type='email' name='email' className='form-control form-control-lg' id='inputEmail' placeholder='Email' tabIndex='1' />
+                    <label htmlFor='inputEmail'>Email</label> {(this.state.error ? this.state.error.message : '')}
+                    <input ref='email' type='email' name='email' className='form-control form-control-lg' id='inputEmail' placeholder='Enter email' tabIndex='1' />
                   </div>
                   <div className='form-group'>
-                    <label htmlFor='inputEmail'>Email Again</label>
-                    <input type='email-again' name='email-again' className='form-control form-control-lg' id='inputEmailAgain' placeholder='Email Again' tabIndex='1' />
-                  </div>
-                  <div className='form-group'>
-                    <label htmlFor='inputEmail'>Password</label>
-                    <input type='password' name='password' className='form-control form-control-lg' id='inputPassword' placeholder='Password' tabIndex='2' />
+                    <label htmlFor='inputEmail'>Password &mdash; <a href='/forgot' className='forgot'>Forgot it?</a></label>
+                    <input ref='password' type='password' name='password' className='form-control form-control-lg' id='inputPassword' placeholder='Password' tabIndex='2' />
                   </div>
                   <div className='checkbox'>
                     <label>
-                      <input type='checkbox' name='remember' tabIndex='3' />I agree to the <a href='/terms' target='_blank'>terms of service</a>.
+                      <input ref='terms' type='checkbox' name='terms' tabIndex='3' />I agree to the Terms of Service.
                     </label>
                   </div>
-                  <button type='submit' className='btn btn-block btn-primary btn-lg' tabIndex='4'>Sign up</button>
+                  <button type='submit' className='btn btn-block btn-primary btn-lg' tabIndex='4' disabled={!this.state.submitable}>Sign up</button>
                 </form>
               </div>
             </div>
@@ -46,3 +82,12 @@ export default React.createClass({
     );
   },
 });
+
+function select(state) {
+  return {
+    user: state.user,
+    token: state.token,
+  };
+}
+
+export default connect(select)(Signin);

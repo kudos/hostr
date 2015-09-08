@@ -1,8 +1,7 @@
 import Router from '../lib/koa-router-monkeypatched';
-import csrf from 'koa-csrf';
 import views from 'koa-views';
+import error from 'koa-error';
 import stats from 'koa-statsd';
-import * as redis from '../lib/redis';
 import StatsD from 'statsy';
 import * as index from './routes/index';
 import * as file from './routes/file';
@@ -10,10 +9,6 @@ import * as pro from './routes/pro';
 import * as user from './routes/user';
 
 const router = new Router();
-
-import { routes } from './public/app/src/app';
-import reactHandler from './lib/react-handler';
-router.use(reactHandler(routes));
 
 const statsdOpts = {prefix: 'hostr-web', host: process.env.STATSD_HOST};
 router.use(stats(statsdOpts));
@@ -23,38 +18,20 @@ router.use(function* statsMiddleware(next) {
   yield next;
 });
 
-router.use(redis.sessionStore());
-
-router.use(function* stateMiddleware(next) {
-  this.state = {
-    session: this.session,
-    baseURL: process.env.WEB_BASE_URL,
-    apiURL: process.env.API_BASE_URL,
-    stripePublic: process.env.STRIPE_PUBLIC_KEY,
-  };
-  yield next;
-});
-
-// router.use(csrf());
+router.use(error({template: 'web/public/error.html'}));
 
 router.use(views('views', {
   default: 'ejs',
 }));
 
-// router.get('/', function* marketing() {
-//   yield this.render('new');
-// });
+router.get('/', index.main);
 
 router.get('/account', index.main);
 router.get('/billing', index.main);
 router.get('/pro', index.main);
 
-// router.get('/signin', user.signin);
-router.post('/signin', user.signin);
-// router.get('/signup', user.signup);
-// router.post('/signup', user.signup);
-router.get('/logout', user.logout);
-router.post('/logout', user.logout);
+router.get('/signin', user.signupin);
+router.get('/signup', user.signupin);
 router.get('/forgot', user.forgot);
 router.get('/forgot/:token', user.forgot);
 router.post('/forgot/:token', user.forgot);

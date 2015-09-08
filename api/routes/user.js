@@ -2,25 +2,90 @@ import uuid from 'node-uuid';
 import redis from 'redis';
 import co from 'co';
 import passwords from 'passwords';
+import jwt from 'koa-jwt';
+import { Mandrill } from 'mandrill-api/mandrill';
+const mandrill = new Mandrill(process.env.MANDRILL_KEY);
+import normalisedUser from '../../lib/normalised-user.js';
+import views from 'co-views';
+// TODO: Move these templates
+const render = views(__dirname + '/../../web/views', { default: 'ejs'});
 
 import debugname from 'debug';
 const debug = debugname('hostr-api:user');
 
 const redisUrl = process.env.REDIS_URL;
 
-export function* get() {
-  this.body = this.user;
+export function* auth() {
+  const email = this.request.body.email || this.request.body.username;
+  const password = this.request.body.password;
+  this.assert(email && password, 400, '{"error": {"message": "Email and password required.", "code": 606}}');
+  const user = yield this.db.Users.findOne({ email: email});
+  this.assert(yield passwords.match(password, user.salted_password), 400, '{"error": {"message": "Invalid email or password.", "code": 606}}');
+  this.body = {token: jwt.sign(user._id, process.env.COOKIE_KEY, {expiresInMinutes: 600})};
 }
 
-export function* token() {
-  const token = uuid.v4(); // eslint-disable-line no-shadow
-  yield this.redis.set(token, this.user.id, 'EX', 86400);
-  this.body = {token: token};
+export function* get() {
+  this.body = yield normalisedUser.call(this, this.db.objectId(this.state.user));
+}
+
+export function* create() {
+  this.assert(this.request.body.email, 400, '{"error": {"message": "Email is required.", "code": 606}}');
+  // Just check that it has an @ in the middle and a dot somewhere afterwards. Let it bounce if it's invalid after that.
+  this.assert(this.request.body.email.match(/(.*)@(.*)\./), 400, '{"error": {"message": "Invalid email.", "code": 606}}');
+  this.assert(this.request.body.password, 400, '{"error": {"message": "Password is required.", "code": 606}}');
+  this.assert(this.request.body.password, 400, '{"error": {"message": "Password must be at least 7 characters long.", "code": 606}}');
+  this.assert(this.request.body.terms, 400, `{"error": {"message": "You must agree to the terms of service.", "code": 606}}`);
+
+  const ip = this.headers['x-real-ip'] || this.ip;
+  const email = this.request.body.email;
+  const password = this.request.body.password;
+
+  const existingUser = yield this.db.Users.findOne({email: email, status: {'$ne': 'deleted'}});
+  this.assert(!existingUser, 400, '{"error": {"message": "An account already exists for this email.", "code": 606}}');
+
+  const cryptedPassword = yield passwords.crypt(password);
+
+  const user = {
+    email: email,
+    'salted_password': cryptedPassword,
+    joined: Math.round(new Date().getTime() / 1000),
+    'signup_ip': ip,
+    activationCode: uuid(),
+    type: 'Free',
+  };
+
+  const insert = yield this.db.Users.insertOne(user);
+
+  const html = yield render('email/inlined/activate', {activationUrl: process.env.WEB_BASE_URL + '/activate/' + user.activationCode});
+  const text = `Thanks for signing up to Hostr!
+Please confirm your email address by clicking the link below.
+
+${process.env.WEB_BASE_URL + '/activate/' + user.activationCode}
+
+— Jonathan Cremin, Hostr Founder
+`;
+  mandrill.messages.send({message: {
+    html: html,
+    text: text,
+    subject: 'Welcome to Hostr',
+    'from_email': 'jonathan@hostr.co',
+    'from_name': 'Jonathan from Hostr',
+    to: [{
+      email: user.email,
+      type: 'to',
+    }],
+    'tags': [
+      'user-activation',
+    ],
+  }});
+  this.statsd.incr('api.user.create', 1);
+  this.body = yield normalisedUser.call(this, insert.insertedId);
 }
 
 export function* transaction() {
+  this.state.userid = this.db.objectId(this.state.userid);
   const Transactions = this.db.Transactions;
-  const transactions = yield Transactions.find({'user_id': this.user.id}).toArray();
+  const transactions = yield Transactions.find({'user_id': this.state.userid}).toArray();
 
   this.body = transactions.map((transaction) => { // eslint-disable-line no-shadow
     const type = transaction.paypal ? 'paypal' : 'direct';
@@ -35,10 +100,11 @@ export function* transaction() {
 }
 
 export function* settings() {
+  this.state.userid = this.db.objectId(this.state.userid);
   this.assert(this.request.body, 400, '{"error": {"message": "Current Password required to update account.", "code": 612}}');
   this.assert(this.request.body.current_password, 400, '{"error": {"message": "Current Password required to update account.", "code": 612}}');
   const Users = this.db.Users;
-  const user = yield Users.findOne({'_id': this.user.id});
+  const user = yield Users.findOne({'_id': this.state.userid});
   this.assert(yield passwords.match(this.request.body.current_password, user.salted_password), 400, '{"error": {"message": "Incorrect password", "code": 606}}');
   const data = {};
   if (this.request.body.email && this.request.body.email !== user.email) {

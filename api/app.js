@@ -2,7 +2,7 @@ import Router from '../lib/koa-router-monkeypatched';
 import stats from 'koa-statsd';
 import cors from 'kcors';
 import StatsD from 'statsy';
-import auth from './lib/auth';
+import jwt from 'koa-jwt';
 import * as user from './routes/user';
 import * as file from './routes/file';
 import debugname from 'debug';
@@ -23,13 +23,18 @@ router.use(cors({
   credentials: true,
 }));
 
-router.use('/*', function* authMiddleware(next) {
+router.get('/file/:id', file.get);
+router.post('/user/token', user.auth);
+router.post('/user', user.create);
+
+router.use(function* authMiddleware(next) {
   try {
     yield next;
     if (this.response.status === 404 && !this.response.body) {
       this.throw(404);
     }
   } catch (err) {
+    debug(err);
     if (err.status === 401) {
       this.statsd.incr('auth.failure', 1);
       this.set('WWW-Authenticate', 'Basic');
@@ -46,7 +51,9 @@ router.use('/*', function* authMiddleware(next) {
     } else {
       if (!err.status) {
         debug(err);
-        this.raven.captureError(err);
+        if (this.raven) {
+          this.raven.captureError(err);
+        }
         throw err;
       } else {
         this.status = err.status;
@@ -57,22 +64,15 @@ router.use('/*', function* authMiddleware(next) {
   this.type = 'application/json';
 });
 
-router.get('/user', auth, user.get);
-router.get('/user/token', auth, user.token);
-router.get('/token', auth, user.token);
-router.get('/user/transaction', auth, user.transaction);
-router.post('/user/settings', auth, user.settings);
-router.get('/file', auth, file.list);
-router.post('/file', auth, file.post);
-router.get('/file/:id', file.get);
-router.put('/file/:id', auth, file.put);
-router.delete('/file/:id', auth, file.del);
-router.delete('/file/:id', auth, file.del);
+const jwtMiddleware = jwt({ secret: process.env.COOKIE_KEY});
 
-// Hack, if no route matches here, router does not dispatch at all
-router.get('/(.*)', function* errorMiddleware() {
-  this.throw(404);
-});
+router.get('/user', jwtMiddleware, user.get);
+router.get('/user/transaction', jwtMiddleware, user.transaction);
+router.post('/user/settings', jwtMiddleware, user.settings);
+router.get('/file', jwtMiddleware, file.list);
+router.post('/file', jwtMiddleware, file.post);
+router.put('/file/:id', jwtMiddleware, file.put);
+router.delete('/file/:id', jwtMiddleware, file.del);
 
 export const ws = new Router();
 

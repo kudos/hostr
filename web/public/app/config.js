@@ -19,6 +19,8 @@ System.config({
     "babel": "npm:babel-core@5.8.23",
     "babel-runtime": "npm:babel-runtime@5.8.20",
     "bootstrap": "github:twbs/bootstrap@4.0.0-alpha",
+    "co": "npm:co@4.6.0",
+    "cookie-dough": "npm:cookie-dough@0.0.6",
     "core-js": "npm:core-js@1.1.3",
     "immutable": "npm:immutable@3.7.5",
     "react": "npm:react@0.13.3",
@@ -29,6 +31,7 @@ System.config({
     "redux": "npm:redux@2.0.0",
     "redux-devtools": "npm:redux-devtools@2.1.0",
     "superagent": "npm:superagent@1.3.0",
+    "superagent-as-promised": "npm:superagent-as-promised@3.2.0",
     "twbs/bootstrap": "github:twbs/bootstrap@4.0.0-alpha",
     "github:jspm/nodelibs-assert@0.1.0": {
       "assert": "npm:assert@1.3.0"
@@ -136,6 +139,9 @@ System.config({
     "npm:babel-runtime@5.8.20": {
       "process": "github:jspm/nodelibs-process@0.1.1"
     },
+    "npm:bluebird@2.9.34": {
+      "process": "github:jspm/nodelibs-process@0.1.1"
+    },
     "npm:browserify-aes@1.0.3": {
       "buffer": "github:jspm/nodelibs-buffer@0.1.0",
       "buffer-xor": "npm:buffer-xor@1.0.2",
@@ -190,6 +196,9 @@ System.config({
     },
     "npm:constants-browserify@0.0.1": {
       "systemjs-json": "github:systemjs/plugin-json@0.1.0"
+    },
+    "npm:cookie-dough@0.0.6": {
+      "cookie": "npm:cookie@0.1.3"
     },
     "npm:core-js@1.1.3": {
       "fs": "github:jspm/nodelibs-fs@0.1.2",
@@ -475,6 +484,9 @@ System.config({
     },
     "npm:string_decoder@0.10.31": {
       "buffer": "github:jspm/nodelibs-buffer@0.1.0"
+    },
+    "npm:superagent-as-promised@3.2.0": {
+      "bluebird": "npm:bluebird@2.9.34"
     },
     "npm:superagent@1.3.0": {
       "buffer": "github:jspm/nodelibs-buffer@0.1.0",
