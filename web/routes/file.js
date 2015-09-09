@@ -2,6 +2,7 @@ import path from 'path';
 import mime from 'mime-types';
 import hostrFileStream from '../../lib/hostr-file-stream';
 import { formatFile } from '../../lib/format';
+import normalisedUser from '../../lib/normalised-user.js';
 
 import { createStore } from 'redux';
 
@@ -93,10 +94,12 @@ export function* landing() {
     return yield get.call(this);
   }
 
-  const user = this.session.user;
+  const userId = this.state.user;
   let files = [];
-  if (user) {
-    files = yield this.db.Files.find({owner: this.db.objectId(user.id), status: 'active'}).toArray();
+  let user = {};
+  if (userId) {
+    user = normalisedUser.call(this, this.db.objectId(user));
+    files = yield this.db.Files.find({owner: this.db.objectId(user), status: 'active'}).toArray();
   }
 
   const store = createStore(reducers, {file: formatFile(file), user, files: files.map(formatFile)});

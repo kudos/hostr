@@ -9,6 +9,7 @@ import { sniff } from '../../lib/type';
 import hostrId from '../../lib/hostr-id';
 import malware from '../../lib/malware';
 import { formatFile } from '../../lib/format';
+import normalisedUser from '../../lib/normalised-user.js';
 
 import debugname from 'debug';
 const debug = debugname('hostr-api:file');
@@ -24,8 +25,7 @@ export function* post(next) {
     return yield next;
   }
   const Files = this.db.Files;
-  this.state.user = this.db.objectId(this.state.user);
-
+  const user = yield normalisedUser.call(this, this.db.objectId(this.state.user));
   const expectedSize = this.request.headers['content-length'];
   const tempGuid = this.request.headers['hostr-guid'];
   const remoteIp = this.request.headers['x-real-ip'] || this.req.connection.remoteAddress;
@@ -42,15 +42,15 @@ export function* post(next) {
   const upload = yield parse(this, {autoFields: true, headers: this.request.headers, limits: { files: 1}, highWaterMark: 1000000});
 
   // Check daily upload limit
-  const count = yield Files.count({owner: this.state.user, 'time_added': {'$gt': Math.ceil(Date.now() / 1000) - 86400}});
-  const userLimit = this.state.userdaily_upload_allowance;
+  const count = yield Files.count({owner: user.id, 'time_added': {'$gt': Math.ceil(Date.now() / 1000) - 86400}});
+  const userLimit = user.daily_upload_allowance;
   const underLimit = (count < userLimit || userLimit === 'unlimited');
   if (!underLimit) {
     this.statsd.incr('file.overlimit', 1);
   }
   this.assert(underLimit, 400, `{
     "error": {
-      "message": "Daily upload limits (${this.state.userdaily_upload_allowance}) exceeded.",
+      "message": "Daily upload limits (${user.userdaily_upload_allowance}) exceeded.",
       "code": 602
     }
   }`);
@@ -62,7 +62,7 @@ export function* post(next) {
 
   // Fire an event to let the frontend map the GUID it sent to the real ID. Allows immediate linking to the file
   const acceptedEvent = `{"type": "file-accepted", "data": {"id": "${fileId}", "guid": "${tempGuid}", "href": "${baseURL}/${fileId}"}}`;
-  this.redis.publish('/user/' + this.state.user, acceptedEvent);
+  this.redis.publish('/user/' + user.id, acceptedEvent);
   this.statsd.incr('file.upload.accepted', 1);
 
   const uploadPromise = new Promise((resolve, reject) => {
@@ -118,7 +118,7 @@ export function* post(next) {
 
   upload.on('data', (data) => {
     receivedSize += data.length;
-    if (receivedSize > this.state.usermax_filesize) {
+    if (receivedSize > user.max_filesize) {
       fs.unlink(path.join(storePath, key));
       this.throw(413, '{"error": {"message": "The file you tried to upload is too large.", "code": 601}}');
     }
@@ -127,7 +127,7 @@ export function* post(next) {
     if (percentComplete > lastPercent && lastTick < Date.now() - 1000) {
       const progressEvent = `{"type": "file-progress", "data": {"id": "${fileId}", "complete": ${percentComplete}}}`;
       this.redis.publish('/file/' + fileId, progressEvent);
-      this.redis.publish('/user/' + this.state.user, progressEvent);
+      this.redis.publish('/user/' + user.id, progressEvent);
       lastTick = Date.now();
     }
     lastPercent = percentComplete;
@@ -138,12 +138,12 @@ export function* post(next) {
   // Fire final upload progress event so users know it's now processing
   const completeEvent = `{"type": "file-progress", "data": {"id": "${fileId}", "complete": 100}}`;
   this.redis.publish('/file/' + fileId, completeEvent);
-  this.redis.publish('/user/' + this.state.user, completeEvent);
+  this.redis.publish('/user/' + user.id, completeEvent);
   this.statsd.incr('file.upload.complete', 1);
 
   const dbFile = {
     _id: fileId,
-    owner: this.state.user,
+    owner: user.id,
     ip: remoteIp,
     'system_name': fileId,
     'file_name': upload.filename,
@@ -180,7 +180,7 @@ export function* post(next) {
   // Fire upload complete event
   const addedEvent = `{"type": "file-added", "data": ${JSON.stringify(formattedFile)}}`;
   this.redis.publish('/file/' + fileId, addedEvent);
-  this.redis.publish('/user/' + this.state.user, addedEvent);
+  this.redis.publish('/user/' + user.id, addedEvent);
   this.status = 201;
   this.body = formattedFile;
 

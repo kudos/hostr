@@ -1,13 +1,19 @@
 import { combineReducers } from 'redux';
-import { UPLOAD_FILE, ADD_FILE, DELETE_FILE, SET_USER, LOGOUT_USER, SET_FILE, SET_FILES, SET_TOKEN } from './actions.js';
+import { UPLOAD_FILE, ADD_FILE, DELETE_FILE, SET_USER, LOGOUT_USER, SET_FILE, SET_FILES, SET_TOKEN, SET_UPLOAD_FILE_PROGRESS, REMOVE_UPLOAD_FILE } from './actions.js';
 
 function uploads(state = [], action) {
   switch (action.type) {
   case UPLOAD_FILE:
     return [
+      action.file,
       ...state,
+    ];
+  case SET_UPLOAD_FILE_PROGRESS:
+    return [
       action.file,
     ];
+  case REMOVE_UPLOAD_FILE:
+    return [];
   default:
     return state;
   }
@@ -17,8 +23,8 @@ function files(state = [], action) {
   switch (action.type) {
   case ADD_FILE:
     return [
-      ...state,
       action.file,
+      ...state,
     ];
   case DELETE_FILE:
     return [

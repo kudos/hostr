@@ -29,3 +29,11 @@ export function createUser(email, password, terms) {
   .send({email: email, password: password, terms: terms})
   .then();
 }
+
+export function uploadFile(file, progress) {
+  return request.post('/api/file')
+  .set('authorization', `Bearer ${cookies().get('token')}`)
+  .on('progress', progress)
+  .attach('file', file, file.name)
+  .then();
+}

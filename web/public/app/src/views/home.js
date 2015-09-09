@@ -2,6 +2,10 @@ import React from 'react';
 import { State, Link } from 'react-router';
 import { connect } from 'react-redux';
 import cookies from 'cookie-dough';
+import Dropzone from 'react-dropzone';
+import co from 'co';
+import { addFile, uploadFile, setUploadFileProgress, removeUploadFile } from '../actions';
+import * as api from '../lib/api';
 
 class Home extends React.Component {
 
@@ -36,8 +40,19 @@ class File extends React.Component {
   render() {
     return (
       <div>
-        <img src={this.props.direct['150x']} />
+        <img src={this.props.direct['150x']} width='150' />
         <Link to='file' params={{id: this.props.id}}>{this.props.name}</Link>
+      </div>
+    );
+  }
+}
+
+class Upload extends React.Component {
+  render() {
+    return (
+      <div>
+        <img src={this.props.preview} width='150' />
+      {this.props.name} {this.props.percent}%
       </div>
     );
   }
@@ -50,15 +65,41 @@ const Files = React.createClass({
     cookies().remove('token');
     location.reload();
   },
+  onDrop(files) {
+    const upload = files[0];
+    upload.percent = 0;
+    upload.loaded = 0;
+    co(function* wrap() {
+      this.props.dispatch(uploadFile(upload));
+      try {
+        const response = yield api.uploadFile(upload, (evt) => {
+          upload.percent = evt.percent;
+          upload.loaded = evt.loaded;
+          this.props.dispatch(setUploadFileProgress(upload));
+        });
+        this.props.dispatch(removeUploadFile(0));
+        this.props.dispatch(addFile(response.body));
+      } catch(e) {
+        console.log(e);
+      }
+    }.bind(this));
+  },
   render() {
     return (
       <div>
+        <Dropzone ref="dropzone" onDrop={this.onDrop} disableClick={true} multiple={false} className='dropzone' activeClassName='dropzone-over'>
         {this.props.user.email} <a href='/logout' onClick={this.logout}>Logout</a>
+        <ul>
+        {this.props.uploads.map((item, i) => {
+          return (<Upload {...item} key={i} />);
+        })}
+        </ul>
         <ul>
         {this.props.files.map((item, i) => {
           return (<File {...item} key={i} />);
         })}
         </ul>
+        </Dropzone>
       </div>
     );
   },
@@ -80,6 +121,7 @@ function select(state) {
     user: state.user,
     token: state.token,
     files: state.files,
+    uploads: state.uploads,
   };
 }
 
