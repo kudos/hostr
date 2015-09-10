@@ -10,7 +10,7 @@
   },
   "scripts": {
     "build": "npm run build-js && npm run build-sass",
-    "build-js": "babel -D -m system -d web/public/app/build web/public/app/src && jspm bundle app web/public/app/build/build.js --minify",
+    "build-js": "babel -D -m system -d web/public/app/build web/public/app/src && jspm bundle app web/public/app/build.js --minify",
     "build-sass": "node-sass --include-path web/public/app/jspm_packages/github/twbs/bootstrap@4.0.0-alpha/scss/ web/public/app/src/scss/style.scss web/public/app/build/css/style.css",
     "cover": "istanbul cover _mocha -- -r babel/register test/**/*.spec.js",
     "init": "node -r babel/register -e \"require('./lib/storage')();\"",
