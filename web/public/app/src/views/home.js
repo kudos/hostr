@@ -2,7 +2,7 @@ import React from 'react';
 import { State, Link } from 'react-router';
 import { connect } from 'react-redux';
 import cookies from 'cookie-dough';
-import Dropzone from 'react-dropzone';
+import Dropzone from '../lib/react-dropzone';
 import co from 'co';
 import { addFile, uploadFile, setUploadFileProgress, removeUploadFile } from '../actions';
 import * as api from '../lib/api';
@@ -38,9 +38,13 @@ class Home extends React.Component {
 
 class File extends React.Component {
   render() {
+    let thumbnail;
+    if (this.props.direct) {
+      thumbnail = <img src={this.props.direct['150x']} width='150' />;
+    }
     return (
       <div>
-        <img src={this.props.direct['150x']} width='150' />
+        {thumbnail}
         <Link to='file' params={{id: this.props.id}}>{this.props.name}</Link>
       </div>
     );
@@ -49,10 +53,14 @@ class File extends React.Component {
 
 class Upload extends React.Component {
   render() {
+    let thumbnail;
+    if (this.props.thumbnail) {
+      thumbnail = <img src={this.props.thumbnail} width='150' />;
+    }
     return (
       <div>
-        <img src={this.props.preview} width='150' />
-      {this.props.name} {this.props.percent}%
+        {thumbnail}
+        {this.props.name} {this.props.percent}%
       </div>
     );
   }
@@ -65,30 +73,32 @@ const Files = React.createClass({
     cookies().remove('token');
     location.reload();
   },
-  onDrop(files) {
-    const upload = files[0];
-    upload.percent = 0;
-    upload.loaded = 0;
+  onDrop(file) {
     co(function* wrap() {
-      this.props.dispatch(uploadFile(upload));
+      this.props.dispatch(uploadFile(file));
       try {
-        const response = yield api.uploadFile(upload, (evt) => {
-          upload.percent = evt.percent;
-          upload.loaded = evt.loaded;
-          this.props.dispatch(setUploadFileProgress(upload));
+        const response = yield api.uploadFile(file, (evt) => {
+          file.percent = evt.percent;
+          file.loaded = evt.loaded;
+          this.props.dispatch(setUploadFileProgress(file));
         });
         this.props.dispatch(removeUploadFile(0));
         this.props.dispatch(addFile(response.body));
       } catch(e) {
-        console.log(e);
+        console.error(e);
       }
     }.bind(this));
   },
+  onSelectFile() {
+    this.refs.dropzone.open();
+  },
   render() {
     return (
-      <div>
-        <Dropzone ref="dropzone" onDrop={this.onDrop} disableClick={true} multiple={false} className='dropzone' activeClassName='dropzone-over'>
+      <Dropzone ref="dropzone" onDrop={this.onDrop} disableClick={true} multiple={false} className='dropzone' activeClassName='dropzone-over'>
         {this.props.user.email} <a href='/logout' onClick={this.logout}>Logout</a>
+        <button type="button" onClick={this.onSelectFile} className='btn'>
+          Upload File
+        </button>
         <ul>
         {this.props.uploads.map((item, i) => {
           return (<Upload {...item} key={i} />);
@@ -99,8 +109,7 @@ const Files = React.createClass({
           return (<File {...item} key={i} />);
         })}
         </ul>
-        </Dropzone>
-      </div>
+      </Dropzone>
     );
   },
 });

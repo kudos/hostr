@@ -21,7 +21,7 @@ export function* main() {
         return;
       }
     } catch (e) {
-      console.log(e);
+      console.error(e);
     }
   }
   if (this.query['app-token']) {

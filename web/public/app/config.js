@@ -16,17 +16,17 @@ System.config({
   },
 
   map: {
-    "babel": "npm:babel-core@5.8.23",
+    "attr-accept": "npm:attr-accept@1.0.1",
+    "babel": "npm:babel-core@5.8.24",
     "babel-runtime": "npm:babel-runtime@5.8.20",
     "bootstrap": "github:twbs/bootstrap@4.0.0-alpha",
     "co": "npm:co@4.6.0",
     "cookie-dough": "npm:cookie-dough@0.0.6",
-    "core-js": "npm:core-js@1.1.3",
+    "core-js": "npm:core-js@1.1.4",
     "immutable": "npm:immutable@3.7.5",
     "react": "npm:react@0.13.3",
-    "react-dropzone": "npm:react-dropzone@2.0.1",
     "react-google-analytics": "npm:react-google-analytics@0.2.0",
-    "react-redux": "npm:react-redux@2.1.0",
+    "react-redux": "npm:react-redux@2.1.1",
     "react-router": "npm:react-router@0.13.3",
     "redux": "npm:redux@2.0.0",
     "redux-devtools": "npm:redux-devtools@2.1.0",
@@ -139,7 +139,7 @@ System.config({
     "npm:babel-runtime@5.8.20": {
       "process": "github:jspm/nodelibs-process@0.1.1"
     },
-    "npm:bluebird@2.9.34": {
+    "npm:bluebird@2.10.0": {
       "process": "github:jspm/nodelibs-process@0.1.1"
     },
     "npm:browserify-aes@1.0.3": {
@@ -159,7 +159,7 @@ System.config({
       "crypto": "github:jspm/nodelibs-crypto@0.1.0",
       "randombytes": "npm:randombytes@2.0.1"
     },
-    "npm:browserify-sign@3.0.3": {
+    "npm:browserify-sign@3.0.8": {
       "bn.js": "npm:bn.js@2.2.0",
       "browserify-rsa": "npm:browserify-rsa@2.0.1",
       "buffer": "github:jspm/nodelibs-buffer@0.1.0",
@@ -200,7 +200,7 @@ System.config({
     "npm:cookie-dough@0.0.6": {
       "cookie": "npm:cookie@0.1.3"
     },
-    "npm:core-js@1.1.3": {
+    "npm:core-js@1.1.4": {
       "fs": "github:jspm/nodelibs-fs@0.1.2",
       "process": "github:jspm/nodelibs-process@0.1.1",
       "systemjs-json": "github:systemjs/plugin-json@0.1.0"
@@ -232,7 +232,7 @@ System.config({
     },
     "npm:crypto-browserify@3.9.14": {
       "browserify-aes": "npm:browserify-aes@1.0.3",
-      "browserify-sign": "npm:browserify-sign@3.0.3",
+      "browserify-sign": "npm:browserify-sign@3.0.8",
       "create-ecdh": "npm:create-ecdh@2.0.1",
       "create-hash": "npm:create-hash@1.1.1",
       "create-hmac": "npm:create-hmac@1.1.3",
@@ -281,10 +281,8 @@ System.config({
       "fs": "github:jspm/nodelibs-fs@0.1.2",
       "process": "github:jspm/nodelibs-process@0.1.1"
     },
-    "npm:fbjs@0.1.0-alpha.4": {
-      "core-js": "npm:core-js@1.1.3",
-      "fs": "github:jspm/nodelibs-fs@0.1.2",
-      "path": "github:jspm/nodelibs-path@0.1.0",
+    "npm:fbjs@0.2.1": {
+      "core-js": "npm:core-js@1.1.4",
       "process": "github:jspm/nodelibs-process@0.1.1",
       "promise": "npm:promise@7.0.4",
       "whatwg-fetch": "npm:whatwg-fetch@0.9.0"
@@ -385,7 +383,7 @@ System.config({
       "process": "github:jspm/nodelibs-process@0.1.1",
       "systemjs-json": "github:systemjs/plugin-json@0.1.0"
     },
-    "npm:process@0.11.1": {
+    "npm:process@0.11.2": {
       "assert": "github:jspm/nodelibs-assert@0.1.0"
     },
     "npm:promise@7.0.4": {
@@ -412,15 +410,16 @@ System.config({
     "npm:react-google-analytics@0.2.0": {
       "react": "npm:react@0.13.3"
     },
-    "npm:react-json-tree@0.1.3": {
-      "react": "npm:react@0.14.0-beta3",
+    "npm:react-json-tree@0.1.8": {
+      "babel-runtime": "npm:babel-runtime@5.8.20",
+      "react": "npm:react@0.14.0-rc1",
       "react-mixin": "npm:react-mixin@1.7.0"
     },
     "npm:react-mixin@1.7.0": {
       "object-assign": "npm:object-assign@2.1.1",
       "smart-mixin": "npm:smart-mixin@1.2.1"
     },
-    "npm:react-redux@2.1.0": {
+    "npm:react-redux@2.1.1": {
       "invariant": "npm:invariant@2.1.0",
       "process": "github:jspm/nodelibs-process@0.1.1",
       "redux": "npm:redux@2.0.0"
@@ -436,10 +435,9 @@ System.config({
       "envify": "npm:envify@3.4.0",
       "process": "github:jspm/nodelibs-process@0.1.1"
     },
-    "npm:react@0.14.0-beta3": {
-      "buffer": "github:jspm/nodelibs-buffer@0.1.0",
+    "npm:react@0.14.0-rc1": {
       "envify": "npm:envify@3.4.0",
-      "fbjs": "npm:fbjs@0.1.0-alpha.4",
+      "fbjs": "npm:fbjs@0.2.1",
       "process": "github:jspm/nodelibs-process@0.1.1"
     },
     "npm:readable-stream@1.0.27-1": {
@@ -453,9 +451,9 @@ System.config({
       "string_decoder": "npm:string_decoder@0.10.31"
     },
     "npm:redux-devtools@2.1.0": {
-      "react-json-tree": "npm:react-json-tree@0.1.3",
+      "react-json-tree": "npm:react-json-tree@0.1.8",
       "react-mixin": "npm:react-mixin@1.7.0",
-      "react-redux": "npm:react-redux@2.1.0",
+      "react-redux": "npm:react-redux@2.1.1",
       "redux": "npm:redux@2.0.0"
     },
     "npm:redux@2.0.0": {
@@ -486,7 +484,7 @@ System.config({
       "buffer": "github:jspm/nodelibs-buffer@0.1.0"
     },
     "npm:superagent-as-promised@3.2.0": {
-      "bluebird": "npm:bluebird@2.9.34"
+      "bluebird": "npm:bluebird@2.10.0"
     },
     "npm:superagent@1.3.0": {
       "buffer": "github:jspm/nodelibs-buffer@0.1.0",
@@ -516,7 +514,7 @@ System.config({
       "stream": "github:jspm/nodelibs-stream@0.1.0"
     },
     "npm:timers-browserify@1.4.1": {
-      "process": "npm:process@0.11.1"
+      "process": "npm:process@0.11.2"
     },
     "npm:url@0.10.3": {
       "assert": "github:jspm/nodelibs-assert@0.1.0",

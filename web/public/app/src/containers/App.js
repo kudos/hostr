@@ -24,7 +24,7 @@ class App extends React.Component {
           response = yield api.getFiles();
           this.props.dispatch(setFiles(response.body));
         } catch(error) {
-          console.log(error);
+          console.error(error);
           cookies().remove('token');
         }
       }.bind(this));
@@ -55,8 +55,6 @@ const filePropType = PropTypes.shape({
   type: PropTypes.string.isRequired,
   trashed: PropTypes.bool.isRequired,
   status: PropTypes.string.isRequired,
-  height: PropTypes.number.isRequired,
-  width: PropTypes.number.isRequired,
   direct: PropTypes.shape({
     '150x': PropTypes.string.isRequired,
     '970x': PropTypes.string.isRequired,
@@ -67,7 +65,6 @@ App.propTypes = {
   user: PropTypes.object,
   file: filePropType,
   files: PropTypes.arrayOf(filePropType),
-  uploads: PropTypes.arrayOf(filePropType),
 };
 
 function select(state) {
