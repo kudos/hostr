@@ -8,7 +8,7 @@ import * as api from '../lib/api';
 import { setUser, setFiles } from '../actions';
 import Head from '../views/head';
 import NotFound from '../views/notfound';
-import Home from '../views/home';
+import Index from '../views/index';
 import Signin from '../views/signin';
 import Signup from '../views/signup';
 import File from '../views/file';
@@ -82,7 +82,7 @@ export default connectedApp;
 
 const routes = [
   <Route name='home' handler={connectedApp} path='/'>
-    <DefaultRoute handler={Home} />
+    <DefaultRoute handler={Index} />
     <NotFoundRoute handler={NotFound} />
     <Route name='signin' path='/signin' handler={Signin} />
     <Route name='signup' path='/signup' handler={Signup} />

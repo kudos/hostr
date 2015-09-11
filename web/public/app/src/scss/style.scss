@@ -31,7 +31,11 @@ html, body {
 .error {
   @import 'error';
 }
-.file-view {
+.files {
+  @import 'files';
+}
+
+.image {
   width: 100%;
   text-align: center;
   header {

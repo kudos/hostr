@@ -1,0 +1,66 @@
+header {
+  margin: 20px 0;
+  button {
+    margin-right: 20px;
+  }
+}
+
+ul {
+  margin: 0;
+  padding: 0;
+}
+
+li {
+  list-style: none;
+}
+
+.item {
+  width: 150px;
+  float: left;
+  margin-right: 15px;
+  margin-bottom: 15px;
+
+  .thumbnail {
+    position: relative;
+    width: 150px;
+    height: 100px;
+    overflow: hidden;
+
+    img {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      height: 100%;
+      width: auto;
+      -webkit-transform: translate(-50%,-50%);
+          -ms-transform: translate(-50%,-50%);
+              transform: translate(-50%,-50%);
+    }
+
+    img.portrait {
+      width: 100%;
+      height: auto;
+    }
+  }
+
+  .icon {
+    width: 150px;
+    height: 100px;
+    text-align: center;
+
+    img {
+      height: 60px;
+      margin-top: 20px;
+    }
+  }
+
+  .name {
+    font-size: 0.9rem;
+    color: $brand-primary;
+    float: left;
+    width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}

@@ -19,7 +19,7 @@ export function getUser() {
 }
 
 export function getFiles() {
-  return request.get('/api/file')
+  return request.get('/api/file?perpage=0')
   .set('authorization', `Bearer ${cookies().get('token')}`)
   .then();
 }

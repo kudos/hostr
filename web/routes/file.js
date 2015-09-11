@@ -20,14 +20,21 @@ function userAgentCheck(userAgent) {
 }
 
 function hotlinkCheck(file, userAgent, referrer) {
-  return !userAgentCheck(userAgent) && !file.width && (!referrer || !(referrer.match(/^https:\/\/hostr.co/) || referrer.match(/^http:\/\/localhost:4040/)));
+  if (file.width) {
+    return true;
+  } else if (userAgentCheck(userAgent)) {
+    return true;
+  } else if (referrer && (referrer.match(/^https:\/\/hostr\.co/) || referrer.match(/^https?:\/\/localhost\.hostr\.co/))) {
+    return true;
+  }
+  return false;
 }
 
 export function* get() {
   const file = yield this.db.Files.findOne({_id: this.params.id, 'file_name': this.params.name, 'status': 'active'});
   this.assert(file, 404);
 
-  if (hotlinkCheck(file, this.headers['user-agent'], this.headers.referer)) {
+  if (!hotlinkCheck(file, this.headers['user-agent'], this.headers.referer)) {
     return this.redirect('/' + file._id);
   }
 

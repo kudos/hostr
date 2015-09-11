@@ -4,6 +4,43 @@ import { connect } from 'react-redux';
 import request from 'superagent';
 import { setFile } from '../actions';
 
+const Image = React.createClass({
+  render() {
+    return (
+      <div className='image'>
+        <header>
+          <Link to='home' className='pull-right'><img src='/images/dots-three-horizontal.svg' height='30rem' className='logo' /></Link>
+          <Link to='home' className='pull-left'><img src='/images/logo.png' height='30rem' className='logo' /></Link>
+        <h1 className='text-center'>{this.props.file.name}</h1>
+        </header>
+        <div className='row'>
+          <div className='col-lg-12'>
+            <img src={this.props.file.direct['970x']} />
+          </div>
+        </div>
+      </div>
+    );
+  },
+});
+
+const Download = React.createClass({
+  render() {
+    return (
+      <div className='download'>
+        <header>
+          <Link to='home' className='pull-left'><img src='/images/logo.png' height='30rem' className='logo' /></Link>
+        </header>
+        <div className='row'>
+          <div className='col-lg-12'>
+            <h1 className='text-center'>{this.props.file.name}</h1>
+          <a href={'/file/' + this.props.file.id + '/' + this.props.file.name + '?warning=on'} className='btn btn-primary btn-lg'>Download</a>
+          </div>
+        </div>
+      </div>
+    );
+  },
+});
+
 const File = React.createClass({
   mixins: [ State ],
   getInitialState() {
@@ -23,21 +60,11 @@ const File = React.createClass({
     if (!this.props.file || this.getParams().id !== this.props.file.id) {
       return (<div/>);
     }
-    const file = this.props.file;
-    return (
-        <div className='file-view'>
-          <header>
-            <Link to='home' className='pull-right'><img src='/images/dots-three-horizontal.svg' height='30rem' className='logo' /></Link>
-            <Link to='home' className='pull-left'><img src='/images/logo.png' height='30rem' className='logo' /></Link>
-            <h1 className='text-center'>{file.name}</h1>
-          </header>
-          <div className='row'>
-            <div className='col-lg-12'>
-              <img src={file.direct['970x']} />
-            </div>
-          </div>
-        </div>
-    );
+
+    if (this.props.file.direct) {
+      return <Image {...this.props} />;
+    }
+    return <Download {...this.props} />;
   },
 });
 

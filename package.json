@@ -20,7 +20,7 @@
     "watch": "parallelshell \"npm run watch-js\" \"npm run watch-sass\" \"npm run watch-server\"",
     "watch-js": "babel -Dw -m system -d web/public/app/build web/public/app/src",
     "watch-server": "nodemon -r babel/register -i web/public/app/build app.js",
-    "watch-sass": "node-sass  --include-path web/public/app/jspm_packages/github/twbs/bootstrap@4.0.0-alpha/scss/ -w web/public/app/src/scss/style.scss web/public/app/build/css/style.css"
+    "watch-sass": "npm run build-sass && node-sass  --include-path web/public/app/jspm_packages/github/twbs/bootstrap@4.0.0-alpha/scss/ -w web/public/app/src/scss/style.scss web/public/app/build/css/style.css"
   },
   "dependencies": {
     "attr-accept": "^1.0.1",
