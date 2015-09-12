@@ -1,5 +1,5 @@
 header {
-  margin: 20px 0;
+  margin: 40px 0;
   button {
     margin-right: 20px;
   }
@@ -15,16 +15,23 @@ li {
 }
 
 .item {
-  width: 150px;
-  float: left;
-  margin-right: 15px;
-  margin-bottom: 15px;
+  margin-bottom: 40px;
 
   .thumbnail {
+    border: 1px solid lighten($body-bg, 5%);
+    box-shadow: 0px 0px 0px 2px lighten($body-bg, 5%);
+    -webkit-transition: 0.15s all ease-in;
+    &:hover {
+      border: 1px solid lighten($body-bg, 15%);
+      box-shadow: 0px 0px 0px 2px lighten($body-bg, 15%);
+    }
+
     position: relative;
-    width: 150px;
-    height: 100px;
+    width: 100%;
+    padding: 30%;
+    box-sizing: border-box;
     overflow: hidden;
+    border-radius: 3px;
 
     img {
       position: absolute;
@@ -44,9 +51,19 @@ li {
   }
 
   .icon {
-    width: 150px;
+    border: 1px solid lighten($body-bg, 5%);
+    box-shadow: 0px 0px 0px 2px lighten($body-bg, 5%);
+    -webkit-transition: 0.15s all ease-in;
+    &:hover {
+      border: 1px solid lighten($body-bg, 15%);
+      box-shadow: 0px 0px 0px 2px lighten($body-bg, 15%);
+    }
+
+    width: 100%;
     height: 100px;
     text-align: center;
+    border-radius: 3px;
+    background: darken($body-bg, 5%);
 
     img {
       height: 60px;
@@ -54,13 +71,19 @@ li {
     }
   }
 
+
+
   .name {
     font-size: 0.9rem;
-    color: $brand-primary;
+    margin-top: 10px;
+    color: $text-muted;
     float: left;
-    width: 150px;
+    width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    a {
+      color: $text-muted;
+    }
   }
 }
