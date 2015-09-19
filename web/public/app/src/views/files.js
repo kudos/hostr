@@ -27,13 +27,13 @@ class Thumbnail extends React.Component {
 class Upload extends React.Component {
   render() {
     return (
-      <li className='item'>
+      <div className='col-xs-6 col-sm-4 col-md-3 col-lg-2 item'>
         <Thumbnail {...this.props} />
         <div style={{float: 'right'}}>{this.props.percent}</div>
         <div className='name'>
           {this.props.name}
         </div>
-      </li>
+      </div>
     );
   }
 }
@@ -97,11 +97,11 @@ export default React.createClass({
               </div>
             </header>
 
-            <ul>
+            <div className='row'>
             {this.props.uploads.map((item, i) => {
               return (<Upload {...item} key={i} />);
             })}
-            </ul>
+            </div>
 
             <div className='row'>
             {this.props.files.map((item, i) => {
