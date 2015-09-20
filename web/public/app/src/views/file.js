@@ -9,8 +9,8 @@ const Image = React.createClass({
     return (
       <div className='image'>
         <header>
-          <Link to='home' className='pull-right'><img src='/images/dots-three-horizontal.svg' height='30rem' className='logo' /></Link>
-          <Link to='home' className='pull-left'><img src='/images/logo.png' height='30rem' className='logo' /></Link>
+          <Link to='/' className='pull-right'><img src='/images/dots-three-horizontal.svg' height='30rem' className='logo' /></Link>
+          <Link to='/' className='pull-left'><img src='/images/logo.png' height='30rem' className='logo' /></Link>
         <h1 className='text-center'>{this.props.file.name}</h1>
         </header>
         <div className='row'>
@@ -28,12 +28,12 @@ const Download = React.createClass({
     return (
       <div className='download'>
         <header>
-          <Link to='home' className='pull-left'><img src='/images/logo.png' height='30rem' className='logo' /></Link>
+          <Link to='/' className='pull-left'><img src='/images/logo.png' height='30rem' className='logo' /></Link>
         </header>
         <div className='row'>
           <div className='col-lg-12'>
             <h1 className='text-center'>{this.props.file.name}</h1>
-          <a href={'/file/' + this.props.file.id + '/' + this.props.file.name + '?warning=on'} className='btn btn-primary btn-lg'>Download</a>
+            <a href={'/file/' + this.props.file.id + '/' + this.props.file.name + '?warning=on'} className='btn btn-primary btn-lg'>Download</a>
           </div>
         </div>
       </div>
@@ -44,20 +44,20 @@ const Download = React.createClass({
 const File = React.createClass({
   mixins: [ State ],
   getInitialState() {
-    if (this.props.file && this.getParams().id === this.props.file.id) {
+    if (this.props.file && this.props.params.id === this.props.file.id) {
       return {file: this.props.file};
     }
     return {file: {id: '', name: '', 'direct': {'970x': ''}}};
   },
   componentDidMount() {
     if (!this.state.file.id) {
-      request.get('/api/file/' + this.getParams().id).then((res) => {
+      request.get('/api/file/' + this.props.params.id).then((res) => {
         this.props.dispatch(setFile(res.body));
       });
     }
   },
   render() {
-    if (!this.props.file || this.getParams().id !== this.props.file.id) {
+    if (!this.props.file || this.props.params.id !== this.props.file.id) {
       return (<div/>);
     }
 

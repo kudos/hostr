@@ -121,6 +121,41 @@ export function* settings() {
   this.body = {};
 }
 
+export function* reset() {
+  this.assert(this.request.body, 400, '{"error": {"message": "Email is required.", "code": 612}}');
+  setTimeout(co.wrap(function* wrapped() {
+    const Users = this.db.Users;
+    const user = yield Users.findOne({'email': this.request.body.email});
+    this.assert(user, 400, '{"error": {"message": "Email not valid.", "code": 612}}');
+    const token = uuid.v4();
+    Reset.save({
+      '_id': user._id,
+      'token': token,
+      'created': Math.round(new Date().getTime() / 1000),
+    });
+    const html = yield render('email/inlined/forgot', {forgotUrl: process.env.WEB_BASE_URL + '/forgot/' + token});
+    const text = `It seems you've forgotten your password :(
+Visit  ${process.env.WEB_BASE_URL + '/forgot/' + token} to set a new one.
+`;
+    mandrill.messages.send({message: {
+      html: html,
+      text: text,
+      subject: 'Hostr Password Reset',
+      'from_email': 'jonathan@hostr.co',
+      'from_name': 'Jonathan from Hostr',
+      to: [{
+        email: user.email,
+        type: 'to',
+      }],
+      'tags': [
+        'password-reset',
+      ],
+    }});
+    this.status = 201;
+    this.body = '';
+  }.bind(this), 1000));
+}
+
 export function* events() {
   const pubsub = redis.createClient(redisUrl);
   pubsub.on('message', (channel, message) => {

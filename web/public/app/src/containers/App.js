@@ -1,5 +1,5 @@
 import React, { PropTypes } from 'react';
-import { Route, RouteHandler, DefaultRoute, NotFoundRoute } from 'react-router';
+import { Route, IndexRoute } from 'react-router';
 import { connect } from 'react-redux';
 import { Initializer as GAInitiailizer } from 'react-google-analytics';
 import co from 'co';
@@ -11,6 +11,7 @@ import NotFound from '../views/notfound';
 import Index from '../views/index';
 import Signin from '../views/signin';
 import Signup from '../views/signup';
+import Forgot from '../views/forgot';
 import File from '../views/file';
 
 class App extends React.Component {
@@ -23,7 +24,7 @@ class App extends React.Component {
           this.props.dispatch(setUser(response.body));
           response = yield api.getFiles();
           this.props.dispatch(setFiles(response.body));
-        } catch(error) {
+        } catch (error) {
           console.error(error);
           cookies().remove('token');
         }
@@ -35,7 +36,7 @@ class App extends React.Component {
       <html>
         <Head {...this.props} />
         <body>
-          <RouteHandler {...this.props} />
+          {this.props.children}
           <GAInitiailizer />
         </body>
       </html>
@@ -80,14 +81,15 @@ const connectedApp = connect(select)(App);
 
 export default connectedApp;
 
-const routes = [
-  <Route name='home' handler={connectedApp} path='/'>
-    <DefaultRoute handler={Index} />
-    <NotFoundRoute handler={NotFound} />
-    <Route name='signin' path='/signin' handler={Signin} />
-    <Route name='signup' path='/signup' handler={Signup} />
-    <Route name='file' path='/:id' handler={File} />
-  </Route>,
-];
+const routes =
+<Route path='/' component={connectedApp}>
+  <IndexRoute component={Index} />
+  <Route path='/signin' component={Signin} />
+  <Route path='/signup' component={Signup} />
+  <Route path='/forgot' component={Forgot} />
+  <Route path='/forgot/:id' component={Forgot} />
+  <Route path='/:id' component={File} />
+  <Route path='*' component={NotFound} />
+</Route>;
 
 export { routes };

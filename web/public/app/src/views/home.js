@@ -18,7 +18,7 @@ export default class Home extends React.Component {
               </div>
               <div className='col-lg-5 col-sm-12'>
                 <p className='cta'>
-                  <Link to='signup' className='btn btn-primary btn-lg'>Sign&nbsp;Up</Link>or&nbsp;<Link to='signin'>Sign&nbsp;In</Link>
+                  <Link to='/signup' className='btn btn-primary btn-lg'>Sign&nbsp;Up</Link>or&nbsp;<Link to='/signin'>Sign&nbsp;In</Link>
                 </p>
               </div>
             </div>

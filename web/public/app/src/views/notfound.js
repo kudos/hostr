@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router';
+import { IndexLink } from 'react-router';
 
 export default React.createClass({
   render() {
@@ -9,7 +9,7 @@ export default React.createClass({
           <div className='row'>
             <div className='col-md-12'>
               <div className='error-logo'>
-                <Link to='home'><img src='/images/logo.png' height='30rem' className='logo' /></Link>
+                <Link to='/'><img src='/images/logo.png' height='30rem' className='logo' /></Link>
               </div>
             </div>
           </div>
@@ -17,7 +17,7 @@ export default React.createClass({
             <div className='col-md-12'>
               <h2>404</h2>
               <h1>Sorry, it looks like the file you asked for is gone.</h1>
-              <Link to='home'>Take Me Home</Link>
+              <Link to='/'>Take Me Home</Link>
             </div>
           </div>
         </div>

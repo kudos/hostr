@@ -18,7 +18,7 @@ class Thumbnail extends React.Component {
     }
     return (
       <div className='icon'>
-        <img src='/images/file.png' />
+        <img src='/images/file.png'  />
       </div>
     );
   }
@@ -42,11 +42,11 @@ class File extends React.Component {
   render() {
     return (
       <div className='col-xs-6 col-sm-4 col-md-3 col-lg-2 item'>
-        <Link to='file' params={{id: this.props.id}} title={this.props.name}>
+        <Link to={`/${this.props.id}`} title={this.props.name}>
           <Thumbnail {...this.props} />
         </Link>
         <div className='name'>
-          <Link to='file' params={{id: this.props.id}} title={this.props.name}>{this.props.name}</Link>
+          <Link to={`/${this.props.id}`} title={this.props.name}>{this.props.name}</Link>
         </div>
       </div>
     );
@@ -61,8 +61,6 @@ export default React.createClass({
   },
   onDrop(file) {
     co(function* wrap() {
-      console.log(this);
-      console.log(this.props);
       this.props.dispatch(uploadFile(file));
       try {
         const response = yield api.uploadFile(file, (evt) => {
@@ -72,7 +70,7 @@ export default React.createClass({
         });
         this.props.dispatch(removeUploadFile(0));
         this.props.dispatch(addFile(response.body));
-      } catch(e) {
+      } catch (e) {
         console.error(e);
       }
     }.bind(this));
@@ -86,7 +84,7 @@ export default React.createClass({
         <div className='container'>
           <div className='files'>
             <header className='clearfix'>
-              <Link to='home' className='pull-left'>
+              <Link to='/' className='pull-left'>
                 <img src='/images/logo.png' height='30rem' className='logo' />
               </Link>
               <div className='pull-right'>

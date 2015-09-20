@@ -30,6 +30,12 @@ export function createUser(email, password, terms) {
   .then();
 }
 
+export function requestReset(email) {
+  return request.post('/api/user/reset')
+  .send({email: email})
+  .then();
+}
+
 export function uploadFile(file, progress) {
   return request.post('/api/file')
   .set('authorization', `Bearer ${cookies().get('token')}`)

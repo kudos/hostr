@@ -69,6 +69,7 @@ const jwtMiddleware = jwt({ secret: process.env.COOKIE_KEY});
 router.get('/user', jwtMiddleware, user.get);
 router.get('/user/transaction', jwtMiddleware, user.transaction);
 router.post('/user/settings', jwtMiddleware, user.settings);
+router.post('/user/reset', jwtMiddleware, user.reset);
 router.get('/file', jwtMiddleware, file.list);
 router.post('/file', jwtMiddleware, file.post);
 router.put('/file/:id', jwtMiddleware, file.put);

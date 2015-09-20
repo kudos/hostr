@@ -3,37 +3,31 @@ import { Link, Navigation } from 'react-router';
 import { connect } from 'react-redux';
 import * as api from '../lib/api';
 import co from 'co';
-import { setToken, setUser, setFiles } from '../actions';
+import { requestReset } from '../actions';
 
-const Signin = React.createClass({
+const Forgot = React.createClass({
   mixins: [ Navigation ],
   getInitialState() {
     return {
       submitable: false,
       error: {},
+      message: '',
     };
   },
   componentDidMount() {
     this.setState({
       submitable: true,
       error: this.state.error,
+      message: '',
     });
   },
   onSubmit(e) {
     e.preventDefault();
     const email = this.refs.email.value;
-    const password = this.refs.password.value;
-    const terms = this.refs.terms.checked;
     co(function* wrap() {
       try {
-        yield api.createUser(email, password, terms);
-        let response = yield api.getToken(email, password);
-        this.props.dispatch(setToken(response.body.token));
-        response = yield api.getUser();
-        this.props.dispatch(setUser(response.body));
-        response = yield api.getFiles();
-        this.props.dispatch(setFiles(response.body));
-        this.props.history.pushState(null, '/');
+        let response = yield api.requestReset(email);
+        this.setState({submitable: true, error: {}, message: 'A password reset email has been sent. Please ensure you check your spam folder.'});
       } catch (err) {
         if (err.response && err.response.body) {
           this.setState({error: err.response.body.error});
@@ -63,16 +57,7 @@ const Signin = React.createClass({
                     <label htmlFor='inputEmail'>Email</label> {(this.state.error ? this.state.error.message : '')}
                     <input ref='email' type='email' name='email' className='form-control form-control-lg' id='inputEmail' placeholder='Enter email' tabIndex='1' />
                   </div>
-                  <div className='form-group'>
-                    <label htmlFor='inputEmail'>Password &mdash; <a href='/forgot' className='forgot'>Forgot it?</a></label>
-                    <input ref='password' type='password' name='password' className='form-control form-control-lg' id='inputPassword' placeholder='Password' tabIndex='2' />
-                  </div>
-                  <div className='checkbox'>
-                    <label>
-                      <input ref='terms' type='checkbox' name='terms' tabIndex='3' />I agree to the Terms of Service.
-                    </label>
-                  </div>
-                  <button type='submit' className='btn btn-block btn-primary btn-lg' tabIndex='4' disabled={!this.state.submitable}>Sign up</button>
+                  <button type='submit' className='btn btn-block btn-primary btn-lg' tabIndex='4' disabled={!this.state.submitable}>Submit</button>
                 </form>
               </div>
             </div>
@@ -90,4 +75,4 @@ function select(state) {
   };
 }
 
-export default connect(select)(Signin);
+export default connect(select)(Forgot);

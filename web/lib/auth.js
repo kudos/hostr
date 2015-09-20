@@ -73,7 +73,6 @@ export function* activateUser(code) {
   const user = yield Users.findOne({activationCode: code});
   if (user) {
     Users.updateOne({_id: user._id}, {'$unset': {activationCode: ''}});
-    yield setupSession(this, user);
   } else {
     return false;
   }

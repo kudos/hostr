@@ -32,6 +32,7 @@ router.get('/pro', index.main);
 
 router.get('/signin', user.signupin);
 router.get('/signup', user.signupin);
+router.get('/logout', user.logout);
 router.get('/forgot', user.forgot);
 router.get('/forgot/:token', user.forgot);
 router.post('/forgot/:token', user.forgot);

@@ -42,11 +42,7 @@ export function* forgot() {
     this.redirect('/');
   } else if (token) {
     const tokenUser = yield validateResetToken.call(this, token);
-    if (!tokenUser) {
-      this.statsd.incr('auth.reset.fail', 1);
-      return yield this.render('forgot', {error: 'Invalid password reset token. It might be expired, or has already been used.', token: null, csrf: this.csrf});
-    }
-    return yield this.render('forgot', {token: token, csrf: this.csrf});
+    this.body = yield renderPage(routes, this.request.url);
   } else if (this.request.body.email) {
     this.assertCSRF(this.request.body);
     try {
@@ -58,14 +54,14 @@ export function* forgot() {
       debug(error);
     }
   } else {
-    yield this.render('forgot', {token: null, csrf: this.csrf});
+    this.body = yield renderPage(routes, this.request.url);
   }
 }
 
 
 export function* logout() {
   this.statsd.incr('auth.logout', 1);
-  this.cookies.set('token', {expires: new Date(1), path: '/'});
+  this.cookies.set('token', '', {expires: new Date(1), path: '/'});
   this.redirect('/');
 }
 
@@ -76,6 +72,6 @@ export function* activate() {
     this.statsd.incr('auth.activation', 1);
     this.redirect('/');
   } else {
-    this.throw(400);
+    this.throw(400, 'This activation token may have already been used, or is invalid.');
   }
 }
