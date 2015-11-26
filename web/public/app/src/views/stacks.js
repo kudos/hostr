@@ -1,11 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router';
 import cookies from 'cookie-dough';
+import * as api from '../lib/api';
 
 class Thumbnail extends React.Component {
   render() {
     if (this.props.direct || this.props.thumbnail) {
-      const imgUrl = this.props.thumbnail || this.props.direct['150x'];
+      const imgUrl = this.props.thumbnail || this.props.direct.thumb;
       return (
         <div className='thumbnail'>
           <img src={imgUrl} width='100%' className={(this.props.height / this.props.width > (3 / 5) ) ? 'portrait' : ''} />
@@ -20,15 +21,15 @@ class Thumbnail extends React.Component {
   }
 }
 
-class File extends React.Component {
+class Stack extends React.Component {
   render() {
     return (
       <div className='col-xs-6 col-sm-4 col-md-3 col-lg-2 item'>
-        <Link to={`/${this.props.stackId}/${this.props.id}`} title={this.props.name}>
+        <Link to={`/${this.props.id}`} title={this.props.id}>
           <Thumbnail {...this.props} />
         </Link>
         <div className='name'>
-          <Link to={`/${this.props.stackId}/${this.props.id}`} title={this.props.name}>{this.props.name}</Link>
+          <Link to={`/${this.props.id}`} title={this.props.id}>{this.props.id}</Link>
         </div>
       </div>
     );
@@ -61,8 +62,8 @@ export default React.createClass({
           </header>
 
           <div className='row'>
-          {this.props.files.map((item, idx) => {
-            return (<File {...item} key={idx} />);
+          {this.props.stacks.map((item, idx) => {
+            return (<Stack {...item} key={idx} />);
           })}
           </div>
         </div>

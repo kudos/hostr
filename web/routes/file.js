@@ -31,29 +31,42 @@ function hotlinkCheck(file, userAgent, referrer) {
 }
 
 export function* get() {
-  const file = yield this.db.Files.findOne({_id: this.params.id, 'file_name': this.params.name, 'status': 'active'});
-  this.assert(file, 404);
+  const file = yield this.rethink
+    .table('files')
+    .get(this.params.id);
+
+  this.assert(file && file.name === this.params.name && file.status === 'active', 404);
+
+  if (this.request.headers['if-none-match'] && file.md5) {
+    if (this.request.headers['if-none-match'].indexOf(file.md5) >= 0) {
+      this.status = 304;
+      return;
+    }
+  }
 
   if (!hotlinkCheck(file, this.headers['user-agent'], this.headers.referer)) {
-    return this.redirect('/' + file._id);
+    this.redirect('/' + file._id);
+    return;
   }
 
   if (!file.width && this.request.query.warning !== 'on') {
-    return this.redirect('/' + file._id);
+    this.redirect('/' + file._id);
+    return;
   }
 
   if (file.malware) {
     const alert = this.request.query.alert;
     if (!alert || !alert.match(/i want to download malware/i)) {
-      return this.redirect('/' + file._id);
+      this.redirect('/' + file._id);
+      return;
     }
   }
 
-  let localPath = path.join(storePath, file._id[0], file._id + '_' + file.file_name);
-  let remotePath = path.join(file._id[0], file._id + '_' + file.file_name);
+  let localPath = path.join(storePath, file.id[0], file.id + '_' + file.name);
+  let remotePath = path.join(file.id[0], file.id + '_' + file.name);
   if (this.params.size > 0) {
-    localPath = path.join(storePath, file._id[0], this.params.size, file._id + '_' + file.file_name);
-    remotePath = path.join(this.params.size, file._id + '_' + file.file_name);
+    localPath = path.join(storePath, file.id[0], this.params.size, file.id + '_' + file.name);
+    remotePath = path.join(this.params.size, file.id + '_' + file.name);
   }
 
   if (file.malware) {
@@ -65,27 +78,36 @@ export function* get() {
     if (this.params.size) {
       this.statsd.incr('file.view', 1);
     }
-    type = mime.lookup(file.file_name);
+    type = mime.lookup(file.name);
   } else {
     this.statsd.incr('file.download', 1);
   }
 
   if (userAgentCheck(this.headers['user-agent'])) {
-    this.set('Content-Disposition', 'attachment; filename=' + file.file_name);
+    this.set('Content-Disposition', 'attachment; filename=' + file.name);
   }
 
   this.set('Content-type', type);
   this.set('Expires', new Date(2020, 1).toISOString());
   this.set('Cache-control', 'max-age=2592000');
-
-  if (!this.params.size || (this.params.size && this.params.size > 150)) {
-    this.db.Files.updateOne(
-      {'_id': file._id},
-      {'$set': {'last_accessed': Math.ceil(Date.now() / 1000)}, '$inc': {downloads: 1}},
-      {'w': 0}
-    );
+  if (file.md5) {
+    if (this.params.size) {
+      this.set('Etag', file.md5 + '+' + this.params.size);
+    } else {
+      this.set('Etag', file.md5);
+    }
   }
 
+  if (!this.params.size || (this.params.size && this.params.size > 150)) {
+    yield this.rethink
+      .table('files')
+      .get(file.id)
+      .update({
+        accessedCount: this.rethink.row('accessedCount').add(1).default(0),
+        accessed: new Date(),
+      });
+  }
+  this.status = 200;
   this.body = yield hostrFileStream(localPath, remotePath);
 }
 
@@ -94,10 +116,12 @@ export function* resized() {
 }
 
 export function* landing() {
-  const file = yield this.db.Files.findOne({_id: this.params.id, status: 'active'});
-  this.assert(file, 404);
+  const file = yield this.rethink
+    .table('files')
+    .get(this.params.id);
+  this.assert(file && file.status === 'active', 404);
   if (userAgentCheck(this.headers['user-agent'])) {
-    this.params.name = file.file_name;
+    this.params.name = file.name;
     return yield get.call(this);
   }
 
@@ -105,8 +129,11 @@ export function* landing() {
   let files = [];
   let user = {};
   if (userId) {
-    user = normalisedUser.call(this, this.db.objectId(user));
-    files = yield this.db.Files.find({owner: this.db.objectId(user), status: 'active'}).toArray();
+    user = normalisedUser.call(this, user);
+    files = yield this.rethink
+      .table('files')
+      .getAll(this.state.user, {index: 'userId'})
+      .filter(this.rethink.row('status').ne('deleted'), {default: true});
   }
 
   const store = createStore(reducers, {file: formatFile(file), user, files: files.map(formatFile)});

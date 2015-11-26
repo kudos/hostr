@@ -1,10 +1,11 @@
-import Router from '../lib/koa-router-monkeypatched';
+import Router from 'koa-router';
 import stats from 'koa-statsd';
 import cors from 'kcors';
 import StatsD from 'statsy';
 import jwt from 'koa-jwt';
 import * as user from './routes/user';
 import * as file from './routes/file';
+import * as stack from './routes/stack';
 import debugname from 'debug';
 const debug = debugname('hostr-api');
 
@@ -70,10 +71,16 @@ router.get('/user', jwtMiddleware, user.get);
 router.get('/user/transaction', jwtMiddleware, user.transaction);
 router.post('/user/settings', jwtMiddleware, user.settings);
 router.post('/user/reset', jwtMiddleware, user.reset);
+router.post('/user/pro', jwtMiddleware, user.upgrade);
+router.delete('/user/pro', jwtMiddleware, user.downgrade);
 router.get('/file', jwtMiddleware, file.list);
 router.post('/file', jwtMiddleware, file.post);
 router.put('/file/:id', jwtMiddleware, file.put);
 router.delete('/file/:id', jwtMiddleware, file.del);
+router.post('/stack', jwtMiddleware, stack.post);
+router.get('/stack', jwtMiddleware, stack.list);
+router.get('/stack/:id', jwtMiddleware, stack.get);
+router.post('/stack/:id/file', jwtMiddleware, stack.postFile);
 
 export const ws = new Router();
 

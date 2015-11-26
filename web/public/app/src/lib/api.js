@@ -1,7 +1,7 @@
 import cookies from 'cookie-dough';
 import superagent from 'superagent';
-import superagentAsPromised from 'superagent-as-promised';
-const request = superagentAsPromised(superagent);
+import superagentAsPromised from 'superagent-promise';
+const request = superagentAsPromised(superagent, Promise);
 
 export function getToken(email, password) {
   return request.post('/api/user/token')
@@ -36,8 +36,24 @@ export function requestReset(email) {
   .then();
 }
 
-export function uploadFile(file, progress) {
-  return request.post('/api/file')
+export function createStack() {
+  return request.post('/api/stack')
+  .set('authorization', `Bearer ${cookies().get('token')}`)
+  .then();
+}
+
+export function getStack(id) {
+  return request.get(`/api/stack/${id}`)
+  .then();
+}
+
+export function getStacks() {
+  return request.get('/api/stack/')
+  .then();
+}
+
+export function uploadFile(file, stackId, progress) {
+  return request.post(`/api/stack/${stackId}/file`)
   .set('authorization', `Bearer ${cookies().get('token')}`)
   .on('progress', progress)
   .attach('file', file, file.name)

@@ -1,7 +1,6 @@
 import { createStore } from 'redux';
 import jwt from 'koa-jwt';
 
-import auth from '../lib/auth';
 import { formatFile } from '../../lib/format';
 import normalisedUser from '../../lib/normalised-user';
 import { renderPage } from '../lib/react-handler';
@@ -13,22 +12,22 @@ export function* main() {
   if (token) {
     try {
       if (jwt.verify(token, process.env.COOKIE_KEY)) {
-        const user = yield normalisedUser.call(this, this.db.objectId(jwt.decode(token)));
-        const files = yield this.db.Files.find({owner: this.db.objectId(user.id), status: 'active'}).toArray();
+        const user = yield normalisedUser.call(this, jwt.decode(token));
+        const files = yield this.rethink
+          .table('stacks')
+          .getAll(user.id, {index: 'userId'})
+          .filter(this.rethink.row('deleted').ne(false));
+        files.sort((first, second) => {
+          return first.created < second.created;
+        });
         const store = createStore(reducers, { user, files: files.map(formatFile)});
 
         this.body = yield renderPage(routes, this.request.url, store);
         return;
       }
-    } catch (e) {
-      console.error(e);
+    } catch (err) {
+      console.error(err);
     }
-  }
-  if (this.query['app-token']) {
-    const user = yield auth.fromToken(this, this.query['app-token']);
-    yield auth.setupSession(this, user);
-    this.redirect('/');
-    return;
   }
   this.body = yield renderPage(routes, this.request.url);
 }

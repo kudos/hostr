@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React from 'react';
 import accept from 'attr-accept';
 
@@ -87,15 +88,13 @@ var Dropzone = React.createClass({
     var max = this.props.multiple ? droppedFiles.length : 1;
     var files = [];
 
-    for (var i = 0; i < max; i++) {
-      var file = droppedFiles[i];
-      this.createThumbnail(file, (err, thumbnail) => {
-        file.thumbnail = thumbnail;
-        files.push(file);
-        if (this.props.onDrop) {
-          this.props.onDrop(file, e);
-        }
-      });
+    for (var file of droppedFiles) {
+      file.thumbnail = yield this.createThumbnail(file);
+      files.push(file);
+    }
+
+    if (this.props.onDrop) {
+      this.props.onDrop(files, e);
     }
 
     if (this.allFilesAccepted(files)) {
@@ -109,19 +108,23 @@ var Dropzone = React.createClass({
     }
   },
 
-  createThumbnail: function (file, callback) {
-    var fileReader;
-    fileReader = new FileReader;
-    fileReader.onload = () => {
-      if (file.type === "image/svg+xml") {
-        if (callback != null) {
-          callback(false, fileReader.result);
+  createThumbnail: function* (file) {
+    return new Promise((resolve, reject) => {
+      var fileReader;
+      fileReader = new FileReader;
+      fileReader.onload = () => {
+        if (file.type === "image/svg+xml") {
+          return resolve(fileReader.result);
         }
-        return;
-      }
-      return this.createThumbnailFromUrl(file, fileReader.result, callback);
-    };
-    return fileReader.readAsDataURL(file);
+        this.createThumbnailFromUrl(file, fileReader.result, (err, res) => {
+          if (err) {
+            return reject(err);
+          }
+          resolve(res);
+        });
+      };
+      return resolve(fileReader.readAsDataURL(file));
+    });
   },
 
   createThumbnailFromUrl: function(file, imageUrl, callback) {
@@ -197,7 +200,7 @@ var Dropzone = React.createClass({
   },
 
   open: function() {
-    var fileInput = React.findDOMNode(this.refs.fileInput);
+    var fileInput = this.refs.fileInput;
     fileInput.value = null;
     fileInput.click();
   },

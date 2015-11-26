@@ -8,7 +8,7 @@ import bodyparser from 'koa-bodyparser';
 import websockify from 'koa-websocket';
 import helmet from 'koa-helmet';
 import raven from 'raven';
-import mongo from './lib/mongo';
+import rethink from './lib/rethink';
 import * as redis from './lib/redis';
 import api from './api/app';
 import { ws } from './api/app';
@@ -50,13 +50,13 @@ app.use(function* errorMiddleware(next) {
   }
 });
 
-app.use(mongo());
+app.use(rethink());
 app.use(redis.middleware());
 app.use(logger());
 app.use(compress());
 app.use(bodyparser());
 
-app.use(favicon(path.join(__dirname, 'web/public/images/favicon.png')));
+app.use(favicon(path.join(__dirname, 'web/public/images/favicon-32x32.png')));
 app.use(serve(path.join(__dirname, 'web/public/'), {maxage: 31536000000}));
 
 app.use(api.prefix('/api').routes());

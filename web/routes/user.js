@@ -1,5 +1,4 @@
 import jwt from 'koa-jwt';
-import { setupSession, activateUser, sendResetToken, validateResetToken, updatePassword } from '../lib/auth';
 import { renderPage } from '../lib/react-handler';
 import { routes } from '../public/app/src/app';
 import debugname from 'debug';
@@ -12,8 +11,8 @@ export function* signupin() {
       if (yield jwt.verify(token, process.env.COOKIE_KEY)) {
         this.redirect('/');
       }
-    } catch (e) {
-      debug(e);
+    } catch (err) {
+      debug(err);
       this.body = yield renderPage(routes, this.request.url);
     }
   } else {
@@ -23,55 +22,29 @@ export function* signupin() {
 
 
 export function* forgot() {
-  const Reset = this.db.Reset;
-  const Users = this.db.Users;
-  const token = this.params.token;
-
-  if (this.request.body.password) {
-    if (this.request.body.password.length < 7) {
-      return yield this.render('forgot', {error: 'Password needs to be at least 7 characters long.', token: token, csrf: this.csrf});
-    }
-    this.assertCSRF(this.request.body);
-    const tokenUser = yield validateResetToken.call(this, token);
-    const userId = tokenUser._id;
-    yield updatePassword.call(this, userId, this.request.body.password);
-    yield Reset.deleteOne({_id: userId});
-    const user = yield Users.findOne({_id: userId});
-    yield setupSession.call(this, user);
-    this.statsd.incr('auth.reset.success', 1);
-    this.redirect('/');
-  } else if (token) {
-    const tokenUser = yield validateResetToken.call(this, token);
-    this.body = yield renderPage(routes, this.request.url);
-  } else if (this.request.body.email) {
-    this.assertCSRF(this.request.body);
-    try {
-      const email = this.request.body.email;
-      yield sendResetToken.call(this, email);
-      this.statsd.incr('auth.reset.request', 1);
-      return yield this.render('forgot', {message: 'We\'ve sent an email with a link to reset your password. Be sure to check your spam folder if you it doesn\'t appear within a few minutes', token: null, csrf: this.csrf});
-    } catch (error) {
-      debug(error);
-    }
-  } else {
-    this.body = yield renderPage(routes, this.request.url);
-  }
+  this.body = yield renderPage(routes, this.request.url);
 }
 
 
 export function* logout() {
-  this.statsd.incr('auth.logout', 1);
+  this.statsd.incr('user.logout', 1);
   this.cookies.set('token', '', {expires: new Date(1), path: '/'});
   this.redirect('/');
 }
 
 
 export function* activate() {
-  const code = this.params.code;
-  if (yield activateUser.call(this, code)) {
-    this.statsd.incr('auth.activation', 1);
-    this.redirect('/');
-  } else {
-    this.throw(400, 'This activation token may have already been used, or is invalid.');
-  }
+  const token = yield this.rethink
+    .table('activationTokens')
+    .get(this.params.token);
+
+  this.assert(token && token.userId, 400, 'This activation token is invalid.');
+
+  yield this.rethink
+    .table('users')
+    .get(token.userId)
+    .update({activated: true});
+
+  this.statsd.incr('user.activated', 1);
+  this.redirect('/');
 }

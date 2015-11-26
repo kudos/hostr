@@ -1,11 +1,11 @@
-import Router from '../lib/koa-router-monkeypatched';
+import Router from 'koa-router';
 import views from 'koa-views';
 import error from 'koa-error';
 import stats from 'koa-statsd';
 import StatsD from 'statsy';
 import * as index from './routes/index';
 import * as file from './routes/file';
-import * as pro from './routes/pro';
+import * as stack from './routes/stack';
 import * as user from './routes/user';
 
 const router = new Router();
@@ -37,7 +37,7 @@ router.get('/forgot', user.forgot);
 router.get('/forgot/:token', user.forgot);
 router.post('/forgot/:token', user.forgot);
 router.post('/forgot', user.forgot);
-router.get('/activate/:code', user.activate);
+router.get('/activate/:token', user.activate);
 
 router.get('/terms', index.staticPage);
 router.get('/privacy', index.staticPage);
@@ -45,10 +45,8 @@ router.get('/pricing', index.staticPage);
 router.get('/apps', index.staticPage);
 router.get('/stats', index.staticPage);
 
-router.post('/pro/create', pro.create);
-router.post('/pro/cancel', pro.cancel);
-
-router.get('/:id', file.landing);
+router.get('/:id', stack.get);
+router.get('/:stackId/:id', file.landing);
 router.get('/file/:id/:name', file.get);
 router.get('/file/:size/:id/:name', file.get);
 router.get('/files/:id/:name', file.get);

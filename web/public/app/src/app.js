@@ -10,15 +10,15 @@ import reducers from './reducers';
 
 if (typeof window !== 'undefined') {
   const store = createStore(reducers, window.STATE);
-  console.info('Time since page started rendering: ' + (Date.now() - timerStart) + 'ms'); // eslint-disable-line no-console
+  console.info('Time since page started rendering: ' + (Date.now() - timerStart) + 'ms'); // eslint-disable-line
   ReactDOM.render(
     <Provider store={store}>
       <Router history={createBrowserHistory()}>{routes}</Router>
     </Provider>,
     document
   );
-  ga('create', 'UA-66209-8', 'auto');
-  ga('send', 'pageview');
+  ga('create', 'UA-66209-8', 'auto'); // eslint-disable-line no-undef
+  ga('send', 'pageview'); // eslint-disable-line no-undef
 }
 
 export default { routes };

@@ -31,7 +31,7 @@ export function* renderPage(routes, url, store = createStore(reducers)) {
   </Provider>);
 
   const built = process.env.NODE_ENV === 'production' ? `<script src='/app/build/app-bundle.js'></script>` : `<script>
-    System.paths["views/*"] = "build/views/*";
+    System.paths["views/*"] = "build/src/*";
     System.paths["app"] = "build/app";
   </script>`;
   return '<!doctype html>\n' + content.replace('</body></html>', `<script>window.STATE = ${JSON.stringify(store.getState())}</script>

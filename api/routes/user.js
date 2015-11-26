@@ -5,28 +5,39 @@ import passwords from 'passwords';
 import jwt from 'koa-jwt';
 import { Mandrill } from 'mandrill-api/mandrill';
 const mandrill = new Mandrill(process.env.MANDRILL_KEY);
+import Stripe from 'stripe';
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 import normalisedUser from '../../lib/normalised-user.js';
 import views from 'co-views';
 // TODO: Move these templates
-const render = views(__dirname + '/../../web/views', { default: 'ejs'});
+const render = views(__dirname + '/../views', { default: 'ejs'});
 
 import debugname from 'debug';
 const debug = debugname('hostr-api:user');
 
 const redisUrl = process.env.REDIS_URL;
+const fromEmail = process.env.EMAIL_FROM;
+const fromName = process.env.EMAIL_NAME;
 
 export function* auth() {
   const email = this.request.body.email || this.request.body.username;
   const password = this.request.body.password;
   this.assert(email && password, 400, '{"error": {"message": "Email and password required.", "code": 606}}');
-  const user = yield this.db.Users.findOne({ email: email});
-  this.assert(yield passwords.match(password, user.salted_password), 400, '{"error": {"message": "Invalid email or password.", "code": 606}}');
-  this.body = {token: jwt.sign(user._id, process.env.COOKIE_KEY, {expiresInMinutes: 600})};
+  const users = yield this.rethink
+    .table('users')
+    .getAll(email, {index: 'email'})
+    .filter(this.rethink.row('status').ne('deleted'), {default: true});
+  this.assert(users[0], 400, '{"error": {"message": "Invalid email or password.", "code": 606}}');
+  const user = users[0];
+  this.assert(yield passwords.match(password, user.password), 400, '{"error": {"message": "Invalid email or password.", "code": 606}}');
+  this.body = {token: jwt.sign(user.id, process.env.COOKIE_KEY, {expiresInMinutes: 600})};
 }
 
+
 export function* get() {
-  this.body = yield normalisedUser.call(this, this.db.objectId(this.state.user));
+  this.body = yield normalisedUser.call(this, this.state.user);
 }
+
 
 export function* create() {
   this.assert(this.request.body.email, 400, '{"error": {"message": "Email is required.", "code": 606}}');
@@ -40,27 +51,44 @@ export function* create() {
   const email = this.request.body.email;
   const password = this.request.body.password;
 
-  const existingUser = yield this.db.Users.findOne({email: email, status: {'$ne': 'deleted'}});
-  this.assert(!existingUser, 400, '{"error": {"message": "An account already exists for this email.", "code": 606}}');
+  const existingUsers = yield this.rethink
+    .table('users')
+    .getAll(email, {index: 'email'})
+    .filter(this.rethink.row('status').ne('deleted'), {default: true})
+    .count();
+
+  this.assert(existingUsers === 0, 400, '{"error": {"message": "An account already exists for this email.", "code": 606}}');
 
   const cryptedPassword = yield passwords.crypt(password);
 
   const user = {
+    id: yield this.rethink.uuid(),
     email: email,
-    'salted_password': cryptedPassword,
-    joined: Math.round(new Date().getTime() / 1000),
-    'signup_ip': ip,
-    activationCode: uuid(),
+    password: cryptedPassword,
+    created: new Date(),
+    ip: ip,
+    activated: false,
     type: 'Free',
   };
 
-  const insert = yield this.db.Users.insertOne(user);
+  const activation = {
+    id: yield this.rethink.uuid(),
+    userId: user.id,
+  };
 
-  const html = yield render('email/inlined/activate', {activationUrl: process.env.WEB_BASE_URL + '/activate/' + user.activationCode});
+  yield this.rethink
+    .table('activationTokens')
+    .insert(activation);
+
+  yield this.rethink
+    .table('users')
+    .insert(user);
+
+  const html = yield render('email/inlined/activate', {activationUrl: process.env.WEB_BASE_URL + '/activate/' + activation.id});
   const text = `Thanks for signing up to Hostr!
 Please confirm your email address by clicking the link below.
 
-${process.env.WEB_BASE_URL + '/activate/' + user.activationCode}
+${process.env.WEB_BASE_URL + '/activate/' + activation.id}
 
 — Jonathan Cremin, Hostr Founder
 `;
@@ -79,18 +107,19 @@ ${process.env.WEB_BASE_URL + '/activate/' + user.activationCode}
     ],
   }});
   this.statsd.incr('api.user.create', 1);
-  this.body = yield normalisedUser.call(this, insert.insertedId);
+  this.body = yield normalisedUser.call(this, user.id);
 }
 
+
 export function* transaction() {
-  this.state.userid = this.db.objectId(this.state.userid);
-  const Transactions = this.db.Transactions;
-  const transactions = yield Transactions.find({'user_id': this.state.userid}).toArray();
+  const transactions = yield this.rethink
+    .table('transactions')
+    .getAll(this.state.userid, {'index': 'userId'});
 
   this.body = transactions.map((transaction) => { // eslint-disable-line no-shadow
-    const type = transaction.paypal ? 'paypal' : 'direct';
+    const type = transaction.paypal ? 'paypal' : 'stripe';
     return {
-      id: transaction._id,
+      id: transaction.id,
       amount: transaction.paypal ? transaction.amount : transaction.amount / 100,
       date: transaction.date,
       description: transaction.desc,
@@ -99,13 +128,17 @@ export function* transaction() {
   });
 }
 
+
 export function* settings() {
-  this.state.userid = this.db.objectId(this.state.userid);
   this.assert(this.request.body, 400, '{"error": {"message": "Current Password required to update account.", "code": 612}}');
   this.assert(this.request.body.current_password, 400, '{"error": {"message": "Current Password required to update account.", "code": 612}}');
-  const Users = this.db.Users;
-  const user = yield Users.findOne({'_id': this.state.userid});
-  this.assert(yield passwords.match(this.request.body.current_password, user.salted_password), 400, '{"error": {"message": "Incorrect password", "code": 606}}');
+  const users = yield this.rethink
+    .table('users')
+    .getAll(this.request.body.email, {index: 'email'})
+    .filter(this.rethink.row('status').ne('deleted'), {default: true});
+  this.assert(users[0], 400, '{"error": {"message": "Email not valid.", "code": 612}}');
+  const user = users[0];
+  this.assert(yield passwords.match(this.request.body.current_password, user.password), 400, '{"error": {"message": "Incorrect password", "code": 606}}');
   const data = {};
   if (this.request.body.email && this.request.body.email !== user.email) {
     data.email = this.request.body.email;
@@ -115,24 +148,34 @@ export function* settings() {
   }
   if (this.request.body.new_password) {
     this.assert(this.request.body.new_password.length >= 7, 400, '{"error": {"message": "Password must be 7 or more characters long.", "code": 606}}');
-    data.salted_password = yield passwords.hash(this.request.body.new_password); // eslint-disable-line camelcase
+    data.password = yield passwords.hash(this.request.body.new_password); // eslint-disable-line camelcase
   }
-  Users.updateOne({_id: user._id}, {'$set': data});
+  yield this.rethink
+    .table('users')
+    .get(user.id)
+    .update(data);
   this.body = {};
 }
 
+
 export function* reset() {
   this.assert(this.request.body, 400, '{"error": {"message": "Email is required.", "code": 612}}');
+  // timeout to limit abuse, hacky
   setTimeout(co.wrap(function* wrapped() {
-    const Users = this.db.Users;
-    const user = yield Users.findOne({'email': this.request.body.email});
-    this.assert(user, 400, '{"error": {"message": "Email not valid.", "code": 612}}');
+    const users = yield this.rethink
+      .table('users')
+      .getAll(this.request.body.email, {index: 'email'})
+      .filter(this.rethink.row('status').ne('deleted'), {default: true});
+    this.assert(users[0], 400, '{"error": {"message": "Email not valid.", "code": 612}}');
+    const user = users[0];
     const token = uuid.v4();
-    Reset.save({
-      '_id': user._id,
-      'token': token,
-      'created': Math.round(new Date().getTime() / 1000),
-    });
+    yield this.rethink
+      .table('resetTokens')
+      .insert({
+        'id': user.id,
+        'token': token,
+        'created': new Date(),
+      });
     const html = yield render('email/inlined/forgot', {forgotUrl: process.env.WEB_BASE_URL + '/forgot/' + token});
     const text = `It seems you've forgotten your password :(
 Visit  ${process.env.WEB_BASE_URL + '/forgot/' + token} to set a new one.
@@ -156,6 +199,85 @@ Visit  ${process.env.WEB_BASE_URL + '/forgot/' + token} to set a new one.
   }.bind(this), 1000));
 }
 
+
+export function* upgrade() {
+  const stripeToken = this.request.body.stripeToken;
+
+  const createCustomer = {
+    card: stripeToken.id,
+    plan: 'usd_monthly',
+    email: this.session.email,
+  };
+
+  const customer = yield stripe.customers.create(createCustomer);
+
+  this.assert(customer.subscription.status === 'active', 400, '{"error": {"message": "Error validating subscription. Please contact support.", "code": 613}}');
+
+  delete customer.subscriptions;
+
+  yield this.rethink
+    .table('users')
+    .get(this.state.user)
+    .update({stripeCustomer: customer, type: 'Pro'});
+
+  const transaction = { // eslint-disable-line no-shadow
+    'userId': this.session.user.id,
+    amount: customer.subscription.plan.amount,
+    desc: customer.subscription.plan.name,
+    date: new Date(customer.subscription.plan.created * 1000),
+  };
+
+  yield this.rethink
+    .table('transactions')
+    .insert(transaction);
+
+  this.body = {type: 'Pro'};
+
+  const html = yield render('email/inlined/pro');
+  const text = `Hey, thanks for upgrading to Hostr Pro!
+
+  You've signed up for Hostr Pro Monthly at $6/Month.
+
+  — Jonathan Cremin, Hostr Founder
+  `;
+
+  mandrill.messages.send({message: {
+    html: html,
+    text: text,
+    subject: 'Hostr Pro',
+    'from_email': fromEmail,
+    'from_name': fromName,
+    to: [{
+      email: this.session.user.email,
+      type: 'to',
+    }],
+    'tags': [
+      'pro-upgrade',
+    ],
+  }});
+}
+
+
+export function* downgrade() {
+  const user = yield this.rethink
+    .table('users')
+    .get(this.state.user);
+
+  const confirmation = yield stripe.customers.cancelSubscription(
+    user.stripe_customer.id,
+    user.stripe_customer.subscription.id,
+    { 'at_period_end': true }
+  );
+
+  yield this.rethink
+    .table('users')
+    .get(this.state.user)
+    .update({stripeCustomer: {subscription: confirmation}, type: 'Free'});
+
+  this.body = {type: 'Free'};
+}
+
+
 export function* events() {
   const pubsub = redis.createClient(redisUrl);
   pubsub.on('message', (channel, message) => {
@@ -166,7 +288,7 @@ export function* events() {
       let json;
       try {
         json = JSON.parse(message);
-      } catch(err) {
+      } catch (err) {
         debug('Invalid JSON for socket auth');
         this.websocket.send('Invalid authentication message. Bad JSON?');
         this.raven.captureError(err);
@@ -180,7 +302,7 @@ export function* events() {
         } else {
           this.websocket.send('Invalid authentication token.');
         }
-      } catch(err) {
+      } catch (err) {
         debug(err);
         this.raven.captureError(err);
       }

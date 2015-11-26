@@ -2,7 +2,6 @@ import path from 'path';
 import fs from 'fs';
 import crypto from 'crypto';
 import gm from 'gm';
-import redis from 'redis';
 import parse from 'co-busboy';
 import { upload as s3Upload } from '../../lib/s3';
 import { sniff } from '../../lib/type';
@@ -14,18 +13,14 @@ import normalisedUser from '../../lib/normalised-user.js';
 import debugname from 'debug';
 const debug = debugname('hostr-api:file');
 
-const redisUrl = process.env.REDIS_URL;
-
 const baseURL = process.env.WEB_BASE_URL;
-
 const storePath = process.env.UPLOAD_STORAGE_PATH;
 
 export function* post(next) {
   if (!this.request.is('multipart/*')) {
     return yield next;
   }
-  const Files = this.db.Files;
-  const user = yield normalisedUser.call(this, this.db.objectId(this.state.user));
+  const user = yield normalisedUser.call(this, this.state.user);
   const expectedSize = this.request.headers['content-length'];
   const tempGuid = this.request.headers['hostr-guid'];
   const remoteIp = this.request.headers['x-real-ip'] || this.req.connection.remoteAddress;
@@ -42,7 +37,11 @@ export function* post(next) {
   const upload = yield parse(this, {autoFields: true, headers: this.request.headers, limits: { files: 1}, highWaterMark: 1000000});
 
   // Check daily upload limit
-  const count = yield Files.count({owner: user.id, 'time_added': {'$gt': Math.ceil(Date.now() / 1000) - 86400}});
+  const count = yield this.rethink
+    .table('files')
+    .getAll(user.id, {index: 'userId'})
+    .filter(this.rethink.row('status').ne('created').gt(new Date()))
+    .count();
   const userLimit = user.daily_upload_allowance;
   const underLimit = (count < userLimit || userLimit === 'unlimited');
   if (!underLimit) {
@@ -58,7 +57,8 @@ export function* post(next) {
   // Clean filename for storage, keep original for display
   upload.originalName = upload.filename;
   upload.filename = upload.filename.replace(/[^a-zA-Z0-9\.\-\_\s]/g, '').replace(/\s+/g, '');
-  const fileId = yield hostrId(Files);
+  const stackId = this.params.id;
+  const fileId = yield hostrId.call(this);
 
   // Fire an event to let the frontend map the GUID it sent to the real ID. Allows immediate linking to the file
   const acceptedEvent = `{"type": "file-accepted", "data": {"id": "${fileId}", "guid": "${tempGuid}", "href": "${baseURL}/${fileId}"}}`;
@@ -142,40 +142,44 @@ export function* post(next) {
   this.statsd.incr('file.upload.complete', 1);
 
   const dbFile = {
-    _id: fileId,
-    owner: user.id,
+    id: fileId,
+    stackId,
+    userId: user.id,
     ip: remoteIp,
-    'system_name': fileId,
-    'file_name': upload.filename,
-    'original_name': upload.originalName,
-    'file_size': receivedSize,
-    'time_added': Math.ceil(Date.now() / 1000),
-    status: 'active',
-    'last_accessed': null,
+    name: upload.filename,
+    originalName: upload.originalName,
+    size: receivedSize,
+    accessedCount: 0,
     s3: false,
     type: sniff(upload.filename),
+    created: new Date(),
+    updated: null,
+    accessed: null,
+    deleted: null,
   };
 
-  yield Files.insertOne(dbFile);
+  yield this.rethink.table('files').insert(dbFile);
   yield uploadPromise;
   try {
     const dimensions = yield dimensionsPromise;
     dbFile.width = dimensions.width;
     dbFile.height = dimensions.height;
-  } catch (e) {
+  } catch (err) {
     debug('Not an image');
   }
 
   yield thumbsPromises;
 
-  dbFile.file_size = receivedSize;  // eslint-disable-line camelcase
+  dbFile.size = receivedSize;  // eslint-disable-line camelcase
   dbFile.status = 'active';
   dbFile.md5 = md5sum.digest('hex');
 
   const formattedFile = formatFile(dbFile);
 
-  delete dbFile._id;
-  yield Files.updateOne({_id: fileId}, {$set: dbFile});
+  yield this.rethink
+    .table('files')
+    .get(fileId)
+    .update(dbFile);
 
   // Fire upload complete event
   const addedEvent = `{"type": "file-added", "data": ${JSON.stringify(formattedFile)}}`;
@@ -190,7 +194,12 @@ export function* post(next) {
       debug('Malware Scan');
       const result = yield malware(dbFile);
       if (result) {
-        yield Files.updateOne({_id: fileId}, {'$set': {malware: positive, virustotal: result}});
+        dbFile.malware = result.positive;
+        dbFile.virustotal = result;
+        yield this.rethink
+          .table('files')
+          .get(fileId)
+          .update(dbFile);
         if (result.positive) {
           this.statsd.incr('file.malware', 1);
         }
@@ -203,47 +212,45 @@ export function* post(next) {
 
 
 export function* list() {
-  const Files = this.db.Files;
-  this.state.user = this.db.objectId(this.state.user);
+  let query = this.rethink
+    .table('files')
+    .getAll(this.state.user, {index: 'userId'});
 
-  let status = 'active';
   if (this.request.query.trashed) {
-    status = 'trashed';
+    query = query.filter(this.rethink.row('status').eq('trashed'), {default: true});
   } else if (this.request.query.all) {
-    status = {'$in': ['active', 'trashed']};
+    query = query.filter(this.rethink.row('status').ne('deleted'), {default: true});
   }
 
-  let limit = 20;
-  if (this.request.query.perpage === '0') {
-    limit = false;
-  } else if (this.request.query.perpage > 0) {
+  let limit = 0;
+  if (this.request.query.perpage > 0) {
     limit = parseInt(this.request.query.perpage / 1, 10);
+    query = query.limit(limit);
+  } else if (this.request.query.perpage !== '0') {
+    query = query.limit(20);
   }
 
-  let skip = 0;
   if (this.request.query.page) {
-    skip = parseInt(this.request.query.page - 1, 10) * limit;
+    query = query.skip(parseInt(this.request.query.page - 1, 10) * limit);
   }
 
-  const queryOptions = {
-    limit: limit, skip: skip, sort: [['time_added', 'desc']],
-    hint: {
-      owner: 1, status: 1, 'time_added': -1,
-    },
-  };
+  const userFiles = yield query;
 
-  const userFiles = yield Files.find({owner: this.state.user, status: status}, queryOptions).toArray();
+  userFiles.sort((first, second) => {
+    return first.created < second.created;
+  });
+
   this.statsd.incr('file.list', 1);
   this.body = userFiles.map(formatFile);
 }
 
 
 export function* get() {
-  const Files = this.db.Files;
-  const Users = this.db.Users;
-  const file = yield Files.findOne({_id: this.params.id, status: {'$in': ['active', 'uploading']}});
-  this.assert(file, 404, '{"error": {"message": "File not found", "code": 604}}');
-  const user = yield Users.findOne({_id: file.owner});
+  const file = yield this.rethink
+    .table('files')
+    .get(this.params.id);
+  this.assert(file && (file.status === 'active' || file.status === 'uploading'), 404, '{"error": {"message": "File not found", "code": 604}}');
+  const user = yield this.rethink.table('users').get(file.userId);
   this.assert(user && !user.banned, 404, '{"error": {"message": "File not found", "code": 604}}');
   this.statsd.incr('file.get', 1);
   this.body = formatFile(file);
@@ -252,36 +259,24 @@ export function* get() {
 
 export function* put() {
   if (this.request.body.trashed) {
-    const Files = this.db.Files;
-    this.state.user = this.db.objectId(this.state.user);
     const status = this.request.body.trashed ? 'trashed' : 'active';
-    yield Files.updateOne({'_id': this.params.id, owner: this.state.user}, {$set: {status: status}}, {w: 1});
+    const file = yield this.rethink.get(this.params.id);
+    if (file.userId === this.state.user) {
+      yield this.rethink.get(this.params.id).update({status: status});
+    }
   }
 }
 
 
 export function* del() {
-  this.state.user = this.db.objectId(this.state.user);
-  yield this.db.Files.updateOne({'_id': this.params.id, owner: this.db.objectId(this.state.user)}, {$set: {status: 'deleted'}}, {w: 1});
+  const file = yield this.rethink.get(this.params.id);
+  if (file.userId === this.state.user) {
+    yield this.rethink.get(this.params.id).update({status: 'deleted'});
+  }
   const event = {type: 'file-deleted', data: {'id': this.params.id}};
   yield this.redis.publish('/user/' + this.state.user, JSON.stringify(event));
-  yield this.redis.publish('/file/' + this.params.id, JSON.stringify(event));
+  yield this.redis.publish('/file/' + file.id, JSON.stringify(event));
   this.statsd.incr('file.delete', 1);
   this.status = 204;
   this.body = '';
-}
-
-
-export function* events() {
-  const pubsub = redis.createClient(redisUrl);
-  pubsub.on('ready', () => {
-    pubsub.subscribe(this.path);
-  });
-
-  pubsub.on('message', (channel, message) => {
-    this.websocket.send(message);
-  });
-  this.websocket.on('close', () => {
-    pubsub.quit();
-  });
 }

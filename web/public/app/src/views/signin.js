@@ -19,8 +19,8 @@ const Signin = React.createClass({
       error: this.state.error,
     });
   },
-  onSubmit(e) {
-    e.preventDefault();
+  onSubmit(evt) {
+    evt.preventDefault();
     const email = this.refs.email.value;
     const password = this.refs.password.value;
     co(function* wrap() {
@@ -50,7 +50,7 @@ const Signin = React.createClass({
             <div className='row vertical-center'>
               <div className='col-lg-5 col-lg-offset-1'>
                 <div className='name'>
-                  <h1><Link to="/"><img src='/images/logo.png' height='40rem' className='logo' /> hostr</Link></h1>
+                  <h1><Link to='/'><img src='/images/logo.png' height='40rem' className='logo' /> hostr</Link></h1>
                   <p className='tagline'>
                     Instant Sharing
                   </p>

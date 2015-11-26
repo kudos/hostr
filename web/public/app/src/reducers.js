@@ -1,23 +1,5 @@
 import { combineReducers } from 'redux';
-import { UPLOAD_FILE, ADD_FILE, DELETE_FILE, SET_USER, LOGOUT_USER, SET_FILE, SET_FILES, SET_TOKEN, SET_UPLOAD_FILE_PROGRESS, REMOVE_UPLOAD_FILE } from './actions.js';
-
-function uploads(state = [], action) {
-  switch (action.type) {
-  case UPLOAD_FILE:
-    return [
-      action.file,
-      ...state,
-    ];
-  case SET_UPLOAD_FILE_PROGRESS:
-    return [
-      action.file,
-    ];
-  case REMOVE_UPLOAD_FILE:
-    return [];
-  default:
-    return state;
-  }
-}
+import { SET_STACK, ADD_FILE, DELETE_FILE, SET_USER, LOGOUT_USER, SET_FILE, SET_FILES, SET_TOKEN } from './actions.js';
 
 function files(state = [], action) {
   switch (action.type) {
@@ -47,6 +29,15 @@ function file(state = null, action) {
   }
 }
 
+function stack(state = null, action) {
+  switch (action.type) {
+  case SET_STACK:
+    return action.stack;
+  default:
+    return state;
+  }
+}
+
 function user(state = null, action) {
   switch (action.type) {
   case SET_USER:
@@ -70,7 +61,7 @@ function token(state = null, action) {
 export default combineReducers({
   file,
   files,
-  uploads,
+  stack,
   user,
   token,
 });

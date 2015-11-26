@@ -1,14 +1,14 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import Home from './home';
-import Files from './files';
+import Stacks from './stacks';
 
 const Index = React.createClass({
   render() {
     if (!this.props.user) {
       return <Home {...this.props} />;
     }
-    return <Files {...this.props} />;
+    return <Stacks {...this.props} />;
   },
 });
 
@@ -17,7 +17,8 @@ function select(state) {
     user: state.user,
     token: state.token,
     files: state.files,
-    uploads: state.uploads,
+    stacks: state.stacks,
+    stack: state.stack,
   };
 }
 
