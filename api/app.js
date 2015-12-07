@@ -23,7 +23,7 @@ router.use(cors({
   credentials: true,
 }));
 
-router.use('/*', function* authMiddleware(next) {
+router.use('*', function* authMiddleware(next) {
   try {
     yield next;
     if (this.response.status === 404 && !this.response.body) {
