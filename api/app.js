@@ -35,7 +35,6 @@ router.use(function* authMiddleware(next) {
       this.throw(404);
     }
   } catch (err) {
-    debug(err);
     if (err.status === 401) {
       this.statsd.incr('auth.failure', 1);
       this.set('WWW-Authenticate', 'Basic');

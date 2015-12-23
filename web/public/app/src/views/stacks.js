@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router';
 import cookies from 'cookie-dough';
-import * as api from '../lib/api';
 
 class Thumbnail extends React.Component {
   render() {

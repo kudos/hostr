@@ -38,6 +38,16 @@ function stack(state = null, action) {
   }
 }
 
+
+function stacks(state = null, action) {
+  switch (action.type) {
+  case SET_STACK:
+    return action.stacks;
+  default:
+    return state;
+  }
+}
+
 function user(state = null, action) {
   switch (action.type) {
   case SET_USER:
@@ -62,6 +72,7 @@ export default combineReducers({
   file,
   files,
   stack,
+  stacks,
   user,
   token,
 });

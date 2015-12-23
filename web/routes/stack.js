@@ -27,11 +27,11 @@ export function* get() {
     user = normalisedUser.call(this, user);
     files = yield this.rethink
       .table('files')
-      .getAll(this.state.user, {index: 'userId'})
-      .filter(this.rethink.row('deleted').eq(null), {default: true});
+      .getAll(this.state.user, { index: 'userId' })
+      .filter(this.rethink.row('deleted').eq(null), { default: true });
   }
 
-  const store = createStore(reducers, {stack, user, files: files.map(formatFile)});
+  const store = createStore(reducers, {stack, user, files: files.map(formatFile), stacks: [] });
 
   this.body = yield renderPage(routes, this.request.url, store);
 

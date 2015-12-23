@@ -76,7 +76,7 @@ var Dropzone = React.createClass({
     }
   },
 
-  onDrop: function(e) {
+  onDrop: function* (e) {
     e.preventDefault();
 
     this.setState({

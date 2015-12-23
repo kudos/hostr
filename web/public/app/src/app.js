@@ -1,4 +1,4 @@
-import 'babel/polyfill';
+import 'babel-polyfill';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { createStore } from 'redux';
@@ -21,4 +21,4 @@ if (typeof window !== 'undefined') {
   ga('send', 'pageview'); // eslint-disable-line no-undef
 }
 
-export default { routes };
+export { routes };

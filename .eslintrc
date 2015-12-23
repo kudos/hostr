@@ -1,8 +1,12 @@
 {
   "extends": "airbnb/base",
+  "parserOptions": {
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
   "ecmaFeatures": {
-    "modules": true,
-    "jsx": true
+    "modules": true
   },
   "env": {
     "node": true,
@@ -11,6 +15,10 @@
   "rules": {
     "no-underscore-dangle": [0],
     "no-console": [0],
-    "jsx-quotes": [2, "prefer-single"]
-  }
+    "jsx-quotes": [2, "prefer-single"],
+    "react/react-in-jsx-scope": 1
+  },
+  "plugins": [
+    "react"
+  ]
 }
