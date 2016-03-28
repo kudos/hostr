@@ -126,3 +126,5 @@ app.run(['$location', '$rootScope', ($location, $rootScope) => {
     }
   });
 }]);
+
+angular.bootstrap(document, ['hostr']);
