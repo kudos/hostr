@@ -5,8 +5,8 @@
   "version": "0.0.0",
   "private": true,
   "engines": {
-    "node": "^5.1.1",
-    "npm": "^3.3.12"
+    "node": "^5.10.0",
+    "npm": "^3.8.5"
   },
   "scripts": {
     "build": "npm run build-js && npm run build-sass",

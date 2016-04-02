@@ -16,7 +16,7 @@ server {
 server {
   listen      [::]:{{ .NGINX_SSL_PORT }} ssl spdy;
   listen      {{ .NGINX_SSL_PORT }} ssl spdy;
-  server_name {{ .SSL_SERVER_NAME }};
+  server_name hostr.co;
   access_log  /var/log/nginx/{{ .APP }}-access.log;
   error_log   /var/log/nginx/{{ .APP }}-error.log;
 
@@ -57,7 +57,7 @@ server {
 server {
   listen      [::]:{{ .NGINX_SSL_PORT }} ssl spdy;
   listen      {{ .NGINX_SSL_PORT }} ssl spdy;
-  server_name api.{{ .SSL_SERVER_NAME }};
+  server_name api.hostr.co;
   access_log  /var/log/nginx/{{ .APP }}-api-access.log;
   error_log   /var/log/nginx/{{ .APP }}-api-error.log;
 
