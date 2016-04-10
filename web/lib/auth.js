@@ -171,7 +171,7 @@ export function* fromCookie(cookie) {
 
 export function* validateResetToken() {
   const Reset = this.db.Reset;
-  return yield Reset.findOne({token: this.params.id});
+  return yield Reset.findOne({token: this.params.token});
 }
 
 
