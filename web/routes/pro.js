@@ -3,8 +3,8 @@ import views from 'co-views';
 const render = views(path.join(__dirname, '/../views'), { default: 'ejs'});
 import Stripe from 'stripe';
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-import { Mandrill } from 'mandrill-api/mandrill';
-const mandrill = new Mandrill(process.env.MANDRILL_KEY);
+import sendgridInit from 'sendgrid';
+const sendgrid = sendgridInit(process.env.SENDGRID_KEY);
 
 const fromEmail = process.env.EMAIL_FROM;
 const fromName = process.env.EMAIL_NAME;
@@ -48,20 +48,16 @@ export function* create() {
   — Jonathan Cremin, Hostr Founder
   `;
 
-  mandrill.messages.send({message: {
+  const mail = new sendgrid.Email({
+    to: this.session.user.email,
+    from: fromEmail,
+    fromname: fromName,
     html: html,
     text: text,
     subject: 'Hostr Pro',
-    'from_email': fromEmail,
-    'from_name': fromName,
-    to: [{
-      email: this.session.user.email,
-      type: 'to',
-    }],
-    'tags': [
-      'pro-upgrade',
-    ],
-  }});
+  });
+  mail.addCategory('pro-upgrade');
+  sendgrid.send(mail);
 }
 
 export function* cancel() {

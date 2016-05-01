@@ -5,8 +5,8 @@ import views from 'co-views';
 const render = views(__dirname + '/../views', { default: 'ejs'});
 import debugname from 'debug';
 const debug = debugname('hostr-web:auth');
-import { Mandrill } from 'mandrill-api/mandrill';
-const mandrill = new Mandrill(process.env.MANDRILL_KEY);
+import sendgridInit from 'sendgrid';
+const sendgrid = sendgridInit(process.env.SENDGRID_KEY);
 
 export function* authenticate(email, password) {
   const Users = this.db.Users;
@@ -102,20 +102,16 @@ ${process.env.WEB_BASE_URL + '/activate/' + user.activationCode}
 
 — Jonathan Cremin, Hostr Founder
 `;
-  mandrill.messages.send({message: {
+  const mail = new sendgrid.Email({
+    to: user.email,
+    from: 'jonathan@hostr.co',
+    fromname: 'Jonathan from Hostr',
     html: html,
     text: text,
     subject: 'Welcome to Hostr',
-    'from_email': 'jonathan@hostr.co',
-    'from_name': 'Jonathan from Hostr',
-    to: [{
-      email: user.email,
-      type: 'to',
-    }],
-    'tags': [
-      'user-activation',
-    ],
-  }});
+  });
+  mail.addCategory('activate');
+  sendgrid.send(mail);
 }
 
 
@@ -134,20 +130,16 @@ export function* sendResetToken(email) {
     const text = `It seems you've forgotten your password :(
 Visit  ${process.env.WEB_BASE_URL + '/forgot/' + token} to set a new one.
 `;
-    mandrill.messages.send({message: {
+    const mail = new sendgrid.Email({
+      to: user.email,
+      from: 'jonathan@hostr.co',
+      fromname: 'Jonathan from Hostr',
       html: html,
       text: text,
       subject: 'Hostr Password Reset',
-      'from_email': 'jonathan@hostr.co',
-      'from_name': 'Jonathan from Hostr',
-      to: [{
-        email: user.email,
-        type: 'to',
-      }],
-      'tags': [
-        'password-reset',
-      ],
-    }});
+    });
+    mail.addCategory('password-reset');
+    sendgrid.send(mail);
   } else {
     throw new Error('There was an error looking up your email address.');
   }
