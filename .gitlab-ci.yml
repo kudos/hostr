@@ -1,0 +1,30 @@
+image: node:6
+services:
+  - mongo
+
+stages:
+  - seed
+  - test
+
+seed:
+  stage: seed
+  image: mongo
+  script:
+    - mongo --host mongo hostr test/fixtures/mongo-user.js test/fixtures/mongo-file.js
+  tags:
+    - docker
+
+test:
+  stage: test
+  before_script:
+    - npm install
+  script:
+    - npm test
+  tags:
+    - docker
+
+cache:
+  key: "$CI_BUILD_REF_NAME"
+  untracked: true
+  paths:
+  - node_modules
