@@ -1,5 +1,5 @@
 import assert from 'assert';
-import gm from 'gm';
+import sizeOf from 'image-size';
 import { agent } from 'supertest';
 import app from '../../app';
 
@@ -46,9 +46,7 @@ describe('hostr-web file', function() {
         .expect(200)
         .expect('Content-type', 'image/jpeg')
         .expect(function(response) {
-          gm(response.body).size((err, size) => {
-            assert(size.width === 150);
-          });
+          assert(sizeOf(response.body).width === 150);
         })
         .end(done);
     });
@@ -61,9 +59,7 @@ describe('hostr-web file', function() {
         .expect(200)
         .expect('Content-type', 'image/jpeg')
         .expect(function(response) {
-          gm(response.body).size((err, size) => {
-            assert(size.width === 970);
-          });
+          assert(sizeOf(response.body).width === 970);
         })
         .end(done);
     });

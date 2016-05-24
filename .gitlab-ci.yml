@@ -10,7 +10,7 @@ test:
   stage: test
   before_script:
     - npm install
-    - node test/fixtures/mongo-user.js test/fixtures/mongo-file.js
+    - npm run init
   script:
     - npm test
   tags:
@@ -25,4 +25,3 @@ cache:
   untracked: true
   paths:
     - node_modules
-    - web/public/jspm_packages
