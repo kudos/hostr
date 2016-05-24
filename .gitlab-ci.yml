@@ -9,7 +9,6 @@ test:
   stage: test
   before_script:
     - npm install
-    - jspm install
     - node test/fixtures/mongo-user.js test/fixtures/mongo-file.js
   script:
     - npm test
