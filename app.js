@@ -43,7 +43,7 @@ app.use(function* errorMiddleware(next) {
   try {
     yield next;
   } catch (err) {
-    if (!err.statusCode) {
+    if (!err.statusCode && this.raven) {
       this.raven.captureError(err);
     }
     throw err;
