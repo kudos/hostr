@@ -1,6 +1,7 @@
 image: node:6
 services:
   - mongo
+  - redis
 
 stages:
   - test
@@ -14,6 +15,10 @@ test:
     - npm test
   tags:
     - docker
+  variables:
+    MONGO_URL: "mongodb://mongo:27017/hostr"
+    REDIS_URL: "redis://redis:6379"
+    DEBUG: "hostr*"
 
 cache:
   key: "$CI_BUILD_REF_NAME"
