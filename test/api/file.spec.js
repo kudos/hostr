@@ -4,32 +4,31 @@ import app from '../../app';
 
 const request = agent(app.listen());
 
-describe('hostr-api file', function() {
-
+describe('hostr-api file', function file() {
   let id;
 
-  describe('when GET /file', function() {
-    it('should receive a list of file objects', function(done) {
+  describe('when GET /file', function getFile() {
+    it('should receive a list of file objects', function listFiles(done) {
       request
         .get('/api/file')
         .auth('test@hostr.co', 'test-password')
         .expect(200)
-        .expect(function(response) {
+        .expect((response) => {
           assert(response.body instanceof Array);
         })
         .end(done);
     });
   });
 
-  describe('when POSTing a file to /file', function() {
-    it('should receive a new file object', function(done) {
+  describe('when POSTing a file to /file', function postFile() {
+    it('should receive a new file object', function receiveFile(done) {
       this.timeout(30000);
       request
         .post('/api/file')
-        .attach('file', 'test/fixtures/utah-arches.jpg')
+        .attach('file', './test/fixtures/utah-arches.jpg')
         .auth('test@hostr.co', 'test-password')
         .expect(201)
-        .expect(function(response) {
+        .expect((response) => {
           assert(response.body.name === 'utah-arches.jpg');
           id = response.body.id;
         })
@@ -37,20 +36,20 @@ describe('hostr-api file', function() {
     });
   });
 
-  describe('when GET /file/:id', function() {
-    it('should receive the file object', function(done) {
+  describe('when GET /file/:id', function getFileById() {
+    it('should receive the file object', function receiveFile(done) {
       request
         .get('/api/file/' + id)
         .expect(200)
-        .expect(function(response) {
+        .expect((response) => {
           assert(response.body.name === 'utah-arches.jpg');
         })
         .end(done);
     });
   });
 
-  describe('when DELETE /file/:id', function() {
-    it('should delete the file object', function(done) {
+  describe('when DELETE /file/:id', function deleteFile() {
+    it('should delete the file object', function deleted(done) {
       request
         .delete('/api/file/' + id)
         .auth('test@hostr.co', 'test-password')
@@ -58,8 +57,8 @@ describe('hostr-api file', function() {
     });
   });
 
-  describe('when GET deleted /file/:id', function() {
-    it('should not receive the file object', function(done) {
+  describe('when GET deleted /file/:id', function getDeletedFileById() {
+    it('should not receive the file object', function receiveFile(done) {
       request
         .get('/api/file/' + id)
         .expect(404, done);
