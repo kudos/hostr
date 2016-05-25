@@ -5,8 +5,7 @@ import views from 'koa-views';
 import stats from 'koa-statsd';
 import * as redis from '../lib/redis';
 import StatsD from 'statsy';
-// waiting for PR to be merged, can remove swig dependency when done
-import errors from '../lib/koa-error';
+import errors from 'koa-error';
 import * as index from './routes/index';
 import * as file from './routes/file';
 import * as pro from './routes/pro';

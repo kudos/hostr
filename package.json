@@ -16,7 +16,7 @@
     "init": "node -r babel/register -e \"require('./lib/storage')();\"",
     "jspm": "jspm install",
     "start": "npm run build && node -r babel/register app.js",
-    "test": "npm run test-seed && mocha -r babel/register test/**/*.spec.js && mocha -r babel/register -r co-mocha test/unit/image-resize.spec.js",
+    "test": "npm run test-seed && mocha -r babel/register test/**/*.spec.js",
     "test-seed": "node test/fixtures/mongo-user.js && node test/fixtures/mongo-file.js",
     "watch": "parallelshell \"npm run watch-js\" \"npm run watch-sass\" \"npm run watch-server\"",
     "watch-js": "babel -Dw -m system -d web/public/build web/public/src",
@@ -24,7 +24,7 @@
     "watch-sass": "node-sass -w -r -o web/public/styles/ web/public/styles/"
   },
   "dependencies": {
-    "aws-sdk": "~2.1.46",
+    "aws-sdk": "~2.3.15",
     "babel": "~5.8.21",
     "basic-auth": "~1.0.3",
     "co": "~4.6.0",
@@ -43,6 +43,7 @@
     "koa-bodyparser": "~2.0.1",
     "koa-compress": "~1.0.8",
     "koa-csrf": "~2.3.0",
+    "koa-error": "^2.0.0",
     "koa-favicon": "~1.2.0",
     "koa-generic-session": "~1.9.0",
     "koa-helmet": "^0.2.0",
@@ -57,6 +58,7 @@
     "mime-types": "~2.1.5",
     "moment": "~2.10.6",
     "mongodb-promisified": "~1.0.3",
+    "mz": "^2.4.0",
     "node-fetch": "^1.3.2",
     "node-sass": "~3.6.0",
     "node-uuid": "~1.4.3",
@@ -65,13 +67,13 @@
     "redis": "~1.0.0",
     "s3-upload-stream": "~1.0.7",
     "sendgrid": "^2.0.0",
+    "ssh2-sftp-client": "^1.0.3",
     "statsy": "~0.2.0",
     "stripe": "~3.7.1",
     "swig": "~1.4.2"
   },
   "devDependencies": {
     "babel-eslint": "^4.0.10",
-    "co-mocha": "^1.1.2",
     "eslint": "~1.3.0",
     "eslint-config-airbnb": "0.0.8",
     "istanbul": "~0.3.18",
@@ -79,6 +81,7 @@
     "nodemon": "~1.4.1",
     "parallelshell": "~2.0.0",
     "supertest": "~1.1.0",
+    "supertest-koa-agent": "^0.2.1",
     "tmp": "~0.0.27"
   },
   "jspm": {

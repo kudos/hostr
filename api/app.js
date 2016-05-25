@@ -46,7 +46,9 @@ router.use('*', function* authMiddleware(next) {
     } else {
       if (!err.status) {
         debug(err);
-        this.raven.captureError(err);
+        if (this.raven) {
+          this.raven.captureError(err);
+        }
         throw err;
       } else {
         this.status = err.status;

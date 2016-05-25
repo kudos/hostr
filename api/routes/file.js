@@ -1,21 +1,17 @@
 import path from 'path';
-import fs from 'fs';
 import crypto from 'crypto';
-import gm from 'gm';
+import fs from 'mz/fs';
 import redis from 'redis';
-import parse from 'co-busboy';
-import { upload as s3Upload } from '../../lib/s3';
+
 import { sniff } from '../../lib/type';
-import hostrId from '../../lib/hostr-id';
 import malware from '../../lib/malware';
 import { formatFile } from '../../lib/format';
+import { accept, processImage } from '../../lib/upload';
 
 import debugname from 'debug';
 const debug = debugname('hostr-api:file');
 
 const redisUrl = process.env.REDIS_URL;
-
-const baseURL = process.env.WEB_BASE_URL;
 
 const storePath = process.env.UPLOAD_STORAGE_PATH;
 
@@ -26,9 +22,7 @@ export function* post(next) {
   const Files = this.db.Files;
 
   const expectedSize = this.request.headers['content-length'];
-  const tempGuid = this.request.headers['hostr-guid'];
   const remoteIp = this.request.headers['x-real-ip'] || this.req.connection.remoteAddress;
-
   const md5sum = crypto.createHash('md5');
 
   let lastPercent = 0;
@@ -36,74 +30,12 @@ export function* post(next) {
   let lastTick = 0;
   let receivedSize = 0;
 
-  // Receive upload
-  debug('Parsing upload');
-  const upload = yield parse(this, {autoFields: true, headers: this.request.headers, limits: { files: 1}, highWaterMark: 1000000});
+  const upload = yield accept.call(this);
 
-  // Check daily upload limit
-  const count = yield Files.count({owner: this.user.id, 'time_added': {'$gt': Math.ceil(Date.now() / 1000) - 86400}});
-  const userLimit = this.user.daily_upload_allowance;
-  const underLimit = (count < userLimit || userLimit === 'unlimited');
-  if (!underLimit) {
-    this.statsd.incr('file.overlimit', 1);
-  }
-  this.assert(underLimit, 400, `{
-    "error": {
-      "message": "Daily upload limits (${this.user.daily_upload_allowance}) exceeded.",
-      "code": 602
-    }
-  }`);
-
-  // Clean filename for storage, keep original for display
-  upload.originalName = upload.filename;
-  upload.filename = upload.filename.replace(/[^a-zA-Z0-9\.\-\_\s]/g, '').replace(/\s+/g, '');
-  const fileId = yield hostrId(Files);
-
-  // Fire an event to let the frontend map the GUID it sent to the real ID. Allows immediate linking to the file
-  const acceptedEvent = `{"type": "file-accepted", "data": {"id": "${fileId}", "guid": "${tempGuid}", "href": "${baseURL}/${fileId}"}}`;
-  this.redis.publish('/user/' + this.user.id, acceptedEvent);
-  this.statsd.incr('file.upload.accepted', 1);
-
-  const uploadPromise = new Promise((resolve, reject) => {
-    upload.on('error', () => {
-      this.statsd.incr('file.upload.error', 1);
-      reject();
-    });
-
-    upload.on('end', () => {
-      resolve();
-    });
-  });
-
-  const key = path.join(fileId[0], fileId + '_' + upload.filename);
-  const localStream = fs.createWriteStream(path.join(storePath, key));
+  upload.path = path.join(upload.id[0], upload.id + '_' + upload.filename);
+  const localStream = fs.createWriteStream(path.join(storePath, upload.path));
 
   upload.pipe(localStream);
-  upload.pipe(s3Upload(key));
-
-  const thumbsPromises = [
-    new Promise((resolve) => {
-      const small = gm(upload).resize(150, 150, '>').stream();
-      small.pipe(fs.createWriteStream(path.join(storePath, fileId[0], '150', fileId + '_' + upload.filename)));
-      small.pipe(s3Upload(path.join('150', fileId + '_' + upload.filename))).on('finish', resolve);
-    }),
-    new Promise((resolve) => {
-      const medium = gm(upload).resize(970, '>').stream();
-      medium.pipe(fs.createWriteStream(path.join(storePath, fileId[0], '970', fileId + '_' + upload.filename)));
-      medium.pipe(s3Upload(path.join('970', fileId + '_' + upload.filename))).on('finish', resolve);
-    }),
-  ];
-
-
-  const dimensionsPromise = new Promise((resolve, reject) => {
-    gm(upload).size((err, size) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(size);
-      }
-    });
-  });
 
   upload.on('data', (data) => {
     receivedSize += data.length;
@@ -114,8 +46,8 @@ export function* post(next) {
 
     percentComplete = Math.floor(receivedSize * 100 / expectedSize);
     if (percentComplete > lastPercent && lastTick < Date.now() - 1000) {
-      const progressEvent = `{"type": "file-progress", "data": {"id": "${fileId}", "complete": ${percentComplete}}}`;
-      this.redis.publish('/file/' + fileId, progressEvent);
+      const progressEvent = `{"type": "file-progress", "data": {"id": "${upload.id}", "complete": ${percentComplete}}}`;
+      this.redis.publish('/file/' + upload.id, progressEvent);
       this.redis.publish('/user/' + this.user.id, progressEvent);
       lastTick = Date.now();
     }
@@ -124,17 +56,10 @@ export function* post(next) {
     md5sum.update(data);
   });
 
-  // Fire final upload progress event so users know it's now processing
-  const completeEvent = `{"type": "file-progress", "data": {"id": "${fileId}", "complete": 100}}`;
-  this.redis.publish('/file/' + fileId, completeEvent);
-  this.redis.publish('/user/' + this.user.id, completeEvent);
-  this.statsd.incr('file.upload.complete', 1);
-
   const dbFile = {
-    _id: fileId,
     owner: this.user.id,
     ip: remoteIp,
-    'system_name': fileId,
+    'system_name': upload.id,
     'file_name': upload.filename,
     'original_name': upload.originalName,
     'file_size': receivedSize,
@@ -145,49 +70,33 @@ export function* post(next) {
     type: sniff(upload.filename),
   };
 
-  yield Files.insertOne(dbFile);
-  yield uploadPromise;
-  try {
-    const dimensions = yield dimensionsPromise;
-    dbFile.width = dimensions.width;
-    dbFile.height = dimensions.height;
-  } catch (e) {
-    debug('Not an image');
-  }
+  yield Files.insertOne({_id: upload.id, ...dbFile});
 
-  yield thumbsPromises;
+  yield upload.promise;
 
+  const completeEvent = `{"type": "file-progress", "data": {"id": "${upload.id}", "complete": 100}}`;
+  this.redis.publish('/file/' + upload.id, completeEvent);
+  this.redis.publish('/user/' + this.user.id, completeEvent);
+  this.statsd.incr('file.upload.complete', 1);
+
+  const size = yield processImage(upload);
+
+  dbFile.width = size.width;
+  dbFile.height = size.height;
   dbFile.file_size = receivedSize;  // eslint-disable-line camelcase
   dbFile.status = 'active';
   dbFile.md5 = md5sum.digest('hex');
 
-  const formattedFile = formatFile(dbFile);
+  const formattedFile = formatFile({_id: upload.id, ...dbFile});
 
-  delete dbFile._id;
-  yield Files.updateOne({_id: fileId}, {$set: dbFile});
+  yield Files.updateOne({_id: upload.id}, {$set: dbFile});
 
-  // Fire upload complete event
   const addedEvent = `{"type": "file-added", "data": ${JSON.stringify(formattedFile)}}`;
-  this.redis.publish('/file/' + fileId, addedEvent);
+  this.redis.publish('/file/' + upload.id, addedEvent);
   this.redis.publish('/user/' + this.user.id, addedEvent);
+
   this.status = 201;
   this.body = formattedFile;
-
-  if (process.env.VIRUSTOTAL_KEY) {
-    // Check in the background
-    process.nextTick(function* malwareScan() {
-      debug('Malware Scan');
-      const result = yield malware(dbFile);
-      if (result) {
-        yield Files.updateOne({_id: fileId}, {'$set': {malware: positive, virustotal: result}});
-        if (result.positive) {
-          this.statsd.incr('file.malware', 1);
-        }
-      }
-    });
-  } else {
-    debug('Skipping Malware Scan, VIRUSTOTAL env variable not found.');
-  }
 }
 
 
