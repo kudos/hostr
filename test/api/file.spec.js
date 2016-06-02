@@ -26,11 +26,11 @@ describe('hostr-api file', function file() {
       this.timeout(30000);
       request
         .post('/api/file')
-        .attach('file', path.join(__dirname, '..', 'fixtures', 'tall.jpg'))
+        .attach('file', path.join(__dirname, '..', 'fixtures', 'utah-arches.jpg'))
         .auth('test@hostr.co', 'test-password')
         .expect(201)
         .expect((response) => {
-          assert(response.body.name === 'tall.jpg');
+          assert(response.body.name === 'utah-arches.jpg');
           id = response.body.id;
         })
         .end(done);
@@ -43,7 +43,7 @@ describe('hostr-api file', function file() {
         .get('/api/file/' + id)
         .expect(200)
         .expect((response) => {
-          assert(response.body.name === 'tall.jpg');
+          assert(response.body.name === 'utah-arches.jpg');
         })
         .end(done);
     });
