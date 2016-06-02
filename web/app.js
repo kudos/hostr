@@ -3,9 +3,9 @@ import Router from 'koa-router';
 import csrf from 'koa-csrf';
 import views from 'koa-views';
 import stats from 'koa-statsd';
-import * as redis from '../lib/redis';
 import StatsD from 'statsy';
 import errors from 'koa-error';
+import * as redis from '../lib/redis';
 import * as index from './routes/index';
 import * as file from './routes/file';
 import * as pro from './routes/pro';
@@ -13,7 +13,10 @@ import * as user from './routes/user';
 
 const router = new Router();
 
-router.use(errors({template: path.join(__dirname, 'public', 'error.html')}));
+router.use(errors({
+  engine: 'ejs',
+  template: path.join(__dirname, 'public', 'error.html')
+}));
 
 const statsdOpts = {prefix: 'hostr-web', host: process.env.STATSD_HOST};
 router.use(stats(statsdOpts));
@@ -37,8 +40,8 @@ router.use(function* stateMiddleware(next) {
 
 router.use(csrf());
 
-router.use(views('views', {
-  default: 'ejs',
+router.use(views(path.join(__dirname, 'views'), {
+  extension: 'ejs'
 }));
 
 router.get('/', index.main);

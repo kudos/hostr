@@ -5,27 +5,32 @@
   "version": "0.0.0",
   "private": true,
   "engines": {
-    "node": "^6.0.0",
+    "node": "^6.2.0",
     "npm": "^3.8.5"
   },
   "scripts": {
     "build": "npm run build-js && npm run build-sass",
     "build-js": "babel -D -m system -d web/public/build -i web/public web/public/src",
     "build-sass": "node-sass -r -o web/public/styles/ web/public/styles/",
-    "cover": "istanbul cover _mocha -- -r babel/register test/**/*.spec.js",
-    "init": "node -r babel/register -e \"require('./lib/storage')();\"",
+    "cover": "istanbul cover _mocha -- -r babel-register test/**/*.spec.js",
+    "init": "babel-node -e \"require('./lib/storage').default();\"",
     "jspm": "jspm install",
-    "start": "npm run build && node -r babel/register app.js",
-    "test": "npm run test-seed && mocha -r babel/register test/**/*.spec.js",
+    "start": "npm run build && node -r babel-register app.js",
+    "test": "npm run test-seed && mocha -r babel-register test/**/*.spec.js",
     "test-seed": "node test/fixtures/mongo-user.js && node test/fixtures/mongo-file.js",
     "watch": "parallelshell \"npm run watch-js\" \"npm run watch-sass\" \"npm run watch-server\"",
     "watch-js": "babel -Dw -m system -d web/public/build web/public/src",
-    "watch-server": "nodemon -r babel/register app.js",
+    "watch-server": "nodemon -r babel-register app.js",
     "watch-sass": "node-sass -w -r -o web/public/styles/ web/public/styles/"
   },
   "dependencies": {
     "aws-sdk": "^2.3.16",
-    "babel": "~5.8.21",
+    "babel": "^6.5.2",
+    "babel-cli": "^6.9.0",
+    "babel-plugin-transform-es2015-destructuring": "^6.9.0",
+    "babel-plugin-transform-es2015-modules-commonjs": "^6.8.0",
+    "babel-plugin-transform-object-rest-spread": "^6.8.0",
+    "babel-register": "^6.9.0",
     "basic-auth": "~1.0.3",
     "co": "~4.6.0",
     "co-busboy": "~1.3.0",
@@ -73,9 +78,10 @@
     "swig": "~1.4.2"
   },
   "devDependencies": {
-    "babel-eslint": "^4.0.10",
-    "eslint": "~1.3.0",
-    "eslint-config-airbnb": "0.0.8",
+    "babel-eslint": "^6.0.4",
+    "eslint": "^2.11.1",
+    "eslint-config-airbnb": "^9.0.1",
+    "eslint-plugin-import": "^1.8.1",
     "istanbul": "^0.4.3",
     "mocha": "^2.5.3",
     "nodemon": "^1.9.2",
@@ -89,21 +95,21 @@
       "baseURL": "web/public"
     },
     "dependencies": {
-      "angular": "npm:angular@~1.4.3",
+      "angular": "npm:angular@^1.5.6",
       "angular-reconnecting-websocket": "github:adieu/angular-reconnecting-websocket@~0.1.1",
-      "angular-strap": "npm:angular-strap@~2.3.1",
-      "angular/resource": "npm:angular-resource@~1.4.3",
-      "angular/route": "npm:angular-route@~1.4.3",
-      "bootstrap-sass": "npm:bootstrap-sass@~3.3.5",
+      "angular/resource": "npm:angular-resource@^1.5.6",
+      "angular/route": "npm:angular-route@^1.5.6",
+      "angular-strap": "npm:angular-strap@^2.3.8",
+      "bootstrap-sass": "npm:bootstrap-sass@^3.3.6",
       "cferdinandi/smooth-scroll": "github:cferdinandi/smooth-scroll@~5.3.7",
       "dropzone": "npm:dropzone@~4.0.1",
-      "jquery": "npm:jquery@~2.1.4",
-      "zeroclipboard": "npm:zeroclipboard@~2.2.0"
+      "jquery": "npm:jquery@^2.2.4",
+      "zeroclipboard": "npm:zeroclipboard@^2.2.0"
     },
     "devDependencies": {
-      "babel": "npm:babel-core@^5.8.22",
-      "babel-runtime": "npm:babel-runtime@^5.8.20",
-      "core-js": "npm:core-js@^1.1.0"
+      "babel": "npm:babel-core@^5.8.24",
+      "babel-runtime": "npm:babel-runtime@^5.8.24",
+      "core-js": "npm:core-js@^1.1.4"
     }
   }
 }
