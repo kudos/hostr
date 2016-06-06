@@ -39,7 +39,7 @@ export function* get() {
   let remotePath = path.join(file._id[0], file._id + '_' + file.file_name);
   if (this.params.size > 0) {
     localPath = path.join(storePath, file._id[0], this.params.size, file._id + '_' + file.file_name);
-    remotePath = path.join(this.params.size, file._id + '_' + file.file_name);
+    remotePath = path.join(file._id[0], this.params.size, file._id + '_' + file.file_name);
   }
 
   if (file.malware) {

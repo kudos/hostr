@@ -16,9 +16,9 @@ System.config({
   map: {
     "angular": "npm:angular@1.5.6",
     "angular-reconnecting-websocket": "github:adieu/angular-reconnecting-websocket@0.1.1",
+    "angular-strap": "npm:angular-strap@2.3.8",
     "angular/resource": "npm:angular-resource@1.5.6",
     "angular/route": "npm:angular-route@1.5.6",
-    "angular-strap": "npm:angular-strap@2.3.8",
     "babel": "npm:babel-core@5.8.38",
     "babel-runtime": "npm:babel-runtime@5.8.38",
     "bootstrap-sass": "npm:bootstrap-sass@3.3.6",
