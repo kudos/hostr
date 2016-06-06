@@ -13,10 +13,11 @@
     "build-js": "babel -D -m system -d web/public/build -i web/public web/public/src",
     "build-sass": "node-sass -r -o web/public/styles/ web/public/styles/",
     "cover": "istanbul cover _mocha -- -r babel-register test/**/*.spec.js",
+    "heroku-postbuild": "jspm install && npm run build",
     "init": "babel-node -e \"require('./lib/storage').default();\"",
     "jspm": "jspm install",
     "lint": "eslint .",
-    "start": "npm run build && node -r babel-register app.js",
+    "start": "node -r babel-register app.js",
     "test": "npm run test-seed && mocha -r babel-register test/**/*.spec.js",
     "test-seed": "node test/fixtures/mongo-user.js && node test/fixtures/mongo-file.js",
     "watch": "parallelshell \"npm run watch-js\" \"npm run watch-sass\" \"npm run watch-server\"",
@@ -72,7 +73,6 @@
     "raven": "^0.11.0",
     "redis": "^2.6.1",
     "sendgrid": "^2.0.0",
-    "ssh2": "^0.5.0",
     "statsy": "~0.2.0",
     "stripe": "^4.7.0",
     "swig": "~1.4.2"
@@ -87,7 +87,6 @@
     "nodemon": "^1.9.2",
     "parallelshell": "~2.0.0",
     "supertest": "^1.2.0",
-    "supertest-koa-agent": "^0.2.1",
     "tmp": "~0.0.27"
   },
   "jspm": {
