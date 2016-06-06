@@ -15,10 +15,10 @@ const router = new Router();
 
 router.use(errors({
   engine: 'ejs',
-  template: path.join(__dirname, 'public', 'error.html')
+  template: path.join(__dirname, 'public', 'error.html'),
 }));
 
-const statsdOpts = {prefix: 'hostr-web', host: process.env.STATSD_HOST};
+const statsdOpts = { prefix: 'hostr-web', host: process.env.STATSD_HOST };
 router.use(stats(statsdOpts));
 const statsd = new StatsD(statsdOpts);
 router.use(function* statsMiddleware(next) {
@@ -41,7 +41,7 @@ router.use(function* stateMiddleware(next) {
 router.use(csrf());
 
 router.use(views(path.join(__dirname, 'views'), {
-  extension: 'ejs'
+  extension: 'ejs',
 }));
 
 router.get('/', index.main);
@@ -75,7 +75,7 @@ router.get('/file/:id/:name', file.get);
 router.get('/file/:size/:id/:name', file.get);
 router.get('/files/:id/:name', file.get);
 router.get('/download/:id/:name', function* downloadRedirect(id) {
-  this.redirect('/' + id);
+  this.redirect(`/${id}`);
 });
 
 router.get('/updaters/mac', function* macUpdater() {

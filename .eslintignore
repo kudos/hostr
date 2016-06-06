@@ -1,0 +1,4 @@
+node_modules
+web/public
+lib/ssh2-sftp-client.js
+test

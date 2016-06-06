@@ -10,8 +10,7 @@ import helmet from 'koa-helmet';
 import raven from 'raven';
 import mongo from './lib/mongo';
 import * as redis from './lib/redis';
-import api from './api/app';
-import { ws } from './api/app';
+import api, { ws } from './api/app';
 import web from './web/app';
 
 import debugname from 'debug';
@@ -38,7 +37,8 @@ app.use(helmet());
 app.use(function* errorMiddleware(next) {
   this.set('Server', 'Nintendo 64');
   if (this.req.headers['x-forwarded-proto'] === 'http') {
-    return this.redirect('https://' + this.req.headers.host + this.req.url);
+    this.redirect(`https://${this.req.headers.host}${this.req.url}`);
+    return;
   }
   try {
     yield next;
@@ -57,7 +57,7 @@ app.use(compress());
 app.use(bodyparser());
 
 app.use(favicon(path.join(__dirname, 'web/public/images/favicon.png')));
-app.use(serve(path.join(__dirname, 'web/public/'), {maxage: 31536000000}));
+app.use(serve(path.join(__dirname, 'web/public/'), { maxage: 31536000000 }));
 
 app.use(api.prefix('/api').routes());
 app.use(web.prefix('').routes());
@@ -66,8 +66,8 @@ app.ws.use(redis.middleware());
 app.ws.use(ws.prefix('/api').routes());
 
 if (!module.parent) {
-  app.listen(process.env.PORT || 4040, function listen() {
-    debug('Koa HTTP server listening on port ' + (process.env.PORT || 4040));
+  app.listen(process.env.PORT || 4040, () => {
+    debug('Koa HTTP server listening on port ', (process.env.PORT || 4040));
   });
 }
 

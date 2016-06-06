@@ -16,16 +16,25 @@ export default function* (next) {
     const userToken = yield this.redis.get(this.req.headers.authorization.substr(1));
     this.assert(userToken, 401, '{"error": {"message": "Invalid token.", "code": 606}}');
     debug('Token found');
-    user = yield Users.findOne({'_id': this.db.objectId(userToken)});
+    user = yield Users.findOne({ _id: this.db.objectId(userToken) });
   } else {
     const authUser = auth(this);
     this.assert(authUser, 401, badLoginMsg);
     const remoteIp = this.req.headers['x-real-ip'] || this.req.connection.remoteAddress;
-    const count = yield Logins.count({ip: remoteIp, successful: false, at: { '$gt': Math.ceil(Date.now() / 1000) - 600}});
-    this.assert(count < 25, 401, '{"error": {"message": "Too many incorrect logins.", "code": 608}}');
+    const count = yield Logins.count({
+      ip: remoteIp,
+      successful: false,
+      at: { $gt: Math.ceil(Date.now() / 1000) - 600 },
+    });
+    this.assert(count < 25, 401,
+      '{"error": {"message": "Too many incorrect logins.", "code": 608}}');
 
-    yield Logins.insertOne({ip: remoteIp, at: Math.ceil(Date.now() / 1000), successful: null});
-    user = yield Users.findOne({'email': authUser.name, 'banned': {'$exists': false}, 'status': {'$ne': 'deleted'}});
+    yield Logins.insertOne({ ip: remoteIp, at: Math.ceil(Date.now() / 1000), successful: null });
+    user = yield Users.findOne({
+      email: authUser.name,
+      banned: { $exists: false },
+      status: { $ne: 'deleted' },
+    });
     this.assert(user, 401, badLoginMsg);
     const authenticated = yield passwords.match(authUser.pass, user.salted_password);
     this.assert(authenticated, 401, badLoginMsg);
@@ -33,22 +42,27 @@ export default function* (next) {
   debug('Checking user');
   this.assert(user, 401, badLoginMsg);
   debug('Checking user is activated');
-  this.assert(!user.activationCode, 401, '{"error": {"message": "Account has not been activated.", "code": 603}}');
+  this.assert(!user.activationCode, 401,
+    '{"error": {"message": "Account has not been activated.", "code": 603}}');
 
-  const uploadedTotal = yield Files.count({owner: user._id, status: {'$ne': 'deleted'}});
-  const uploadedToday = yield Files.count({owner: user._id, 'time_added': {'$gt': Math.ceil(Date.now() / 1000) - 86400}});
+  const uploadedTotal = yield Files.count({ owner: user._id, status: { $ne: 'deleted' } });
+  const uploadedToday = yield Files.count({
+    owner: user._id,
+    time_added: { $gt: Math.ceil(Date.now() / 1000) - 86400 },
+  });
 
   const normalisedUser = {
-    'id': user._id,
-    'email': user.email,
-    'daily_upload_allowance': user.type === 'Pro' ? 'unlimited' : 15,
-    'file_count': uploadedTotal,
-    'max_filesize': user.type === 'Pro' ? 524288000 : 20971520,
-    'plan': user.type || 'Free',
-    'uploads_today': uploadedToday,
+    id: user._id,
+    email: user.email,
+    daily_upload_allowance: user.type === 'Pro' ? 'unlimited' : 15,
+    file_count: uploadedTotal,
+    max_filesize: user.type === 'Pro' ? 524288000 : 20971520,
+    plan: user.type || 'Free',
+    uploads_today: uploadedToday,
   };
-  this.response.set('Daily-Uploads-Remaining', user.type === 'Pro' ? 'unlimited' : 15 - uploadedToday);
+  this.response.set('Daily-Uploads-Remaining',
+    user.type === 'Pro' ? 'unlimited' : 15 - uploadedToday);
   this.user = normalisedUser;
-  debug('Authenticated user: ' + this.user.email);
+  debug('Authenticated user: ', this.user.email);
   yield next;
 }

@@ -4,12 +4,13 @@ import auth from '../lib/auth';
 export function* main() {
   if (this.session.user) {
     if (this.query['app-token']) {
-      return this.redirect('/');
+      this.redirect('/');
+      return;
     }
     const token = uuid.v4();
     yield this.redis.set(token, this.session.user.id, 'EX', 604800);
     this.session.user.token = token;
-    yield this.render('index', {user: this.session.user});
+    yield this.render('index', { user: this.session.user });
   } else {
     if (this.query['app-token']) {
       const user = yield auth.fromToken(this, this.query['app-token']);
@@ -30,26 +31,26 @@ export function* staticPage(next) {
     const token = uuid.v4();
     yield this.redis.set(token, this.session.user.id, 'EX', 604800);
     this.session.user.token = token;
-    yield this.render('index', {user: this.session.user});
+    yield this.render('index', { user: this.session.user });
   } else {
     switch (this.originalUrl) {
-    case '/terms':
-      yield this.render('terms');
-      break;
-    case '/privacy':
-      yield this.render('privacy');
-      break;
-    case '/pricing':
-      yield this.render('pricing');
-      break;
-    case '/apps':
-      yield this.render('apps');
-      break;
-    case '/stats':
-      yield this.render('index', {user: {}});
-      break;
-    default:
-      yield next;
+      case '/terms':
+        yield this.render('terms');
+        break;
+      case '/privacy':
+        yield this.render('privacy');
+        break;
+      case '/pricing':
+        yield this.render('pricing');
+        break;
+      case '/apps':
+        yield this.render('apps');
+        break;
+      case '/stats':
+        yield this.render('index', { user: {} });
+        break;
+      default:
+        yield next;
     }
   }
 }

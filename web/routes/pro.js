@@ -1,13 +1,13 @@
 import path from 'path';
 import views from 'co-views';
-const render = views(path.join(__dirname, '/../views'), { default: 'ejs'});
+const render = views(path.join(__dirname, '/../views'), { default: 'ejs' });
 import Stripe from 'stripe';
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 import sendgridInit from 'sendgrid';
 const sendgrid = sendgridInit(process.env.SENDGRID_KEY);
 
-const fromEmail = process.env.EMAIL_FROM;
-const fromName = process.env.EMAIL_NAME;
+const from = process.env.EMAIL_FROM;
+const fromname = process.env.EMAIL_NAME;
 
 export function* create() {
   const Users = this.db.Users;
@@ -26,10 +26,11 @@ export function* create() {
 
   delete customer.subscriptions;
 
-  yield Users.updateOne({_id: this.session.user.id}, {'$set': {'stripe_customer': customer, type: 'Pro'}});
+  yield Users.updateOne({ _id: this.session.user.id },
+    { $set: { stripe_customer: customer, type: 'Pro' } });
 
   const transaction = {
-    'user_id': this.session.user.id,
+    user_id: this.session.user.id,
     amount: customer.subscription.plan.amount,
     desc: customer.subscription.plan.name,
     date: new Date(customer.subscription.plan.created * 1000),
@@ -38,7 +39,7 @@ export function* create() {
   yield Transactions.insertOne(transaction);
 
   this.session.user.plan = 'Pro';
-  this.body = {status: 'active'};
+  this.body = { status: 'active' };
 
   const html = yield render('email/inlined/pro');
   const text = `Hey, thanks for upgrading to Hostr Pro!
@@ -50,11 +51,11 @@ export function* create() {
 
   const mail = new sendgrid.Email({
     to: this.session.user.email,
-    from: fromEmail,
-    fromname: fromName,
-    html: html,
-    text: text,
     subject: 'Hostr Pro',
+    from,
+    fromname,
+    html,
+    text,
   });
   mail.addCategory('pro-upgrade');
   sendgrid.send(mail);
@@ -63,16 +64,17 @@ export function* create() {
 export function* cancel() {
   this.assertCSRF();
   const Users = this.db.Users;
-  const user = yield Users.findOne({_id: this.session.user.id});
+  const user = yield Users.findOne({ _id: this.session.user.id });
 
   const confirmation = yield stripe.customers.cancelSubscription(
     user.stripe_customer.id,
     user.stripe_customer.subscription.id,
-    { 'at_period_end': true }
+    { at_period_end: true }
   );
 
-  yield Users.updateOne({_id: this.session.user.id}, {'$set': {'stripe_customer.subscription': confirmation, type: 'Free'}});
+  yield Users.updateOne({ _id: this.session.user.id },
+    { $set: { 'stripe_customer.subscription': confirmation, type: 'Free' } });
 
   this.session.user.plan = 'Pro';
-  this.body = {status: 'inactive'};
+  this.body = { status: 'inactive' };
 }

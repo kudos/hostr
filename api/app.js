@@ -10,7 +10,7 @@ const debug = debugname('hostr-api');
 
 const router = new Router();
 
-const statsdOpts = {prefix: 'hostr-api', host: process.env.STATSD_HOST};
+const statsdOpts = { prefix: 'hostr-api', host: process.env.STATSD_HOST };
 router.use(stats(statsdOpts));
 const statsd = new StatsD(statsdOpts);
 router.use(function* statsMiddleware(next) {

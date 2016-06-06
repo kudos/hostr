@@ -13,9 +13,13 @@ export function* post(next) {
 
   const uploader = new Uploader(this);
 
+  yield uploader.checkLimit();
   yield uploader.accept();
+
   uploader.acceptedEvent();
+
   uploader.receive();
+
   yield uploader.save();
   yield uploader.promise;
 

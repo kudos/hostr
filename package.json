@@ -15,6 +15,7 @@
     "cover": "istanbul cover _mocha -- -r babel-register test/**/*.spec.js",
     "init": "babel-node -e \"require('./lib/storage').default();\"",
     "jspm": "jspm install",
+    "lint": "eslint .",
     "start": "npm run build && node -r babel-register app.js",
     "test": "npm run test-seed && mocha -r babel-register test/**/*.spec.js",
     "test-seed": "node test/fixtures/mongo-user.js && node test/fixtures/mongo-file.js",
