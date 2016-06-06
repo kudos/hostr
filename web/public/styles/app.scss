@@ -6,7 +6,7 @@ html, body {
    height: 100%;
 }
 
-$icon-font-path: "../jspm_packages/npm/bootstrap-sass@3.3.5/assets/fonts/bootstrap/";
+$icon-font-path: "../jspm_packages/npm/bootstrap-sass@3.3.6/assets/fonts/bootstrap/";
 
 // MAIN VARIABLES
 $body-bg: #ededf3;
@@ -33,7 +33,7 @@ $nav-pills-active-link-hover-color: $brand-primary;
 
 $tooltip-bg: $brand-primary !default;
 
-@import '../jspm_packages/npm/bootstrap-sass@3.3.5/assets/stylesheets/bootstrap';
+@import '../jspm_packages/npm/bootstrap-sass@3.3.6/assets/stylesheets/bootstrap';
 
 $throbber-color: #96d4a1 !default;
 $throbber-highlight-color: #39b54a !default;
