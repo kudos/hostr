@@ -27,6 +27,11 @@ function hotlinkCheck(file, userAgent, referrer) {
 }
 
 export function* get() {
+  if (this.params.size && ['150', '970'].indexOf(this.params.size) < 0) {
+    this.throw(404);
+    return;
+  }
+
   const file = yield this.db.Files.findOne({
     _id: this.params.id,
     file_name: this.params.name,
