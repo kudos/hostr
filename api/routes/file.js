@@ -1,5 +1,6 @@
 import redis from 'redis';
 
+import models from '../../models';
 import { formatFile } from '../../lib/format';
 import Uploader from '../../lib/uploader';
 
@@ -20,7 +21,6 @@ export function* post(next) {
 
   uploader.receive();
 
-  yield uploader.save();
   yield uploader.promise;
 
   uploader.processingEvent();
@@ -31,7 +31,7 @@ export function* post(next) {
   yield uploader.finalise();
 
   this.status = 201;
-  this.body = uploader.toJSON();
+  this.body = formatFile(uploader.file);
 
   uploader.completeEvent();
   uploader.malwareScan();
@@ -39,48 +39,44 @@ export function* post(next) {
 
 
 export function* list() {
-  const Files = this.db.Files;
-
-  let status = 'active';
-  if (this.request.query.trashed) {
-    status = 'trashed';
-  } else if (this.request.query.all) {
-    status = { $in: ['active', 'trashed'] };
-  }
-
   let limit = 20;
   if (this.request.query.perpage === '0') {
-    limit = false;
+    limit = 1000;
   } else if (this.request.query.perpage > 0) {
     limit = parseInt(this.request.query.perpage / 1, 10);
   }
 
-  let skip = 0;
+  let offset = 0;
   if (this.request.query.page) {
-    skip = parseInt(this.request.query.page - 1, 10) * limit;
+    offset = parseInt(this.request.query.page - 1, 10) * limit;
   }
 
-  const queryOptions = {
-    limit, skip, sort: [['time_added', 'desc']],
-    hint: {
-      owner: 1, status: 1, time_added: -1,
+  const files = yield models.file.findAll({
+    where: {
+      userId: this.user.id,
+      status: 'active',
     },
-  };
+    order: '"createdAt" DESC',
+    offset,
+    limit,
+  });
 
-  const userFiles = yield Files.find({
-    owner: this.user.id, status }, queryOptions).toArray();
   this.statsd.incr('file.list', 1);
-  this.body = userFiles.map(formatFile);
+  this.body = files.map(formatFile);
 }
 
 
 export function* get() {
-  const Files = this.db.Files;
-  const Users = this.db.Users;
-  const file = yield Files.findOne({ _id: this.params.id,
-    status: { $in: ['active', 'uploading'] } });
+  const file = yield models.file.findOne({
+    where: {
+      id: this.params.id,
+      status: {
+        $in: ['active', 'uploading'],
+      },
+    },
+  });
   this.assert(file, 404, '{"error": {"message": "File not found", "code": 604}}');
-  const user = yield Users.findOne({ _id: file.owner });
+  const user = yield file.getUser();
   this.assert(user && !user.banned, 404, '{"error": {"message": "File not found", "code": 604}}');
   this.statsd.incr('file.get', 1);
   this.body = formatFile(file);
@@ -89,17 +85,28 @@ export function* get() {
 
 export function* put() {
   if (this.request.body.trashed) {
-    const Files = this.db.Files;
-    const status = this.request.body.trashed ? 'trashed' : 'active';
-    yield Files.updateOne({ _id: this.params.id, owner: this.user.id },
-    { $set: { status } }, { w: 1 });
+    const file = yield models.file.findOne({
+      where: {
+        id: this.params.id,
+        userId: this.user.id,
+      },
+    });
+    file.status = this.request.body.trashed ? 'trashed' : 'active';
+    yield file.save();
   }
 }
 
 
 export function* del() {
-  yield this.db.Files.updateOne({ _id: this.params.id, owner: this.db.objectId(this.user.id) },
-  { $set: { status: 'deleted' } }, { w: 1 });
+  const file = yield models.file.findOne({
+    where: {
+      id: this.params.id,
+      userId: this.user.id,
+    },
+  });
+  this.assert(file, 401, '{"error": {"message": "File not found", "code": 604}}');
+  file.status = 'deleted';
+  yield file.save();
   const event = { type: 'file-deleted', data: { id: this.params.id } };
   yield this.redis.publish(`/file/${this.params.id}`, JSON.stringify(event));
   yield this.redis.publish(`/user/${this.user.id}`, JSON.stringify(event));

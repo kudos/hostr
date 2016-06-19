@@ -13,6 +13,8 @@ import * as redis from './lib/redis';
 import api, { ws } from './api/app';
 import web from './web/app';
 
+import models from './models';
+
 import debugname from 'debug';
 const debug = debugname('hostr');
 

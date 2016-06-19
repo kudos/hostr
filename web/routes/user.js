@@ -2,6 +2,7 @@ import {
   authenticate, setupSession, signup as signupUser, activateUser, sendResetToken,
   validateResetToken, updatePassword,
 } from '../lib/auth';
+import models from '../../models';
 import debugname from 'debug';
 const debug = debugname('hostr-web:user');
 
@@ -69,8 +70,6 @@ export function* signup() {
 
 
 export function* forgot() {
-  const Reset = this.db.Reset;
-  const Users = this.db.Users;
   const token = this.params.token;
 
   if (this.request.body.password) {
@@ -83,16 +82,14 @@ export function* forgot() {
       return;
     }
     this.assertCSRF(this.request.body);
-    const tokenUser = yield validateResetToken.call(this, token);
-    const userId = tokenUser._id;
-    yield updatePassword.call(this, userId, this.request.body.password);
-    yield Reset.deleteOne({ _id: userId });
-    const user = yield Users.findOne({ _id: userId });
-    yield setupSession.call(this, user);
+    const user = yield validateResetToken(token);
+    yield updatePassword(user.id, this.request.body.password);
+    yield models.reset.deleteById(token);
+    yield setupSession(this, user);
     this.statsd.incr('auth.reset.success', 1);
     this.redirect('/');
   } else if (token) {
-    const tokenUser = yield validateResetToken.call(this, token);
+    const tokenUser = yield validateResetToken(token);
     if (!tokenUser) {
       this.statsd.incr('auth.reset.fail', 1);
       yield this.render('forgot', {
