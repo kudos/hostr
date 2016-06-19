@@ -21,6 +21,11 @@ export default function (sequelize, DataTypes) {
     md5: DataTypes.STRING(32), // eslint-disable-line new-cap
     malwarePositives: DataTypes.INTEGER,
   }, {
+    indexes: [
+      {
+        fields: ['userId'],
+      },
+    ],
     classMethods: {
       accessed: (id) => sequelize.query(`
         UPDATE files

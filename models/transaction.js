@@ -6,6 +6,11 @@ export default function (sequelize, DataTypes) {
     type: DataTypes.ENUM('direct', 'paypal'), // eslint-disable-line new-cap
     ip: 'inet',
   }, {
+    indexes: [
+      {
+        fields: ['userId'],
+      },
+    ],
     classMethods: {
       associate: (models) => {
         Transaction.belongsTo(models.user);

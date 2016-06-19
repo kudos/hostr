@@ -1,7 +1,12 @@
 image: node:6
 services:
-  - mongo
+  - postgres
   - redis
+
+variables:
+  POSTGRES_DB: hostr_test
+  POSTGRES_USER: hostr_test
+  POSTGRES_PASSWORD: ""
 
 stages:
   - test
@@ -16,7 +21,7 @@ test:
   tags:
     - docker
   variables:
-    MONGO_URL: "mongodb://mongo:27017/hostr"
+    DATABASE_URL: "postgres://hostr_test@postgres:5432/hostr_test"
     REDIS_URL: "redis://redis:6379"
     DEBUG: "hostr*"
 

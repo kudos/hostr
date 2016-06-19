@@ -9,6 +9,11 @@ export default function (sequelize, DataTypes) {
     banned: DataTypes.BOOLEAN,
     deleted: DataTypes.BOOLEAN,
   }, {
+    indexes: [
+      {
+        fields: ['email'],
+      },
+    ],
     classMethods: {
       associate: (models) => {
         User.hasMany(models.file);

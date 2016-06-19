@@ -1,7 +1,7 @@
 export default function (sequelize, DataTypes) {
   const Activation = sequelize.define('activation', {
     id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
-    activated: false,
+    activated: { type: DataTypes.BOOLEAN, defaultValue: false, primaryKey: true },
     email: DataTypes.STRING,
   }, {
     classMethods: {
