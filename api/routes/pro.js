@@ -6,18 +6,20 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 import sendgridInit from 'sendgrid';
 const sendgrid = sendgridInit(process.env.SENDGRID_KEY);
 
+import models from '../../models';
+
 const from = process.env.EMAIL_FROM;
 const fromname = process.env.EMAIL_NAME;
 
 export function* create() {
-  const Users = this.db.Users;
-  const Transactions = this.db.Transactions;
   const stripeToken = this.request.body.stripeToken;
+
+  const ip = this.request.headers['x-real-ip'] || this.req.connection.remoteAddress;
 
   const createCustomer = {
     card: stripeToken.id,
     plan: 'usd_monthly',
-    email: this.session.email,
+    email: this.user.email,
   };
 
   const customer = yield stripe.customers.create(createCustomer);
@@ -26,19 +28,22 @@ export function* create() {
 
   delete customer.subscriptions;
 
-  yield Users.updateOne({ _id: this.session.user.id },
-    { $set: { stripe_customer: customer, type: 'Pro' } });
+  const user = yield models.user.findById(this.user.id);
+  user.plan = 'Pro';
+  yield user.save();
 
-  const transaction = {
-    user_id: this.session.user.id,
+  const transaction = yield models.transaction.create({
+    userId: this.user.id,
     amount: customer.subscription.plan.amount,
-    desc: customer.subscription.plan.name,
-    date: new Date(customer.subscription.plan.created * 1000),
-  };
+    description: customer.subscription.plan.name,
+    data: customer,
+    type: 'direct',
+    ip,
+  });
 
-  yield Transactions.insertOne(transaction);
+  yield transaction.save();
 
-  this.session.user.plan = 'Pro';
+  this.user.plan = 'Pro';
   this.body = { status: 'active' };
 
   const html = yield render('email/inlined/pro');
@@ -50,7 +55,7 @@ export function* create() {
   `;
 
   const mail = new sendgrid.Email({
-    to: this.session.user.email,
+    to: this.user.email,
     subject: 'Hostr Pro',
     from,
     fromname,
@@ -62,19 +67,19 @@ export function* create() {
 }
 
 export function* cancel() {
-  this.assertCSRF();
-  const Users = this.db.Users;
-  const user = yield Users.findOne({ _id: this.session.user.id });
+  const user = yield models.user.findById(this.user.id);
+  const transactions = yield user.getTransactions();
+  const transaction = transactions[0];
 
-  const confirmation = yield stripe.customers.cancelSubscription(
-    user.stripe_customer.id,
-    user.stripe_customer.subscription.id,
-    { at_period_end: true }
+  yield stripe.customers.cancelSubscription(
+    transaction.data.id,
+    transaction.data.subscription.id,
+    { at_period_end: false }
   );
 
-  yield Users.updateOne({ _id: this.session.user.id },
-    { $set: { 'stripe_customer.subscription': confirmation, type: 'Free' } });
+  user.plan = 'Free';
+  yield user.save();
 
-  this.session.user.plan = 'Pro';
+  this.user.plan = 'Free';
   this.body = { status: 'inactive' };
 }

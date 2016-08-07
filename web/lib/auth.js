@@ -1,8 +1,9 @@
 import crypto from 'crypto';
+import { join } from 'path';
 import passwords from 'passwords';
 import uuid from 'node-uuid';
 import views from 'co-views';
-import { join } from 'path';
+import models from '../../models';
 const render = views(join(__dirname, '..', 'views'), { default: 'ejs' });
 import debugname from 'debug';
 const debug = debugname('hostr-web:auth');
@@ -13,64 +14,67 @@ const from = process.env.EMAIL_FROM;
 const fromname = process.env.EMAIL_NAME;
 
 export function* authenticate(email, password) {
-  const Users = this.db.Users;
-  const Logins = this.db.Logins;
   const remoteIp = this.headers['x-real-ip'] || this.ip;
 
   if (!password || password.length < 6) {
     debug('No password, or password too short');
     return new Error('Invalid login details');
   }
-  const count = yield Logins.count({
-    ip: remoteIp,
-    successful: false,
-    at: { $gt: Math.ceil(Date.now() / 1000) - 600 },
+  const count = yield models.login.count({
+    where: {
+      ip: remoteIp,
+      successful: false,
+      createdAt: {
+        $gt: Math.ceil(Date.now()) - 600000,
+      },
+    },
   });
+
   if (count > 25) {
     debug('Throttling brute force');
     return new Error('Invalid login details');
   }
-  const login = { ip: remoteIp, at: Math.ceil(Date.now() / 1000), successful: null };
-  yield Logins.save(login);
-  const user = yield Users.findOne({
-    email: email.toLowerCase(),
-    banned: { $exists: false }, status: { $ne: 'deleted' },
+  const user = yield models.user.findOne({
+    where: {
+      email: email.toLowerCase(),
+      activated: true,
+    },
   });
-  if (user) {
-    const verified = yield passwords.verify(password, user.salted_password);
-    if (verified) {
+  debug(user);
+  const login = yield models.login.create({
+    ip: remoteIp,
+    successful: false,
+  });
+
+  if (user && user.password) {
+    if (yield passwords.verify(password, user.password)) {
       debug('Password verified');
       login.successful = true;
-      yield Logins.updateOne({ _id: login._id }, login);
+      yield login.save();
+      debug(user);
       return user;
     }
     debug('Password invalid');
-    login.successful = false;
-    yield Logins.updateOne({ _id: login._id }, login);
-  } else {
-    debug('Email invalid');
-    login.successful = false;
-    yield Logins.updateOne({ _id: login._id }, login);
+    login.userId = user.id;
   }
-  return new Error('Invalid login details');
+  yield login.save();
+  return false;
 }
 
 
 export function* setupSession(user) {
   debug('Setting up session');
   const token = uuid.v4();
-  yield this.redis.set(token, user._id, 'EX', 604800);
+  yield this.redis.set(token, user.id, 'EX', 604800);
 
   const sessionUser = {
-    id: user._id,
+    id: user.id,
     email: user.email,
     dailyUploadAllowance: 15,
     maxFileSize: 20971520,
-    joined: user.joined,
-    plan: user.type || 'Free',
-    uploadsToday: yield this.db.Files.count({
-      owner: user._id, time_added: { $gt: Math.ceil(Date.now() / 1000) - 86400 },
-    }),
+    joined: user.createdAt,
+    plan: user.plan,
+    uploadsToday: yield models.file.count({ userId: user.id }),
     md5: crypto.createHash('md5').update(user.email).digest('hex'),
     token,
   };
@@ -82,39 +86,50 @@ export function* setupSession(user) {
 
   this.session.user = sessionUser;
   if (this.request.body.remember && this.request.body.remember === 'on') {
-    const Remember = this.db.Remember;
-    const rememberToken = uuid();
-    Remember.save({ _id: rememberToken, user_id: user.id, created: new Date().getTime() });
-    this.cookies.set('r', rememberToken, { maxAge: 1209600000, httpOnly: true });
+    const remember = yield models.remember.create({
+      id: uuid(),
+      userId: user.id,
+    });
+    this.cookies.set('r', remember.id, { maxAge: 1209600000, httpOnly: true });
   }
   debug('Session set up');
 }
 
 
 export function* signup(email, password, ip) {
-  const Users = this.db.Users;
-  const existingUser = yield Users.findOne({ email, status: { $ne: 'deleted' } });
+  const existingUser = yield models.user.findOne({
+    where: {
+      email,
+      activated: true,
+    },
+  });
   if (existingUser) {
     debug('Email already in use.');
     throw new Error('Email already in use.');
   }
   const cryptedPassword = yield passwords.crypt(password);
-  const user = {
+  const user = yield models.user.create({
     email,
-    salted_password: cryptedPassword,
-    joined: Math.round(new Date().getTime() / 1000),
-    signup_ip: ip,
-    activationCode: uuid(),
-  };
-  Users.insertOne(user);
+    password: cryptedPassword,
+    ip,
+    plan: 'Free',
+    activation: {
+      id: uuid(),
+      email,
+    },
+  }, {
+    include: [models.activation],
+  });
+
+  yield user.save();
 
   const html = yield render('email/inlined/activate', {
-    activationUrl: `${process.env.WEB_BASE_URL}/activate/${user.activationCode}`,
+    activationUrl: `${process.env.WEB_BASE_URL}/activate/${user.activation.id}`,
   });
   const text = `Thanks for signing up to Hostr!
 Please confirm your email address by clicking the link below.
 
-${process.env.WEB_BASE_URL}/activate/${user.activationCode}
+${process.env.WEB_BASE_URL}/activate/${user.activation.id}
 
 — Jonathan Cremin, Hostr Founder
 `;
@@ -132,21 +147,21 @@ ${process.env.WEB_BASE_URL}/activate/${user.activationCode}
 
 
 export function* sendResetToken(email) {
-  const Users = this.db.Users;
-  const Reset = this.db.Reset;
-  const user = yield Users.findOne({ email });
+  const user = yield models.user.findOne({
+    where: {
+      email,
+    },
+  });
   if (user) {
-    const token = uuid.v4();
-    Reset.save({
-      _id: user._id,
-      created: Math.round(new Date().getTime() / 1000),
-      token,
+    const reset = yield models.reset.create({
+      id: uuid.v4(),
+      userId: user.id,
     });
     const html = yield render('email/inlined/forgot', {
-      forgotUrl: `${process.env.WEB_BASE_URL}/forgot/${token}`,
+      forgotUrl: `${process.env.WEB_BASE_URL}/forgot/${reset.id}`,
     });
     const text = `It seems you've forgotten your password :(
-Visit  ${process.env.WEB_BASE_URL}/forgot/${token} to set a new one.
+Visit  ${process.env.WEB_BASE_URL}/forgot/${reset.id} to set a new one.
 `;
     const mail = new sendgrid.Email({
       to: user.email,
@@ -165,38 +180,43 @@ Visit  ${process.env.WEB_BASE_URL}/forgot/${token} to set a new one.
 
 
 export function* fromToken(token) {
-  const Users = this.db.Users;
-  const reply = yield this.redis.get(token);
-  return yield Users.findOne({ _id: reply });
+  const userId = yield this.redis.get(token);
+  return yield models.user.findById(userId);
 }
 
 
-export function* fromCookie(cookie) {
-  const Remember = this.db.Remember;
-  const Users = this.db.Users;
-  const remember = yield Remember.findOne({ _id: cookie });
-  return yield Users.findOne({ _id: remember.user_id });
+export function* fromCookie(rememberId) {
+  const userId = yield models.remember.findById(rememberId);
+  return yield models.user.findById(userId);
 }
 
 
-export function* validateResetToken() {
-  const Reset = this.db.Reset;
-  return yield Reset.findOne({ token: this.params.token });
+export function* validateResetToken(resetId) {
+  return yield models.reset.findById(resetId);
 }
 
 
 export function* updatePassword(userId, password) {
-  const Users = this.db.Users;
   const cryptedPassword = yield passwords.crypt(password);
-  yield Users.updateOne({ _id: userId }, { $set: { salted_password: cryptedPassword } });
+  const user = yield models.user.findById(userId);
+  user.password = cryptedPassword;
+  yield user.save();
 }
 
 
 export function* activateUser(code) {
-  const Users = this.db.Users;
-  const user = yield Users.findOne({ activationCode: code });
-  if (user) {
-    Users.updateOne({ _id: user._id }, { $unset: { activationCode: '' } });
+  debug(code);
+  const activation = yield models.activation.findOne({
+    where: {
+      id: code,
+    },
+  });
+  if (activation.updatedAt.getTime() === activation.createdAt.getTime()) {
+    activation.activated = true;
+    yield activation.save();
+    const user = yield activation.getUser();
+    user.activated = true;
+    yield user.save();
     yield setupSession.call(this, user);
     return true;
   }

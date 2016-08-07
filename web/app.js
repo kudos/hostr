@@ -8,7 +8,6 @@ import errors from 'koa-error';
 import * as redis from '../lib/redis';
 import * as index from './routes/index';
 import * as file from './routes/file';
-import * as pro from './routes/pro';
 import * as user from './routes/user';
 
 const router = new Router();
@@ -66,9 +65,6 @@ router.get('/privacy', index.staticPage);
 router.get('/pricing', index.staticPage);
 router.get('/apps', index.staticPage);
 router.get('/stats', index.staticPage);
-
-router.post('/pro/create', pro.create);
-router.post('/pro/cancel', pro.cancel);
 
 router.get('/:id', file.landing);
 router.get('/file/:id/:name', file.get);

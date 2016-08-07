@@ -8,7 +8,6 @@ import bodyparser from 'koa-bodyparser';
 import websockify from 'koa-websocket';
 import helmet from 'koa-helmet';
 import raven from 'raven';
-import mongo from './lib/mongo';
 import * as redis from './lib/redis';
 import api, { ws } from './api/app';
 import web from './web/app';
@@ -50,7 +49,6 @@ app.use(function* errorMiddleware(next) {
   }
 });
 
-app.use(mongo());
 app.use(redis.middleware());
 app.use(logger());
 app.use(compress());

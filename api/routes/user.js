@@ -2,6 +2,7 @@ import uuid from 'node-uuid';
 import redis from 'redis';
 import co from 'co';
 import passwords from 'passwords';
+import models from '../../models';
 
 import debugname from 'debug';
 const debug = debugname('hostr-api:user');
@@ -19,17 +20,19 @@ export function* token() {
 }
 
 export function* transaction() {
-  const Transactions = this.db.Transactions;
-  const transactions = yield Transactions.find({ user_id: this.user.id }).toArray();
+  const transactions = yield models.transaction.findAll({
+    where: {
+      userId: this.user.id,
+    },
+  });
 
-  this.body = transactions.map((transaction) => { // eslint-disable-line no-shadow
-    const type = transaction.paypal ? 'paypal' : 'direct';
+  this.body = transactions.map((item) => {
     return {
-      id: transaction._id,
-      amount: transaction.paypal ? transaction.amount : transaction.amount / 100,
-      date: transaction.date,
-      description: transaction.desc,
-      type,
+      id: item.id,
+      amount: item.amount / 100,
+      date: item.date,
+      description: item.description,
+      type: 'direct',
     };
   });
 }
@@ -39,23 +42,18 @@ export function* settings() {
     '{"error": {"message": "Current Password required to update account.", "code": 612}}');
   this.assert(this.request.body.current_password, 400,
     '{"error": {"message": "Current Password required to update account.", "code": 612}}');
-  const Users = this.db.Users;
-  const user = yield Users.findOne({ _id: this.user.id });
-  this.assert(yield passwords.match(this.request.body.current_password, user.salted_password), 400,
+  const user = yield models.user.findById(this.user.id);
+  this.assert(yield passwords.match(this.request.body.current_password, user.password), 400,
     '{"error": {"message": "Incorrect password", "code": 606}}');
-  const data = {};
   if (this.request.body.email && this.request.body.email !== user.email) {
-    data.email = this.request.body.email;
-    if (!user.activated_email) {
-      data.activated_email = user.email; // eslint-disable-line camelcase
-    }
+    user.email = this.request.body.email;
   }
   if (this.request.body.new_password) {
     this.assert(this.request.body.new_password.length >= 7, 400,
       '{"error": {"message": "Password must be 7 or more characters long.", "code": 606}}');
-    data.salted_password = yield passwords.hash(this.request.body.new_password);
+    user.password = yield passwords.hash(this.request.body.new_password);
   }
-  Users.updateOne({ _id: user._id }, { $set: data });
+  yield user.save();
   this.body = {};
 }
 

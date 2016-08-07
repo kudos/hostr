@@ -2,6 +2,7 @@ import {
   authenticate, setupSession, signup as signupUser, activateUser, sendResetToken,
   validateResetToken, updatePassword,
 } from '../lib/auth';
+import models from '../../models';
 import debugname from 'debug';
 const debug = debugname('hostr-web:user');
 
@@ -14,13 +15,14 @@ export function* signin() {
   this.statsd.incr('auth.attempt', 1);
   this.assertCSRF(this.request.body);
   const user = yield authenticate.call(this, this.request.body.email, this.request.body.password);
+
   if (!user) {
     this.statsd.incr('auth.failure', 1);
     yield this.render('signin', { error: 'Invalid login details', csrf: this.csrf });
     return;
   } else if (user.activationCode) {
     yield this.render('signin', {
-      error: 'Your account hasn\'t been activated yet. Check your for an activation email.',
+      error: 'Your account hasn\'t been activated yet. Check for an activation email.',
       csrf: this.csrf,
     });
     return;
@@ -69,8 +71,6 @@ export function* signup() {
 
 
 export function* forgot() {
-  const Reset = this.db.Reset;
-  const Users = this.db.Users;
   const token = this.params.token;
 
   if (this.request.body.password) {
@@ -83,16 +83,17 @@ export function* forgot() {
       return;
     }
     this.assertCSRF(this.request.body);
-    const tokenUser = yield validateResetToken.call(this, token);
-    const userId = tokenUser._id;
-    yield updatePassword.call(this, userId, this.request.body.password);
-    yield Reset.deleteOne({ _id: userId });
-    const user = yield Users.findOne({ _id: userId });
-    yield setupSession.call(this, user);
-    this.statsd.incr('auth.reset.success', 1);
-    this.redirect('/');
+    const user = yield validateResetToken(token);
+    if (user) {
+      yield updatePassword(user.userId, this.request.body.password);
+      const reset = yield models.reset.findById(token);
+      //reset.destroy();
+      yield setupSession.call(this, user);
+      this.statsd.incr('auth.reset.success', 1);
+      this.redirect('/');
+    }
   } else if (token) {
-    const tokenUser = yield validateResetToken.call(this, token);
+    const tokenUser = yield validateResetToken(token);
     if (!tokenUser) {
       this.statsd.incr('auth.reset.fail', 1);
       yield this.render('forgot', {

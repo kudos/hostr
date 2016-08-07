@@ -66,7 +66,7 @@ export class ProController {
     $scope.user = UserService.get();
     $scope.header = 'full';
     $scope.cancel = () => {
-      $http.post('/pro/cancel').success(() => {
+      $http.delete(window.settings.apiURL + '/user/pro').success(() => {
         window.location.reload(true);
       }).error((data) => {
         console.error(new Error(data));
