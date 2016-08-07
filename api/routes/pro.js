@@ -14,7 +14,7 @@ const fromname = process.env.EMAIL_NAME;
 export function* create() {
   const stripeToken = this.request.body.stripeToken;
 
-  const ip = this.request.headers['x-real-ip'] || this.req.connection.remoteAddress;
+  const ip = this.request.headers['x-forwarded-for'] || this.req.connection.remoteAddress;
 
   const createCustomer = {
     card: stripeToken.id,

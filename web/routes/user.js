@@ -52,7 +52,7 @@ export function* signup() {
       csrf: this.csrf });
     return;
   }
-  const ip = this.headers['x-real-ip'] || this.ip;
+  const ip = this.headers['x-forwarded-for'] || this.ip;
   const email = this.request.body.email;
   const password = this.request.body.password;
   try {

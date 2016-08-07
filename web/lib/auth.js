@@ -14,7 +14,7 @@ const from = process.env.EMAIL_FROM;
 const fromname = process.env.EMAIL_NAME;
 
 export function* authenticate(email, password) {
-  const remoteIp = this.headers['x-real-ip'] || this.ip;
+  const remoteIp = this.headers['x-forwarded-for'] || this.ip;
 
   if (!password || password.length < 6) {
     debug('No password, or password too short');

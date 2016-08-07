@@ -8,7 +8,7 @@ const badLoginMsg = '{"error": {"message": "Incorrect login details.", "code": 6
 
 export default function* (next) {
   let user = false;
-  const remoteIp = this.req.headers['x-real-ip'] || this.req.connection.remoteAddress;
+  const remoteIp = this.req.headers['x-forwarded-for'] || this.req.connection.remoteAddress;
   const login = yield models.login.create({
     ip: remoteIp,
     successful: false,
