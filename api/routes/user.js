@@ -20,7 +20,11 @@ export function* token() {
 }
 
 export function* transaction() {
-  const transactions = yield models.transaction.findAll({ userId: this.user.id });
+  const transactions = yield models.transaction.findAll({
+    where: {
+      userId: this.user.id,
+    },
+  });
 
   this.body = transactions.map((item) => {
     return {

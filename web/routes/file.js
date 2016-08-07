@@ -37,7 +37,6 @@ export function* get() {
     where: {
       id: this.params.id,
       name: this.params.name,
-      status: 'active',
     },
   });
   this.assert(file, 404);
@@ -104,7 +103,6 @@ export function* landing() {
   const file = yield models.file.findOne({
     where: {
       id: this.params.id,
-      status: 'active',
     },
   });
   this.assert(file, 404);

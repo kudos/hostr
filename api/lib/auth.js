@@ -31,7 +31,7 @@ export default function* (next) {
         ip: remoteIp,
         successful: false,
         createdAt: {
-          $gt: new Date(Math.ceil(Date.now()) - 600000),
+          $gt: new Date(Date.now() - 600000),
         },
       },
     });
@@ -71,7 +71,7 @@ export default function* (next) {
     where: {
       userId: user.id,
       createdAt: {
-        $gt: Math.ceil(Date.now() / 1000) - 86400,
+        $gt: Date.now() - 86400000,
       },
     },
   });

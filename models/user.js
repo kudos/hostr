@@ -3,12 +3,14 @@ export default function (sequelize, DataTypes) {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     email: DataTypes.STRING,
     password: DataTypes.STRING,
+    name: DataTypes.STRING,
     plan: DataTypes.ENUM('Free', 'Pro'), // eslint-disable-line new-cap
-    ip: 'inet',
     activated: DataTypes.BOOLEAN,
     banned: DataTypes.BOOLEAN,
-    deleted: DataTypes.BOOLEAN,
+    deletedAt: DataTypes.DATE,
+    oldId: DataTypes.STRING,
   }, {
+    paranoid: true,
     indexes: [
       {
         fields: ['email'],
@@ -17,6 +19,7 @@ export default function (sequelize, DataTypes) {
     classMethods: {
       associate: (models) => {
         User.hasMany(models.file);
+        User.hasMany(models.transaction);
         User.hasOne(models.activation);
       },
     },

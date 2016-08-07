@@ -15,13 +15,14 @@ export function* signin() {
   this.statsd.incr('auth.attempt', 1);
   this.assertCSRF(this.request.body);
   const user = yield authenticate.call(this, this.request.body.email, this.request.body.password);
+
   if (!user) {
     this.statsd.incr('auth.failure', 1);
     yield this.render('signin', { error: 'Invalid login details', csrf: this.csrf });
     return;
   } else if (user.activationCode) {
     yield this.render('signin', {
-      error: 'Your account hasn\'t been activated yet. Check your for an activation email.',
+      error: 'Your account hasn\'t been activated yet. Check for an activation email.',
       csrf: this.csrf,
     });
     return;
@@ -83,11 +84,14 @@ export function* forgot() {
     }
     this.assertCSRF(this.request.body);
     const user = yield validateResetToken(token);
-    yield updatePassword(user.id, this.request.body.password);
-    yield models.reset.deleteById(token);
-    yield setupSession(this, user);
-    this.statsd.incr('auth.reset.success', 1);
-    this.redirect('/');
+    if (user) {
+      yield updatePassword(user.userId, this.request.body.password);
+      const reset = yield models.reset.findById(token);
+      //reset.destroy();
+      yield setupSession.call(this, user);
+      this.statsd.incr('auth.reset.success', 1);
+      this.redirect('/');
+    }
   } else if (token) {
     const tokenUser = yield validateResetToken(token);
     if (!tokenUser) {

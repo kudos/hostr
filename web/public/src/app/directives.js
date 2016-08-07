@@ -69,7 +69,7 @@ export function stripeSubscribe($http) {
     key: window.settings.stripePublic,
     image: '/images/stripe-128.png',
     token: (token) => {
-      $http.post('/pro/create', {
+      $http.post(window.settings.apiURL + '/user/pro', {
         stripeToken: token,
       })
       .success((data) => {

@@ -25,7 +25,7 @@ export function* authenticate(email, password) {
       ip: remoteIp,
       successful: false,
       createdAt: {
-        $gt: Math.ceil(Date.now() / 1000) - 600,
+        $gt: Math.ceil(Date.now()) - 600000,
       },
     },
   });
@@ -35,26 +35,30 @@ export function* authenticate(email, password) {
     return new Error('Invalid login details');
   }
   const user = yield models.user.findOne({
-    email: email.toLowerCase(),
-    activated: 'true',
+    where: {
+      email: email.toLowerCase(),
+      activated: true,
+    },
   });
+  debug(user);
   const login = yield models.login.create({
     ip: remoteIp,
     successful: false,
   });
 
-  if (user) {
+  if (user && user.password) {
     if (yield passwords.verify(password, user.password)) {
       debug('Password verified');
       login.successful = true;
       yield login.save();
+      debug(user);
       return user;
     }
     debug('Password invalid');
     login.userId = user.id;
   }
   yield login.save();
-  return new Error('Invalid login details');
+  return false;
 }
 
 
@@ -93,7 +97,12 @@ export function* setupSession(user) {
 
 
 export function* signup(email, password, ip) {
-  const existingUser = yield models.user.findOne({ where: { email, activated: true } });
+  const existingUser = yield models.user.findOne({
+    where: {
+      email,
+      activated: true,
+    },
+  });
   if (existingUser) {
     debug('Email already in use.');
     throw new Error('Email already in use.');
@@ -102,8 +111,8 @@ export function* signup(email, password, ip) {
   const user = yield models.user.create({
     email,
     password: cryptedPassword,
-    created: Math.round(new Date().getTime() / 1000),
     ip,
+    plan: 'Free',
     activation: {
       id: uuid(),
       email,
@@ -138,7 +147,11 @@ ${process.env.WEB_BASE_URL}/activate/${user.activation.id}
 
 
 export function* sendResetToken(email) {
-  const user = yield models.user.findOne({ email });
+  const user = yield models.user.findOne({
+    where: {
+      email,
+    },
+  });
   if (user) {
     const reset = yield models.reset.create({
       id: uuid.v4(),
@@ -168,18 +181,18 @@ Visit  ${process.env.WEB_BASE_URL}/forgot/${reset.id} to set a new one.
 
 export function* fromToken(token) {
   const userId = yield this.redis.get(token);
-  return yield models.user.findbyId(userId);
+  return yield models.user.findById(userId);
 }
 
 
 export function* fromCookie(rememberId) {
   const userId = yield models.remember.findById(rememberId);
-  return yield models.user.findbyId(userId);
+  return yield models.user.findById(userId);
 }
 
 
 export function* validateResetToken(resetId) {
-  return yield models.reset.findbyId(resetId);
+  return yield models.reset.findById(resetId);
 }
 
 

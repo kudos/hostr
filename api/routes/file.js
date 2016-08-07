@@ -54,7 +54,7 @@ export function* list() {
   const files = yield models.file.findAll({
     where: {
       userId: this.user.id,
-      status: 'active',
+      processed: true,
     },
     order: '"createdAt" DESC',
     offset,
@@ -70,9 +70,6 @@ export function* get() {
   const file = yield models.file.findOne({
     where: {
       id: this.params.id,
-      status: {
-        $in: ['active', 'uploading'],
-      },
     },
   });
   this.assert(file, 404, '{"error": {"message": "File not found", "code": 604}}');
@@ -80,20 +77,6 @@ export function* get() {
   this.assert(user && !user.banned, 404, '{"error": {"message": "File not found", "code": 604}}');
   this.statsd.incr('file.get', 1);
   this.body = formatFile(file);
-}
-
-
-export function* put() {
-  if (this.request.body.trashed) {
-    const file = yield models.file.findOne({
-      where: {
-        id: this.params.id,
-        userId: this.user.id,
-      },
-    });
-    file.status = this.request.body.trashed ? 'trashed' : 'active';
-    yield file.save();
-  }
 }
 
 
@@ -105,8 +88,7 @@ export function* del() {
     },
   });
   this.assert(file, 401, '{"error": {"message": "File not found", "code": 604}}');
-  file.status = 'deleted';
-  yield file.save();
+  yield file.destroy();
   const event = { type: 'file-deleted', data: { id: this.params.id } };
   yield this.redis.publish(`/file/${this.params.id}`, JSON.stringify(event));
   yield this.redis.publish(`/user/${this.user.id}`, JSON.stringify(event));

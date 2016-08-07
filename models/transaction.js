@@ -5,6 +5,7 @@ export default function (sequelize, DataTypes) {
     description: DataTypes.STRING,
     type: DataTypes.ENUM('direct', 'paypal'), // eslint-disable-line new-cap
     ip: 'inet',
+    data: DataTypes.JSON,
   }, {
     indexes: [
       {

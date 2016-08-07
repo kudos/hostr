@@ -6,7 +6,8 @@ export default function (sequelize, DataTypes) {
     size: DataTypes.BIGINT,
     downloads: DataTypes.BIGINT,
     accessedAt: DataTypes.DATE,
-    status: DataTypes.ENUM('active', 'uploading', 'deleted'), // eslint-disable-line new-cap
+    deletedAt: DataTypes.DATE,
+    processed: DataTypes.BOOLEAN,
     type: DataTypes.ENUM( // eslint-disable-line new-cap
       'image',
       'audio',
@@ -21,6 +22,7 @@ export default function (sequelize, DataTypes) {
     md5: DataTypes.STRING(32), // eslint-disable-line new-cap
     malwarePositives: DataTypes.INTEGER,
   }, {
+    paranoid: true,
     indexes: [
       {
         fields: ['userId'],
@@ -37,6 +39,7 @@ export default function (sequelize, DataTypes) {
         }),
       associate: (models) => {
         File.belongsTo(models.user);
+        File.hasOne(models.malware);
       },
     },
   });

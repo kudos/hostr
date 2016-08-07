@@ -5,6 +5,7 @@ import StatsD from 'statsy';
 import auth from './lib/auth';
 import * as user from './routes/user';
 import * as file from './routes/file';
+import * as pro from './routes/pro';
 import debugname from 'debug';
 const debug = debugname('hostr-api');
 
@@ -64,10 +65,11 @@ router.get('/user/token', auth, user.token);
 router.get('/token', auth, user.token);
 router.get('/user/transaction', auth, user.transaction);
 router.post('/user/settings', auth, user.settings);
+router.post('/user/pro', auth, pro.create);
+router.delete('/user/pro', auth, pro.cancel);
 router.get('/file', auth, file.list);
 router.post('/file', auth, file.post);
 router.get('/file/:id', file.get);
-router.put('/file/:id', auth, file.put);
 router.delete('/file/:id', auth, file.del);
 router.delete('/file/:id', auth, file.del);
 
