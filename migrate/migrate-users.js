@@ -50,7 +50,7 @@ co(function *sync() {
       continue;
     }
 
-    const oldId = user._id.toString();
+    const mongoId = user._id.toString();
 
     const newUser = yield models.user.create({
       email: user.email,
@@ -62,7 +62,7 @@ co(function *sync() {
       deletedAt: user.status === 'deleted' ? new Date().getTime() : null,
       createdAt: user.createdAt,
       updatedAt: user.createdAt,
-      oldId,
+      mongoId,
     }, {
       include: [models.activation],
     });

@@ -18,7 +18,7 @@ co(function *sync() {
   const userIds = {};
   debug('remap');
   for (const user of users) {
-    userIds[user._id] = user.id;
+    userIds[user.mongoId] = user.id;
   }
   debug('remap done');
   let files;
@@ -48,6 +48,8 @@ co(function *sync() {
     const processed = file.status !== 'uploading';
     const accessedAt = file.last_accessed ? new Date(file.last_accessed * 1000) : null;
 
+    const mongoId = file._id.toString();
+
     yield models.file.upsert({
       id: file._id.toString(),
       name: file.file_name,
@@ -68,6 +70,7 @@ co(function *sync() {
       md5: file.md5,
       malwarePositives: file.virustotal && file.virustotal.positives > 0 ?
       file.virustotal.positives : null,
+      mongoId,
     }, { /* logging: false */ });
   }
 

@@ -8,7 +8,7 @@ export default function (sequelize, DataTypes) {
     activated: DataTypes.BOOLEAN,
     banned: DataTypes.BOOLEAN,
     deletedAt: DataTypes.DATE,
-    oldId: DataTypes.STRING,
+    mongoId: DataTypes.STRING,
   }, {
     paranoid: true,
     indexes: [

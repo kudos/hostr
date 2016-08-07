@@ -21,6 +21,7 @@ export default function (sequelize, DataTypes) {
     legacyId: DataTypes.STRING(12), // eslint-disable-line new-cap
     md5: DataTypes.STRING(32), // eslint-disable-line new-cap
     malwarePositives: DataTypes.INTEGER,
+    mongoId: DataTypes.STRING,
   }, {
     paranoid: true,
     indexes: [
