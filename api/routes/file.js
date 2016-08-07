@@ -19,7 +19,7 @@ export function* post(next) {
 
   uploader.acceptedEvent();
 
-  uploader.receive();
+  yield uploader.receive();
 
   yield uploader.promise;
 
