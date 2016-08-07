@@ -64,6 +64,7 @@
     "lwip": "0.0.9",
     "mime-types": "~2.1.5",
     "moment": "^2.13.0",
+    "mongodb": "^2.2.5",
     "mongodb-promisified": "~1.0.3",
     "mz": "^2.4.0",
     "node-fetch": "^1.5.3",

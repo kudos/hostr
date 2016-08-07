@@ -25,7 +25,6 @@ export function* post(next) {
 
   uploader.processingEvent();
 
-  yield uploader.sendToSFTP();
   yield uploader.processImage();
 
   yield uploader.finalise();
