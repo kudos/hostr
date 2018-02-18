@@ -74,7 +74,7 @@
     "raven": "^0.11.0",
     "redis": "^2.6.1",
     "sendgrid": "^2.0.0",
-    "sequelize": "^3.23.3",
+    "sequelize": "^4.17.2",
     "sequelize-classes": "^0.1.12",
     "ssh2": "^0.5.0",
     "statsy": "~0.2.0",
