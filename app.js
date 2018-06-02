@@ -8,7 +8,7 @@ import bodyparser from 'koa-bodyparser';
 import websockify from 'koa-websocket';
 import helmet from 'koa-helmet';
 import session from 'koa-session';
-import raven from 'raven';
+import Raven from 'raven';
 import debugname from 'debug';
 import * as redis from './lib/redis';
 import api, { ws } from './api/app';
@@ -20,14 +20,14 @@ const app = websockify(new Koa());
 app.keys = [process.env.COOKIE_KEY];
 
 if (process.env.SENTRY_DSN) {
-  const ravenClient = new raven.Client(process.env.SENTRY_DSN);
-  ravenClient.patchGlobal();
+  Raven.config(process.env.SENTRY_DSN);
+  Raven.install();
   app.use(async (ctx, next) => {
-    this.raven = ravenClient;
+    this.Raven = Raven;
     await next();
   });
   app.ws.use(async (ctx, next) => {
-    this.raven = ravenClient;
+    this.Raven = Raven;
     await next();
   });
 }
@@ -43,8 +43,8 @@ app.use(async (ctx, next) => {
   try {
     await next();
   } catch (err) {
-    if (!err.statusCode && ctx.raven) {
-      ctx.raven.captureError(err);
+    if (!err.statusCode && process.env.SENTRY_DSN) {
+      Raven.captureException(err);
     }
     throw err;
   }

@@ -9,38 +9,30 @@ It has been through many iterations, but in its current incarnation Hostr uses [
 
 ### Dependencies
 
-Everything is taken care of by an `npm install`.
+Everything is taken care of by an `make build`.
 
 ### Enviroment Variable Configuration
 
-See [`.env.example`](.env.example). Copy it to `.env`, modify and `source .env` for development. [autoenv](https://github.com/kennethreitz/autoenv) is pretty nice for doing this automatically when you `cd` into your work directory.
-
-### Deploying to Heroku
-
-You'll need to add Heroku Redis and a MongoDB addon.
+See [`.envrc.example`](.envrc.example). Copy it to `.envrc`, modify and `source .envrc` for development. [direnv](https://github.com/direnv/direnv) is pretty nice for doing this automatically when you `cd` into your work directory.
 
 ## Usage
 
 ### Start the app
 
 ```
-$ npm start
+$ make docker-compose-up
 ```
 
-This will install and build the frontend too.
-
-Alternatively
+### Initialise the environment
 
 ```
-$ npm run watch
+$ make init migrate
 ```
-
-Will watch your JS and CSS for changes, rebuild them, and reload the server.
 
 ### Run the tests
 
 ```
-$ npm test
+$ make test
 ```
 
 Running the tests will also set the indexes required for Mongo.
