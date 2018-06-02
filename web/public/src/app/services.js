@@ -39,7 +39,8 @@ export class UserService {
 export class EventService {
   constructor($rootScope, ReconnectingWebSocket) {
     if (window.user && WebSocket) {
-      const ws = new ReconnectingWebSocket('wss' + window.settings.apiURL.replace('https', '').replace('http', '') + '/user');
+      const apiURL = new URL(window.settings.apiURL);
+      const ws = new ReconnectingWebSocket((apiURL.protocol === 'http:' ? 'ws' : 'wss') + window.settings.apiURL.replace('https', '').replace('http', '') + '/user');
       ws.onmessage = (msg) => {
         const evt = JSON.parse(msg.data);
         $rootScope.$broadcast(evt.type, evt.data);

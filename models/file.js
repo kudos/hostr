@@ -29,21 +29,24 @@ export default function (sequelize, DataTypes) {
         fields: ['userId'],
       },
     ],
-    classMethods: {
-      accessed: (id) => sequelize.query(`
-        UPDATE files
-        SET "downloads" = downloads + 1, "accessedAt" = NOW()
-        WHERE "id" = :id`,
-        {
-          replacements: { id },
-          type: sequelize.QueryTypes.UPDATE,
-        }),
-      associate: (models) => {
-        File.belongsTo(models.user);
-        File.hasOne(models.malware);
-      },
-    },
   });
+
+  File.accessed = function accessed(id) {
+    sequelize.query(`
+      UPDATE files
+      SET "downloads" = downloads + 1, "accessedAt" = NOW()
+      WHERE "id" = :id`,
+    {
+      replacements: { id },
+      type: sequelize.QueryTypes.UPDATE,
+    }
+    );
+  };
+
+  File.associate = function associate(models) {
+    File.belongsTo(models.user);
+    File.hasOne(models.malware);
+  };
 
   return File;
 }

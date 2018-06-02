@@ -6,63 +6,63 @@ import models from '../../models';
 import debugname from 'debug';
 const debug = debugname('hostr-web:user');
 
-export function* signin() {
-  if (!this.request.body.email) {
-    yield this.render('signin', { csrf: this.csrf });
+export async function signin(ctx) {
+  if (!ctx.request.body.email) {
+    await ctx.render('signin', { csrf: ctx.csrf });
     return;
   }
 
-  this.statsd.incr('auth.attempt', 1);
-  this.assertCSRF(this.request.body);
-  const user = yield authenticate.call(this, this.request.body.email, this.request.body.password);
+  ctx.statsd.incr('auth.attempt', 1);
+
+  const user = await authenticate.call(ctx, ctx.request.body.email, ctx.request.body.password);
 
   if (!user) {
-    this.statsd.incr('auth.failure', 1);
-    yield this.render('signin', { error: 'Invalid login details', csrf: this.csrf });
+    ctx.statsd.incr('auth.failure', 1);
+    await ctx.render('signin', { error: 'Invalid login details', csrf: ctx.csrf });
     return;
   } else if (user.activationCode) {
-    yield this.render('signin', {
+    await ctx.render('signin', {
       error: 'Your account hasn\'t been activated yet. Check for an activation email.',
-      csrf: this.csrf,
+      csrf: ctx.csrf,
     });
     return;
   }
-  this.statsd.incr('auth.success', 1);
-  yield setupSession.call(this, user);
-  this.redirect('/');
+  ctx.statsd.incr('auth.success', 1);
+  await setupSession.call(ctx, user);
+  ctx.redirect('/');
 }
 
 
-export function* signup() {
-  if (!this.request.body.email) {
-    yield this.render('signup', { csrf: this.csrf });
+export async function signup(ctx) {
+  if (!ctx.request.body.email) {
+    await ctx.render('signup', { csrf: ctx.csrf });
     return;
   }
 
-  this.assertCSRF(this.request.body);
-  if (this.request.body.email !== this.request.body.confirm_email) {
-    yield this.render('signup', { error: 'Emails do not match.', csrf: this.csrf });
+  ctx.assertCSRF(ctx.request.body);
+  if (ctx.request.body.email !== ctx.request.body.confirm_email) {
+    await ctx.render('signup', { error: 'Emails do not match.', csrf: ctx.csrf });
     return;
-  } else if (this.request.body.email && !this.request.body.terms) {
-    yield this.render('signup', { error: 'You must agree to the terms of service.',
-      csrf: this.csrf });
+  } else if (ctx.request.body.email && !ctx.request.body.terms) {
+    await ctx.render('signup', { error: 'You must agree to the terms of service.',
+      csrf: ctx.csrf });
     return;
-  } else if (this.request.body.password && this.request.body.password.length < 7) {
-    yield this.render('signup', { error: 'Password must be at least 7 characters long.',
-      csrf: this.csrf });
+  } else if (ctx.request.body.password && ctx.request.body.password.length < 7) {
+    await ctx.render('signup', { error: 'Password must be at least 7 characters long.',
+      csrf: ctx.csrf });
     return;
   }
-  const ip = this.headers['x-forwarded-for'] || this.ip;
-  const email = this.request.body.email;
-  const password = this.request.body.password;
+  const ip = ctx.headers['x-forwarded-for'] || ctx.ip;
+  const email = ctx.request.body.email;
+  const password = ctx.request.body.password;
   try {
-    yield signupUser.call(this, email, password, ip);
+    await signupUser.call(ctx, email, password, ip);
   } catch (e) {
-    yield this.render('signup', { error: e.message, csrf: this.csrf });
+    await ctx.render('signup', { error: e.message, csrf: ctx.csrf });
     return;
   }
-  this.statsd.incr('auth.signup', 1);
-  yield this.render('signup', {
+  ctx.statsd.incr('auth.signup', 1);
+  await ctx.render('signup', {
     message: 'Thanks for signing up, we\'ve sent you an email to activate your account.',
     csrf: '',
   });
@@ -70,51 +70,51 @@ export function* signup() {
 }
 
 
-export function* forgot() {
-  const token = this.params.token;
+export async function forgot(ctx) {
+  const token = ctx.params.token;
 
-  if (this.request.body.password) {
-    if (this.request.body.password.length < 7) {
-      yield this.render('forgot', {
+  if (ctx.request.body.password) {
+    if (ctx.request.body.password.length < 7) {
+      await ctx.render('forgot', {
         error: 'Password needs to be at least 7 characters long.',
-        csrf: this.csrf,
+        csrf: ctx.csrf,
         token,
       });
       return;
     }
-    this.assertCSRF(this.request.body);
-    const user = yield validateResetToken(token);
+    ctx.assertCSRF(ctx.request.body);
+    const user = await validateResetToken(token);
     if (user) {
-      yield updatePassword(user.userId, this.request.body.password);
-      const reset = yield models.reset.findById(token);
+      await updatePassword(user.userId, ctx.request.body.password);
+      const reset = await models.reset.findById(token);
       //reset.destroy();
-      yield setupSession.call(this, user);
-      this.statsd.incr('auth.reset.success', 1);
-      this.redirect('/');
+      await setupSession.call(ctx, user);
+      ctx.statsd.incr('auth.reset.success', 1);
+      ctx.redirect('/');
     }
   } else if (token) {
-    const tokenUser = yield validateResetToken(token);
+    const tokenUser = await validateResetToken(token);
     if (!tokenUser) {
-      this.statsd.incr('auth.reset.fail', 1);
-      yield this.render('forgot', {
+      ctx.statsd.incr('auth.reset.fail', 1);
+      await ctx.render('forgot', {
         error: 'Invalid password reset token. It might be expired, or has already been used.',
-        csrf: this.csrf,
+        csrf: ctx.csrf,
         token: null,
       });
       return;
     }
-    yield this.render('forgot', { csrf: this.csrf, token });
+    await ctx.render('forgot', { csrf: ctx.csrf, token });
     return;
-  } else if (this.request.body.email) {
-    this.assertCSRF(this.request.body);
+  } else if (ctx.request.body.email) {
+    ctx.assertCSRF(ctx.request.body);
     try {
-      const email = this.request.body.email;
-      yield sendResetToken.call(this, email);
-      this.statsd.incr('auth.reset.request', 1);
-      yield this.render('forgot', {
+      const email = ctx.request.body.email;
+      await sendResetToken.call(ctx, email);
+      ctx.statsd.incr('auth.reset.request', 1);
+      await ctx.render('forgot', {
         message: `We've sent an email with a link to reset your password.
         Be sure to check your spam folder if you it doesn't appear within a few minutes`,
-        csrf: this.csrf,
+        csrf: ctx.csrf,
         token: null,
       });
       return;
@@ -122,25 +122,25 @@ export function* forgot() {
       debug(error);
     }
   } else {
-    yield this.render('forgot', { csrf: this.csrf, token: null });
+    await ctx.render('forgot', { csrf: ctx.csrf, token: null });
   }
 }
 
 
-export function* logout() {
-  this.statsd.incr('auth.logout', 1);
-  this.cookies.set('r', { expires: new Date(1), path: '/' });
-  this.session = null;
-  this.redirect('/');
+export async function logout(ctx) {
+  ctx.statsd.incr('auth.logout', 1);
+  ctx.cookies.set('r', { expires: new Date(1), path: '/' });
+  ctx.session = null;
+  ctx.redirect('/');
 }
 
 
-export function* activate() {
-  const code = this.params.code;
-  if (yield activateUser.call(this, code)) {
-    this.statsd.incr('auth.activation', 1);
-    this.redirect('/');
+export async function activate(ctx) {
+  const code = ctx.params.code;
+  if (await activateUser.call(ctx, code)) {
+    ctx.statsd.incr('auth.activation', 1);
+    ctx.redirect('/');
   } else {
-    this.throw(400);
+    ctx.throw(400);
   }
 }

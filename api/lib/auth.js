@@ -6,27 +6,27 @@ const debug = debugname('hostr-api:auth');
 
 const badLoginMsg = '{"error": {"message": "Incorrect login details.", "code": 607}}';
 
-export default function* (next) {
+export default async (ctx, next) => {
   let user = false;
-  const remoteIp = this.req.headers['x-forwarded-for'] || this.req.connection.remoteAddress;
-  const login = yield models.login.create({
+  const remoteIp = ctx.req.headers['x-forwarded-for'] || ctx.req.connection.remoteAddress;
+  const login = await models.login.create({
     ip: remoteIp,
     successful: false,
   });
-  if (this.req.headers.authorization && this.req.headers.authorization[0] === ':') {
+  if (ctx.req.headers.authorization && ctx.req.headers.authorization[0] === ':') {
     debug('Logging in with token');
-    const userToken = yield this.redis.get(this.req.headers.authorization.substr(1));
-    this.assert(userToken, 401, '{"error": {"message": "Invalid token.", "code": 606}}');
+    const userToken = await ctx.redis.get(ctx.req.headers.authorization.substr(1));
+    ctx.assert(userToken, 401, '{"error": {"message": "Invalid token.", "code": 606}}');
     debug('Token found');
-    user = yield models.user.findById(userToken);
+    user = await models.user.findById(userToken);
     if (!user) {
       login.save();
       return;
     }
   } else {
-    const authUser = auth(this);
-    this.assert(authUser, 401, badLoginMsg);
-    const count = yield models.login.count({
+    const authUser = auth(ctx);
+    ctx.assert(authUser, 401, badLoginMsg);
+    const count = await models.login.count({
       where: {
         ip: remoteIp,
         successful: false,
@@ -36,38 +36,38 @@ export default function* (next) {
       },
     });
 
-    this.assert(count < 25, 401,
+    ctx.assert(count < 25, 401,
       '{"error": {"message": "Too many incorrect logins.", "code": 608}}');
 
-    user = yield models.user.findOne({
+    user = await models.user.findOne({
       where: {
         email: authUser.name,
         activated: true,
       },
     });
 
-    if (!user || !(yield passwords.match(authUser.pass, user.password))) {
+    if (!user || !(await passwords.match(authUser.pass, user.password))) {
       login.save();
-      this.throw(401, badLoginMsg);
+      ctx.throw(401, badLoginMsg);
       return;
     }
   }
   debug('Checking user');
-  this.assert(user, 401, badLoginMsg);
+  ctx.assert(user, 401, badLoginMsg);
   debug('Checking user is activated');
   debug(user.activated);
-  this.assert(user.activated === true, 401,
+  ctx.assert(user.activated === true, 401,
     '{"error": {"message": "Account has not been activated.", "code": 603}}');
 
   login.successful = true;
-  yield login.save();
+  await login.save();
 
-  const uploadedTotal = yield models.file.count({
+  const uploadedTotal = await models.file.count({
     where: {
       userId: user.id,
     },
   });
-  const uploadedToday = yield models.file.count({
+  const uploadedToday = await models.file.count({
     where: {
       userId: user.id,
       createdAt: {
@@ -85,9 +85,9 @@ export default function* (next) {
     plan: user.plan,
     uploads_today: uploadedToday,
   };
-  this.response.set('Daily-Uploads-Remaining',
+  ctx.response.set('Daily-Uploads-Remaining',
     user.type === 'Pro' ? 'unlimited' : 15 - uploadedToday);
-  this.user = normalisedUser;
-  debug('Authenticated user: ', this.user.email);
-  yield next;
+  ctx.user = normalisedUser;
+  debug('Authenticated user: ', ctx.user.email);
+  await next();
 }

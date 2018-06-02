@@ -11,29 +11,29 @@ import models from '../../models';
 const from = process.env.EMAIL_FROM;
 const fromname = process.env.EMAIL_NAME;
 
-export function* create() {
-  const stripeToken = this.request.body.stripeToken;
+export async function create(ctx) {
+  const stripeToken = ctx.request.body.stripeToken;
 
-  const ip = this.request.headers['x-forwarded-for'] || this.req.connection.remoteAddress;
+  const ip = ctx.request.headers['x-forwarded-for'] || ctx.req.connection.remoteAddress;
 
   const createCustomer = {
     card: stripeToken.id,
     plan: 'usd_monthly',
-    email: this.user.email,
+    email: ctx.user.email,
   };
 
-  const customer = yield stripe.customers.create(createCustomer);
+  const customer = await stripe.customers.create(createCustomer);
 
-  this.assert(customer.subscription.status === 'active', 400, '{"status": "error"}');
+  ctx.assert(customer.subscription.status === 'active', 400, '{"status": "error"}');
 
   delete customer.subscriptions;
 
-  const user = yield models.user.findById(this.user.id);
+  const user = await models.user.findById(ctx.user.id);
   user.plan = 'Pro';
-  yield user.save();
+  await user.save();
 
-  const transaction = yield models.transaction.create({
-    userId: this.user.id,
+  const transaction = await models.transaction.create({
+    userId: ctx.user.id,
     amount: customer.subscription.plan.amount,
     description: customer.subscription.plan.name,
     data: customer,
@@ -41,12 +41,12 @@ export function* create() {
     ip,
   });
 
-  yield transaction.save();
+  await transaction.save();
 
-  this.user.plan = 'Pro';
-  this.body = { status: 'active' };
+  ctx.user.plan = 'Pro';
+  ctx.body = { status: 'active' };
 
-  const html = yield render('email/inlined/pro');
+  const html = await render('email/inlined/pro');
   const text = `Hey, thanks for upgrading to Hostr Pro!
 
   You've signed up for Hostr Pro Monthly at $6/Month.
@@ -55,7 +55,7 @@ export function* create() {
   `;
 
   const mail = new sendgrid.Email({
-    to: this.user.email,
+    to: ctx.user.email,
     subject: 'Hostr Pro',
     from,
     fromname,
@@ -66,20 +66,20 @@ export function* create() {
   sendgrid.send(mail);
 }
 
-export function* cancel() {
-  const user = yield models.user.findById(this.user.id);
-  const transactions = yield user.getTransactions();
+export async function cancel(ctx) {
+  const user = await models.user.findById(ctx.user.id);
+  const transactions = await user.getTransactions();
   const transaction = transactions[0];
 
-  yield stripe.customers.cancelSubscription(
+  await stripe.customers.cancelSubscription(
     transaction.data.id,
     transaction.data.subscription.id,
     { at_period_end: false }
   );
 
   user.plan = 'Free';
-  yield user.save();
+  await user.save();
 
-  this.user.plan = 'Free';
-  this.body = { status: 'inactive' };
+  ctx.user.plan = 'Free';
+  ctx.body = { status: 'inactive' };
 }

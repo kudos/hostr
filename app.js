@@ -1,5 +1,5 @@
 import path from 'path';
-import koa from 'koa';
+import Koa from 'koa';
 import logger from 'koa-logger';
 import serve from 'koa-static';
 import favicon from 'koa-favicon';
@@ -7,6 +7,7 @@ import compress from 'koa-compress';
 import bodyparser from 'koa-bodyparser';
 import websockify from 'koa-websocket';
 import helmet from 'koa-helmet';
+import session from 'koa-session';
 import raven from 'raven';
 import * as redis from './lib/redis';
 import api, { ws } from './api/app';
@@ -15,39 +16,41 @@ import web from './web/app';
 import debugname from 'debug';
 const debug = debugname('hostr');
 
-const app = websockify(koa());
+const app = websockify(new Koa());
 app.keys = [process.env.COOKIE_KEY];
 
 if (process.env.SENTRY_DSN) {
   const ravenClient = new raven.Client(process.env.SENTRY_DSN);
   ravenClient.patchGlobal();
-  app.use(function* ravenMiddleware(next) {
+  app.use(async (ctx, next) => {
     this.raven = ravenClient;
-    yield next;
+    await next();
   });
-  app.ws.use(function* ravenWsMiddleware(next) {
+  app.ws.use(async (ctx, next) => {
     this.raven = ravenClient;
-    yield next;
+    await next();
   });
 }
 
 app.use(helmet());
 
-app.use(function* errorMiddleware(next) {
-  this.set('Server', 'Nintendo 64');
-  if (this.req.headers['x-forwarded-proto'] === 'http') {
-    this.redirect(`https://${this.req.headers.host}${this.req.url}`);
+app.use(async (ctx, next) => {
+  ctx.set('Server', 'Nintendo 64');
+  if (ctx.req.headers['x-forwarded-proto'] === 'http') {
+    ctx.redirect(`https://${this.req.headers.host}${this.req.url}`);
     return;
   }
   try {
-    yield next;
+    await next();
   } catch (err) {
-    if (!err.statusCode && this.raven) {
-      this.raven.captureError(err);
+    if (!err.statusCode && ctx.raven) {
+      ctx.raven.captureError(err);
     }
     throw err;
   }
 });
+
+app.use(session(app));
 
 app.use(redis.middleware());
 app.use(logger());

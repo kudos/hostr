@@ -9,12 +9,11 @@ export default function (sequelize, DataTypes) {
         fields: ['ip'],
       },
     ],
-    classMethods: {
-      associate: (models) => {
-        Login.belongsTo(models.user);
-      },
-    },
   });
+
+  Login.associate = function associate(models) {
+    Login.belongsTo(models.user);
+  };
 
   return Login;
 }

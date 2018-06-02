@@ -12,12 +12,11 @@ export default function (sequelize, DataTypes) {
         fields: ['userId'],
       },
     ],
-    classMethods: {
-      associate: (models) => {
-        Transaction.belongsTo(models.user);
-      },
-    },
   });
+
+  Transaction.associate = function associate(models) {
+    Transaction.belongsTo(models.user);
+  };
 
   return Transaction;
 }

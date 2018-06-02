@@ -16,14 +16,13 @@ export default function (sequelize, DataTypes) {
         fields: ['email'],
       },
     ],
-    classMethods: {
-      associate: (models) => {
-        User.hasMany(models.file);
-        User.hasMany(models.transaction);
-        User.hasOne(models.activation);
-      },
-    },
   });
+
+  User.associate = function associate(models) {
+    User.hasMany(models.file);
+    User.hasMany(models.transaction);
+    User.hasOne(models.activation);
+  };
 
   return User;
 }

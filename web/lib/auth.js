@@ -3,24 +3,25 @@ import { join } from 'path';
 import passwords from 'passwords';
 import uuid from 'node-uuid';
 import views from 'co-views';
-import models from '../../models';
-const render = views(join(__dirname, '..', 'views'), { default: 'ejs' });
 import debugname from 'debug';
-const debug = debugname('hostr-web:auth');
 import sendgridInit from 'sendgrid';
+import models from '../../models';
+
+const render = views(join(__dirname, '..', 'views'), { default: 'ejs' });
+const debug = debugname('hostr-web:auth');
 const sendgrid = sendgridInit(process.env.SENDGRID_KEY);
 
 const from = process.env.EMAIL_FROM;
 const fromname = process.env.EMAIL_NAME;
 
-export function* authenticate(email, password) {
+export async function authenticate(email, password) {
   const remoteIp = this.headers['x-forwarded-for'] || this.ip;
 
   if (!password || password.length < 6) {
     debug('No password, or password too short');
     return new Error('Invalid login details');
   }
-  const count = yield models.login.count({
+  const count = await models.login.count({
     where: {
       ip: remoteIp,
       successful: false,
@@ -34,38 +35,38 @@ export function* authenticate(email, password) {
     debug('Throttling brute force');
     return new Error('Invalid login details');
   }
-  const user = yield models.user.findOne({
+  const user = await models.user.findOne({
     where: {
       email: email.toLowerCase(),
       activated: true,
     },
   });
   debug(user);
-  const login = yield models.login.create({
+  const login = await models.login.create({
     ip: remoteIp,
     successful: false,
   });
 
   if (user && user.password) {
-    if (yield passwords.verify(password, user.password)) {
+    if (await passwords.verify(password, user.password)) {
       debug('Password verified');
       login.successful = true;
-      yield login.save();
+      await login.save();
       debug(user);
       return user;
     }
     debug('Password invalid');
     login.userId = user.id;
   }
-  yield login.save();
+  await login.save();
   return false;
 }
 
 
-export function* setupSession(user) {
+export async function setupSession(user) {
   debug('Setting up session');
   const token = uuid.v4();
-  yield this.redis.set(token, user.id, 'EX', 604800);
+  await this.redis.set(token, user.id, 'EX', 604800);
 
   const sessionUser = {
     id: user.id,
@@ -74,7 +75,7 @@ export function* setupSession(user) {
     maxFileSize: 20971520,
     joined: user.createdAt,
     plan: user.plan,
-    uploadsToday: yield models.file.count({ userId: user.id }),
+    uploadsToday: await models.file.count({ userId: user.id }),
     md5: crypto.createHash('md5').update(user.email).digest('hex'),
     token,
   };
@@ -86,7 +87,7 @@ export function* setupSession(user) {
 
   this.session.user = sessionUser;
   if (this.request.body.remember && this.request.body.remember === 'on') {
-    const remember = yield models.remember.create({
+    const remember = await models.remember.create({
       id: uuid(),
       userId: user.id,
     });
@@ -96,8 +97,8 @@ export function* setupSession(user) {
 }
 
 
-export function* signup(email, password, ip) {
-  const existingUser = yield models.user.findOne({
+export async function signup(email, password, ip) {
+  const existingUser = await models.user.findOne({
     where: {
       email,
       activated: true,
@@ -107,8 +108,8 @@ export function* signup(email, password, ip) {
     debug('Email already in use.');
     throw new Error('Email already in use.');
   }
-  const cryptedPassword = yield passwords.crypt(password);
-  const user = yield models.user.create({
+  const cryptedPassword = await passwords.crypt(password);
+  const user = await models.user.create({
     email,
     password: cryptedPassword,
     ip,
@@ -121,9 +122,9 @@ export function* signup(email, password, ip) {
     include: [models.activation],
   });
 
-  yield user.save();
+  await user.save();
 
-  const html = yield render('email/inlined/activate', {
+  const html = await render('email/inlined/activate', {
     activationUrl: `${process.env.WEB_BASE_URL}/activate/${user.activation.id}`,
   });
   const text = `Thanks for signing up to Hostr!
@@ -146,18 +147,18 @@ ${process.env.WEB_BASE_URL}/activate/${user.activation.id}
 }
 
 
-export function* sendResetToken(email) {
-  const user = yield models.user.findOne({
+export async function sendResetToken(email) {
+  const user = await models.user.findOne({
     where: {
       email,
     },
   });
   if (user) {
-    const reset = yield models.reset.create({
+    const reset = await models.reset.create({
       id: uuid.v4(),
       userId: user.id,
     });
-    const html = yield render('email/inlined/forgot', {
+    const html = await render('email/inlined/forgot', {
       forgotUrl: `${process.env.WEB_BASE_URL}/forgot/${reset.id}`,
     });
     const text = `It seems you've forgotten your password :(
@@ -179,45 +180,45 @@ Visit  ${process.env.WEB_BASE_URL}/forgot/${reset.id} to set a new one.
 }
 
 
-export function* fromToken(token) {
-  const userId = yield this.redis.get(token);
-  return yield models.user.findById(userId);
+export async function fromToken(token) {
+  const userId = await this.redis.get(token);
+  return await models.user.findById(userId);
 }
 
 
-export function* fromCookie(rememberId) {
-  const userId = yield models.remember.findById(rememberId);
-  return yield models.user.findById(userId);
+export async function fromCookie(rememberId) {
+  const userId = await models.remember.findById(rememberId);
+  return await models.user.findById(userId);
 }
 
 
-export function* validateResetToken(resetId) {
-  return yield models.reset.findById(resetId);
+export async function validateResetToken(resetId) {
+  return await models.reset.findById(resetId);
 }
 
 
-export function* updatePassword(userId, password) {
-  const cryptedPassword = yield passwords.crypt(password);
-  const user = yield models.user.findById(userId);
+export async function updatePassword(userId, password) {
+  const cryptedPassword = await passwords.crypt(password);
+  const user = await models.user.findById(userId);
   user.password = cryptedPassword;
-  yield user.save();
+  await user.save();
 }
 
 
-export function* activateUser(code) {
+export async function activateUser(code) {
   debug(code);
-  const activation = yield models.activation.findOne({
+  const activation = await models.activation.findOne({
     where: {
       id: code,
     },
   });
   if (activation.updatedAt.getTime() === activation.createdAt.getTime()) {
     activation.activated = true;
-    yield activation.save();
-    const user = yield activation.getUser();
+    await activation.save();
+    const user = await activation.getUser();
     user.activated = true;
-    yield user.save();
-    yield setupSession.call(this, user);
+    await user.save();
+    await setupSession.call(this, user);
     return true;
   }
   return false;

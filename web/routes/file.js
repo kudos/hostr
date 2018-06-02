@@ -27,92 +27,92 @@ function hotlinkCheck(file, userAgent, referrer) {
   return userAgentCheck(userAgent) || file.width || referrerCheck(referrer);
 }
 
-export function* get() {
-  if (this.params.size && ['150', '970'].indexOf(this.params.size) < 0) {
-    this.throw(404);
+export async function get(ctx) {
+  if (ctx.params.size && ['150', '970'].indexOf(ctx.params.size) < 0) {
+    ctx.throw(404);
     return;
   }
 
-  const file = yield models.file.findOne({
+  const file = await models.file.findOne({
     where: {
-      id: this.params.id,
-      name: this.params.name,
+      id: ctx.params.id,
+      name: ctx.params.name,
     },
   });
-  this.assert(file, 404);
+  ctx.assert(file, 404);
 
-  if (!hotlinkCheck(file, this.headers['user-agent'], this.headers.referer)) {
-    this.redirect(`/${file.id}`);
+  if (!hotlinkCheck(file, ctx.headers['user-agent'], ctx.headers.referer)) {
+    ctx.redirect(`/${file.id}`);
     return;
   }
 
-  if (!file.width && this.request.query.warning !== 'on') {
-    this.redirect(`/${file.id}`);
+  if (!file.width && ctx.request.query.warning !== 'on') {
+    ctx.redirect(`/${file.id}`);
     return;
   }
 
   if (file.malware) {
-    const alert = this.request.query.alert;
+    const alert = ctx.request.query.alert;
     if (!alert || !alert.match(/i want to download malware/i)) {
-      this.redirect(`/${file.id}`);
+      ctx.redirect(`/${file.id}`);
       return;
     }
   }
 
   let localPath = join(storePath, file.id[0], `${file.id}_${file.name}`);
   let remotePath = join(file.id[0], `${file.id}_${file.name}`);
-  if (this.params.size > 0) {
-    localPath = join(storePath, file.id[0], this.params.size, `${file.id}_${file.name}`);
-    remotePath = join(file.id[0], this.params.size, `${file.id}_${file.name}`);
+  if (ctx.params.size > 0) {
+    localPath = join(storePath, file.id[0], ctx.params.size, `${file.id}_${file.name}`);
+    remotePath = join(file.id[0], ctx.params.size, `${file.id}_${file.name}`);
   }
 
   if (file.malware) {
-    this.statsd.incr('file.malware.download', 1);
+    ctx.statsd.incr('file.malware.download', 1);
   }
 
   let type = 'application/octet-stream';
   if (file.width > 0) {
-    if (this.params.size) {
-      this.statsd.incr('file.view', 1);
+    if (ctx.params.size) {
+      ctx.statsd.incr('file.view', 1);
     }
     type = mime.lookup(file.name);
   } else {
-    this.statsd.incr('file.download', 1);
+    ctx.statsd.incr('file.download', 1);
   }
 
-  if (userAgentCheck(this.headers['user-agent'])) {
-    this.set('Content-Disposition', `attachment; filename=${file.name}`);
+  if (userAgentCheck(ctx.headers['user-agent'])) {
+    ctx.set('Content-Disposition', `attachment; filename=${file.name}`);
   }
 
-  this.set('Content-type', type);
-  this.set('Expires', new Date(2020, 1).toISOString());
-  this.set('Cache-control', 'max-age=2592000');
+  ctx.set('Content-type', type);
+  ctx.set('Expires', new Date(2020, 1).toISOString());
+  ctx.set('Cache-control', 'max-age=2592000');
 
-  if (!this.params.size || (this.params.size && this.params.size > 150)) {
+  if (!ctx.params.size || (ctx.params.size && ctx.params.size > 150)) {
     models.file.accessed(file.id);
   }
 
-  this.body = yield hostrFileStream(localPath, remotePath);
+  ctx.body = await hostrFileStream(localPath, remotePath);
 }
 
-export function* resized() {
-  yield get.call(this);
+export async function resized(ctx) {
+  await get.call(ctx);
 }
 
-export function* landing() {
-  const file = yield models.file.findOne({
+export async function landing(ctx) {
+  const file = await models.file.findOne({
     where: {
-      id: this.params.id,
+      id: ctx.params.id,
     },
   });
-  this.assert(file, 404);
-  if (userAgentCheck(this.headers['user-agent'])) {
-    this.params.name = file.name;
-    yield get.call(this);
+  ctx.assert(file, 404);
+  if (userAgentCheck(ctx.headers['user-agent'])) {
+    ctx.params.name = file.name;
+    await get.call(ctx);
     return;
   }
 
-  this.statsd.incr('file.landing', 1);
+  ctx.statsd.incr('file.landing', 1);
   const formattedFile = formatFile(file);
-  yield this.render('file', { file: formattedFile });
+  await ctx.render('file', { file: formattedFile });
 }

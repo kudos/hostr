@@ -3,13 +3,11 @@ export default function (sequelize, DataTypes) {
     id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
     activatedAt: { type: DataTypes.DATE },
     email: DataTypes.STRING,
-  }, {
-    classMethods: {
-      associate: (models) => {
-        Activation.belongsTo(models.user);
-      },
-    },
   });
+
+  Activation.associate = function associate(models) {
+    Activation.belongsTo(models.user);
+  };
 
   return Activation;
 }

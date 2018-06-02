@@ -1,10 +1,11 @@
 import path from 'path';
 import Router from 'koa-router';
-import csrf from 'koa-csrf';
+import CSRF from 'koa-csrf';
 import views from 'koa-views';
-import stats from 'koa-statsd';
+import stats from '../lib/koa-statsd';
 import StatsD from 'statsy';
 import errors from 'koa-error';
+
 import * as redis from '../lib/redis';
 import * as index from './routes/index';
 import * as file from './routes/file';
@@ -20,24 +21,24 @@ router.use(errors({
 const statsdOpts = { prefix: 'hostr-web', host: process.env.STATSD_HOST };
 router.use(stats(statsdOpts));
 const statsd = new StatsD(statsdOpts);
-router.use(function* statsMiddleware(next) {
-  this.statsd = statsd;
-  yield next;
+router.use(async (ctx, next) => {
+  ctx.statsd = statsd;
+  await next();
 });
 
-router.use(redis.sessionStore());
+//router.use(redis.sessionStore());
 
-router.use(function* stateMiddleware(next) {
-  this.state = {
-    session: this.session,
+router.use(async (ctx, next) => {
+  ctx.state = {
+    session: ctx.session,
     baseURL: process.env.WEB_BASE_URL,
     apiURL: process.env.API_BASE_URL,
     stripePublic: process.env.STRIPE_PUBLIC_KEY,
   };
-  yield next;
+  await next();
 });
 
-router.use(csrf());
+router.use(new CSRF());
 
 router.use(views(path.join(__dirname, 'views'), {
   extension: 'ejs',

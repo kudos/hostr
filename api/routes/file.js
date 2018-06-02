@@ -6,107 +6,100 @@ import Uploader from '../../lib/uploader';
 
 const redisUrl = process.env.REDIS_URL;
 
-export function* post(next) {
-  if (!this.request.is('multipart/*')) {
-    yield next;
+export async function post(ctx, next) {
+  if (!ctx.request.is('multipart/*')) {
+    await next();
     return;
   }
 
-  const uploader = new Uploader(this);
+  const uploader = new Uploader(ctx);
 
-  yield uploader.checkLimit();
-  yield uploader.accept();
+  await uploader.checkLimit();
 
-  uploader.acceptedEvent();
+  await uploader.accept();
+  await uploader.processImage();
+  await uploader.finalise();
 
-  yield uploader.receive();
-
-  yield uploader.promise;
-
-  uploader.processingEvent();
-
-  yield uploader.processImage();
-
-  yield uploader.finalise();
-
-  this.status = 201;
-  this.body = formatFile(uploader.file);
+  ctx.status = 201;
+  ctx.body = formatFile(uploader.file);
 
   uploader.completeEvent();
   uploader.malwareScan();
 }
 
 
-export function* list() {
+export async function list(ctx) {
   let limit = 20;
-  if (this.request.query.perpage === '0') {
+  if (ctx.request.query.perpage === '0') {
     limit = 1000;
-  } else if (this.request.query.perpage > 0) {
-    limit = parseInt(this.request.query.perpage / 1, 10);
+  } else if (ctx.request.query.perpage > 0) {
+    limit = parseInt(ctx.request.query.perpage / 1, 10);
   }
 
   let offset = 0;
-  if (this.request.query.page) {
-    offset = parseInt(this.request.query.page - 1, 10) * limit;
+  if (ctx.request.query.page) {
+    offset = parseInt(ctx.request.query.page - 1, 10) * limit;
   }
 
-  const files = yield models.file.findAll({
+  const files = await models.file.findAll({
     where: {
-      userId: this.user.id,
+      userId: ctx.user.id,
       processed: true,
     },
-    order: '"createdAt" DESC',
+    order: [
+    ['createdAt', 'DESC'],
+  ],
     offset,
     limit,
   });
 
-  this.statsd.incr('file.list', 1);
-  this.body = files.map(formatFile);
+  ctx.statsd.incr('file.list', 1);
+  ctx.body = files.map(formatFile);
 }
 
 
-export function* get() {
-  const file = yield models.file.findOne({
+export async function get(ctx) {
+  const file = await models.file.findOne({
     where: {
-      id: this.params.id,
+      id: ctx.params.id,
     },
   });
-  this.assert(file, 404, '{"error": {"message": "File not found", "code": 604}}');
-  const user = yield file.getUser();
-  this.assert(user && !user.banned, 404, '{"error": {"message": "File not found", "code": 604}}');
-  this.statsd.incr('file.get', 1);
-  this.body = formatFile(file);
+  ctx.assert(file, 404, '{"error": {"message": "File not found", "code": 604}}');
+  const user = await file.getUser();
+  ctx.assert(user && !user.banned, 404, '{"error": {"message": "File not found", "code": 604}}');
+  ctx.statsd.incr('file.get', 1);
+  ctx.body = formatFile(file);
 }
 
 
-export function* del() {
-  const file = yield models.file.findOne({
+export async function del(ctx) {
+  const file = await models.file.findOne({
     where: {
-      id: this.params.id,
-      userId: this.user.id,
+      id: ctx.params.id,
+      userId: ctx.user.id,
     },
   });
-  this.assert(file, 401, '{"error": {"message": "File not found", "code": 604}}');
-  yield file.destroy();
-  const event = { type: 'file-deleted', data: { id: this.params.id } };
-  yield this.redis.publish(`/file/${this.params.id}`, JSON.stringify(event));
-  yield this.redis.publish(`/user/${this.user.id}`, JSON.stringify(event));
-  this.statsd.incr('file.delete', 1);
-  this.status = 204;
-  this.body = '';
+  ctx.assert(file, 401, '{"error": {"message": "File not found", "code": 604}}');
+  await file.destroy();
+  const event = { type: 'file-deleted', data: { id: ctx.params.id } };
+  await ctx.redis.publish(`/file/${ctx.params.id}`, JSON.stringify(event));
+  await ctx.redis.publish(`/user/${ctx.user.id}`, JSON.stringify(event));
+  ctx.statsd.incr('file.delete', 1);
+  ctx.status = 204;
+  ctx.body = '';
 }
 
 
-export function* events() {
+export async function events(ctx) {
   const pubsub = redis.createClient(redisUrl);
   pubsub.on('ready', () => {
-    pubsub.subscribe(this.path);
+    pubsub.subscribe(ctx.path);
   });
 
   pubsub.on('message', (channel, message) => {
-    this.websocket.send(message);
+    ctx.websocket.send(message);
   });
-  this.websocket.on('close', () => {
+  ctx.websocket.on('close', () => {
     pubsub.quit();
   });
 }

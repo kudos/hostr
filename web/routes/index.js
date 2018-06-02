@@ -1,56 +1,56 @@
 import uuid from 'node-uuid';
 import auth from '../lib/auth';
 
-export function* main() {
-  if (this.session.user) {
-    if (this.query['app-token']) {
-      this.redirect('/');
+export async function main(ctx) {
+  if (ctx.session.user) {
+    if (ctx.query['app-token']) {
+      ctx.redirect('/');
       return;
     }
     const token = uuid.v4();
-    yield this.redis.set(token, this.session.user.id, 'EX', 604800);
-    this.session.user.token = token;
-    yield this.render('index', { user: this.session.user });
+    await ctx.redis.set(token, ctx.session.user.id, 'EX', 604800);
+    ctx.session.user.token = token;
+    await ctx.render('index', { user: ctx.session.user });
   } else {
-    if (this.query['app-token']) {
-      const user = yield auth.fromToken(this, this.query['app-token']);
-      yield auth.setupSession(this, user);
-      this.redirect('/');
-    } else if (this.cookies.r) {
-      const user = yield auth.fromCookie(this, this.cookies.r);
-      yield auth.setupSession(this, user);
-      this.redirect('/');
+    if (ctx.query['app-token']) {
+      const user = await auth.fromToken(ctx, ctx.query['app-token']);
+      await auth.setupSession(ctx, user);
+      ctx.redirect('/');
+    } else if (ctx.cookies.r) {
+      const user = await auth.fromCookie(ctx, ctx.cookies.r);
+      await auth.setupSession(ctx, user);
+      ctx.redirect('/');
     } else {
-      yield this.render('marketing');
+      await ctx.render('marketing');
     }
   }
 }
 
-export function* staticPage(next) {
-  if (this.session.user) {
+export async function staticPage(ctx, next) {
+  if (ctx.session.user) {
     const token = uuid.v4();
-    yield this.redis.set(token, this.session.user.id, 'EX', 604800);
-    this.session.user.token = token;
-    yield this.render('index', { user: this.session.user });
+    await ctx.redis.set(token, ctx.session.user.id, 'EX', 604800);
+    ctx.session.user.token = token;
+    await ctx.render('index', { user: ctx.session.user });
   } else {
-    switch (this.originalUrl) {
+    switch (ctx.originalUrl) {
       case '/terms':
-        yield this.render('terms');
+        await ctx.render('terms');
         break;
       case '/privacy':
-        yield this.render('privacy');
+        await ctx.render('privacy');
         break;
       case '/pricing':
-        yield this.render('pricing');
+        await ctx.render('pricing');
         break;
       case '/apps':
-        yield this.render('apps');
+        await ctx.render('apps');
         break;
       case '/stats':
-        yield this.render('index', { user: {} });
+        await ctx.render('index', { user: {} });
         break;
       default:
-        yield next;
+        await next();
     }
   }
 }
