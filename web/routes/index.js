@@ -1,5 +1,5 @@
 import uuid from 'node-uuid';
-import auth from '../lib/auth';
+import { fromToken, fromCookie, setupSession } from '../lib/auth';
 
 export async function main(ctx) {
   if (ctx.session.user) {
@@ -11,18 +11,16 @@ export async function main(ctx) {
     await ctx.redis.set(token, ctx.session.user.id, 'EX', 604800);
     ctx.session.user.token = token;
     await ctx.render('index', { user: ctx.session.user });
+  } else if (ctx.query['app-token']) {
+    const user = await fromToken(ctx, ctx.query['app-token']);
+    await setupSession(ctx, user);
+    ctx.redirect('/');
+  } else if (ctx.cookies.r) {
+    const user = await fromCookie(ctx, ctx.cookies.r);
+    await setupSession(ctx, user);
+    ctx.redirect('/');
   } else {
-    if (ctx.query['app-token']) {
-      const user = await auth.fromToken(ctx, ctx.query['app-token']);
-      await auth.setupSession(ctx, user);
-      ctx.redirect('/');
-    } else if (ctx.cookies.r) {
-      const user = await auth.fromCookie(ctx, ctx.cookies.r);
-      await auth.setupSession(ctx, user);
-      ctx.redirect('/');
-    } else {
-      await ctx.render('marketing');
-    }
+    await ctx.render('marketing');
   }
 }
 

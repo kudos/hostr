@@ -2,9 +2,10 @@ import uuid from 'node-uuid';
 import redis from 'redis';
 import co from 'co';
 import passwords from 'passwords';
+import debugname from 'debug';
+
 import models from '../../models';
 
-import debugname from 'debug';
 const debug = debugname('hostr-api:user');
 
 const redisUrl = process.env.REDIS_URL;
@@ -26,31 +27,37 @@ export async function transaction(ctx) {
     },
   });
 
-  ctx.body = transactions.map((item) => {
-    return {
-      id: item.id,
-      amount: item.amount / 100,
-      date: item.date,
-      description: item.description,
-      type: 'direct',
-    };
-  });
+  ctx.body = transactions.map(item => ({
+    id: item.id,
+    amount: item.amount / 100,
+    date: item.date,
+    description: item.description,
+    type: 'direct',
+  }));
 }
 
 export async function settings(ctx) {
-  ctx.assert(ctx.request.body, 400,
-    '{"error": {"message": "Current Password required to update account.", "code": 612}}');
-  ctx.assert(ctx.request.body.current_password, 400,
-    '{"error": {"message": "Current Password required to update account.", "code": 612}}');
+  ctx.assert(
+    ctx.request.body, 400,
+    '{"error": {"message": "Current Password required to update account.", "code": 612}}',
+  );
+  ctx.assert(
+    ctx.request.body.current_password, 400,
+    '{"error": {"message": "Current Password required to update account.", "code": 612}}',
+  );
   const user = await models.user.findById(ctx.user.id);
-  ctx.assert(await passwords.match(ctx.request.body.current_password, user.password), 400,
-    '{"error": {"message": "Incorrect password", "code": 606}}');
+  ctx.assert(
+    await passwords.match(ctx.request.body.current_password, user.password), 400,
+    '{"error": {"message": "Incorrect password", "code": 606}}',
+  );
   if (ctx.request.body.email && ctx.request.body.email !== user.email) {
     user.email = ctx.request.body.email;
   }
   if (ctx.request.body.new_password) {
-    ctx.assert(ctx.request.body.new_password.length >= 7, 400,
-      '{"error": {"message": "Password must be 7 or more characters long.", "code": 606}}');
+    ctx.assert(
+      ctx.request.body.new_password.length >= 7, 400,
+      '{"error": {"message": "Password must be 7 or more characters long.", "code": 606}}',
+    );
     user.password = await passwords.hash(ctx.request.body.new_password);
   }
   await user.save();

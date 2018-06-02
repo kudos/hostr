@@ -13,7 +13,7 @@ export default function (sequelize, DataTypes) {
       'audio',
       'video',
       'archive',
-      'other'
+      'other',
     ),
     width: DataTypes.INTEGER,
     height: DataTypes.INTEGER,
@@ -32,14 +32,15 @@ export default function (sequelize, DataTypes) {
   });
 
   File.accessed = function accessed(id) {
-    sequelize.query(`
+    sequelize.query(
+      `
       UPDATE files
       SET "downloads" = downloads + 1, "accessedAt" = NOW()
       WHERE "id" = :id`,
-    {
-      replacements: { id },
-      type: sequelize.QueryTypes.UPDATE,
-    }
+      {
+        replacements: { id },
+        type: sequelize.QueryTypes.UPDATE,
+      },
     );
   };
 

@@ -2,10 +2,6 @@ import fs from 'fs';
 import path from 'path';
 import Sequelize from 'sequelize';
 
-import debugname from 'debug';
-
-const debug = debugname('hostr:models');
-
 const config = {
   dialect: 'postgres',
   protocol: 'postgres',

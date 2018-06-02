@@ -3,8 +3,6 @@ import kue from 'kue';
 import raven from 'raven';
 import debuglog from 'debug';
 
-import models from '../models';
-
 const debug = debuglog('hostr:worker');
 
 raven.config(process.env.SENTRY_DSN).install();

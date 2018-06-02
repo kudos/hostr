@@ -2,11 +2,10 @@ import path from 'path';
 import Router from 'koa-router';
 import CSRF from 'koa-csrf';
 import views from 'koa-views';
-import stats from '../lib/koa-statsd';
 import StatsD from 'statsy';
 import errors from 'koa-error';
 
-import * as redis from '../lib/redis';
+import stats from '../lib/koa-statsd';
 import * as index from './routes/index';
 import * as file from './routes/file';
 import * as user from './routes/user';
@@ -25,8 +24,6 @@ router.use(async (ctx, next) => {
   ctx.statsd = statsd;
   await next();
 });
-
-//router.use(redis.sessionStore());
 
 router.use(async (ctx, next) => {
   ctx.state = {
@@ -71,15 +68,15 @@ router.get('/:id', file.landing);
 router.get('/file/:id/:name', file.get);
 router.get('/file/:size/:id/:name', file.get);
 router.get('/files/:id/:name', file.get);
-router.get('/download/:id/:name', function* downloadRedirect(id) {
-  this.redirect(`/${id}`);
+router.get('/download/:id/:name', async (ctx, id) => {
+  ctx.redirect(`/${id}`);
 });
 
-router.get('/updaters/mac', function* macUpdater() {
-  this.redirect('/updaters/mac.xml');
+router.get('/updaters/mac', async (ctx) => {
+  ctx.redirect('/updaters/mac.xml');
 });
-router.get('/updaters/mac/changelog', function* macChangelog() {
-  yield this.render('mac-update-changelog');
+router.get('/updaters/mac/changelog', async (ctx) => {
+  await ctx.render('mac-update-changelog');
 });
 
 export default router;

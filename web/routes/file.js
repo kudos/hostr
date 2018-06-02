@@ -20,7 +20,7 @@ function userAgentCheck(userAgent) {
 }
 
 function referrerCheck(referrer) {
-  return referrer && referrerRegexes.some((regex) => referrer.match(regex));
+  return referrer && referrerRegexes.some(regex => referrer.match(regex));
 }
 
 function hotlinkCheck(file, userAgent, referrer) {
@@ -52,7 +52,7 @@ export async function get(ctx) {
   }
 
   if (file.malware) {
-    const alert = ctx.request.query.alert;
+    const { alert } = ctx.request.query;
     if (!alert || !alert.match(/i want to download malware/i)) {
       ctx.redirect(`/${file.id}`);
       return;

@@ -1,18 +1,19 @@
 import path from 'path';
 import views from 'co-views';
-const render = views(path.join(__dirname, '/../views'), { default: 'ejs' });
 import Stripe from 'stripe';
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 import sendgridInit from 'sendgrid';
-const sendgrid = sendgridInit(process.env.SENDGRID_KEY);
 
 import models from '../../models';
+
+const render = views(path.join(__dirname, '/../views'), { default: 'ejs' });
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+const sendgrid = sendgridInit(process.env.SENDGRID_KEY);
 
 const from = process.env.EMAIL_FROM;
 const fromname = process.env.EMAIL_NAME;
 
 export async function create(ctx) {
-  const stripeToken = ctx.request.body.stripeToken;
+  const { stripeToken } = ctx.request.body;
 
   const ip = ctx.request.headers['x-forwarded-for'] || ctx.req.connection.remoteAddress;
 
@@ -74,7 +75,7 @@ export async function cancel(ctx) {
   await stripe.customers.cancelSubscription(
     transaction.data.id,
     transaction.data.subscription.id,
-    { at_period_end: false }
+    { at_period_end: false },
   );
 
   user.plan = 'Free';

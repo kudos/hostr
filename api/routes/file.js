@@ -47,8 +47,8 @@ export async function list(ctx) {
       processed: true,
     },
     order: [
-    ['createdAt', 'DESC'],
-  ],
+      ['createdAt', 'DESC'],
+    ],
     offset,
     limit,
   });

@@ -41,7 +41,7 @@ export async function authenticate(email, password) {
       activated: true,
     },
   });
-  debug(user);
+
   const login = await models.login.create({
     ip: remoteIp,
     successful: false,
@@ -52,7 +52,6 @@ export async function authenticate(email, password) {
       debug('Password verified');
       login.successful = true;
       await login.save();
-      debug(user);
       return user;
     }
     debug('Password invalid');
@@ -182,18 +181,18 @@ Visit  ${process.env.WEB_BASE_URL}/forgot/${reset.id} to set a new one.
 
 export async function fromToken(token) {
   const userId = await this.redis.get(token);
-  return await models.user.findById(userId);
+  return models.user.findById(userId);
 }
 
 
 export async function fromCookie(rememberId) {
   const userId = await models.remember.findById(rememberId);
-  return await models.user.findById(userId);
+  return models.user.findById(userId);
 }
 
 
 export async function validateResetToken(resetId) {
-  return await models.reset.findById(resetId);
+  return models.reset.findById(resetId);
 }
 
 
@@ -206,7 +205,6 @@ export async function updatePassword(userId, password) {
 
 
 export async function activateUser(code) {
-  debug(code);
   const activation = await models.activation.findOne({
     where: {
       id: code,

@@ -9,11 +9,11 @@ import websockify from 'koa-websocket';
 import helmet from 'koa-helmet';
 import session from 'koa-session';
 import raven from 'raven';
+import debugname from 'debug';
 import * as redis from './lib/redis';
 import api, { ws } from './api/app';
 import web from './web/app';
 
-import debugname from 'debug';
 const debug = debugname('hostr');
 
 const app = websockify(new Koa());

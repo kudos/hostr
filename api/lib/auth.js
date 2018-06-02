@@ -1,7 +1,9 @@
 import passwords from 'passwords';
 import auth from 'basic-auth';
-import models from '../../models';
 import debugname from 'debug';
+
+import models from '../../models';
+
 const debug = debugname('hostr-api:auth');
 
 const badLoginMsg = '{"error": {"message": "Incorrect login details.", "code": 607}}';
@@ -36,8 +38,10 @@ export default async (ctx, next) => {
       },
     });
 
-    ctx.assert(count < 25, 401,
-      '{"error": {"message": "Too many incorrect logins.", "code": 608}}');
+    ctx.assert(
+      count < 25, 401,
+      '{"error": {"message": "Too many incorrect logins.", "code": 608}}',
+    );
 
     user = await models.user.findOne({
       where: {
@@ -56,8 +60,10 @@ export default async (ctx, next) => {
   ctx.assert(user, 401, badLoginMsg);
   debug('Checking user is activated');
   debug(user.activated);
-  ctx.assert(user.activated === true, 401,
-    '{"error": {"message": "Account has not been activated.", "code": 603}}');
+  ctx.assert(
+    user.activated === true, 401,
+    '{"error": {"message": "Account has not been activated.", "code": 603}}',
+  );
 
   login.successful = true;
   await login.save();
@@ -85,9 +91,11 @@ export default async (ctx, next) => {
     plan: user.plan,
     uploads_today: uploadedToday,
   };
-  ctx.response.set('Daily-Uploads-Remaining',
-    user.type === 'Pro' ? 'unlimited' : 15 - uploadedToday);
+  ctx.response.set(
+    'Daily-Uploads-Remaining',
+    user.type === 'Pro' ? 'unlimited' : 15 - uploadedToday,
+  );
   ctx.user = normalisedUser;
   debug('Authenticated user: ', ctx.user.email);
   await next();
-}
+};

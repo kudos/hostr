@@ -1,12 +1,14 @@
 import Router from 'koa-router';
-import stats from '../lib/koa-statsd';
 import cors from 'kcors';
 import StatsD from 'statsy';
+import debugname from 'debug';
+
+import stats from '../lib/koa-statsd';
 import auth from './lib/auth';
 import * as user from './routes/user';
 import * as file from './routes/file';
 import * as pro from './routes/pro';
-import debugname from 'debug';
+
 const debug = debugname('hostr-api');
 
 const router = new Router();
@@ -45,17 +47,15 @@ router.use(async (ctx, next) => {
           code: 604,
         },
       };
-    } else {
-      if (!err.status) {
-        debug(err);
-        if (ctx.raven) {
-          ctx.raven.captureError(err);
-        }
-        throw err;
-      } else {
-        ctx.status = err.status;
-        ctx.body = err.message;
+    } else if (!err.status) {
+      debug(err);
+      if (ctx.raven) {
+        ctx.raven.captureError(err);
       }
+      throw err;
+    } else {
+      ctx.status = err.status;
+      ctx.body = err.message;
     }
   }
   ctx.type = 'application/json';

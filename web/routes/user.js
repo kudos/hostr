@@ -1,9 +1,11 @@
+import debugname from 'debug';
 import {
   authenticate, setupSession, signup as signupUser, activateUser, sendResetToken,
   validateResetToken, updatePassword,
 } from '../lib/auth';
+
 import models from '../../models';
-import debugname from 'debug';
+
 const debug = debugname('hostr-web:user');
 
 export async function signin(ctx) {
@@ -44,17 +46,20 @@ export async function signup(ctx) {
     await ctx.render('signup', { error: 'Emails do not match.', csrf: ctx.csrf });
     return;
   } else if (ctx.request.body.email && !ctx.request.body.terms) {
-    await ctx.render('signup', { error: 'You must agree to the terms of service.',
-      csrf: ctx.csrf });
+    await ctx.render('signup', {
+      error: 'You must agree to the terms of service.',
+      csrf: ctx.csrf,
+    });
     return;
   } else if (ctx.request.body.password && ctx.request.body.password.length < 7) {
-    await ctx.render('signup', { error: 'Password must be at least 7 characters long.',
-      csrf: ctx.csrf });
+    await ctx.render('signup', {
+      error: 'Password must be at least 7 characters long.',
+      csrf: ctx.csrf,
+    });
     return;
   }
   const ip = ctx.headers['x-forwarded-for'] || ctx.ip;
-  const email = ctx.request.body.email;
-  const password = ctx.request.body.password;
+  const { email, password } = ctx.request.body;
   try {
     await signupUser.call(ctx, email, password, ip);
   } catch (e) {
@@ -66,12 +71,11 @@ export async function signup(ctx) {
     message: 'Thanks for signing up, we\'ve sent you an email to activate your account.',
     csrf: '',
   });
-  return;
 }
 
 
 export async function forgot(ctx) {
-  const token = ctx.params.token;
+  const { token } = ctx.params;
 
   if (ctx.request.body.password) {
     if (ctx.request.body.password.length < 7) {
@@ -87,7 +91,7 @@ export async function forgot(ctx) {
     if (user) {
       await updatePassword(user.userId, ctx.request.body.password);
       const reset = await models.reset.findById(token);
-      //reset.destroy();
+      reset.destroy();
       await setupSession.call(ctx, user);
       ctx.statsd.incr('auth.reset.success', 1);
       ctx.redirect('/');
@@ -104,11 +108,10 @@ export async function forgot(ctx) {
       return;
     }
     await ctx.render('forgot', { csrf: ctx.csrf, token });
-    return;
   } else if (ctx.request.body.email) {
     ctx.assertCSRF(ctx.request.body);
     try {
-      const email = ctx.request.body.email;
+      const { email } = ctx.request.body;
       await sendResetToken.call(ctx, email);
       ctx.statsd.incr('auth.reset.request', 1);
       await ctx.render('forgot', {
@@ -136,7 +139,7 @@ export async function logout(ctx) {
 
 
 export async function activate(ctx) {
-  const code = ctx.params.code;
+  const { code } = ctx.params;
   if (await activateUser.call(ctx, code)) {
     ctx.statsd.incr('auth.activation', 1);
     ctx.redirect('/');
