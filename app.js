@@ -13,6 +13,7 @@ import debugname from 'debug';
 import * as redis from './lib/redis';
 import api, { ws } from './api/app';
 import web from './web/app';
+import { isContext } from 'vm';
 
 const debug = debugname('hostr');
 
@@ -23,11 +24,11 @@ if (process.env.SENTRY_DSN) {
   Raven.config(process.env.SENTRY_DSN);
   Raven.install();
   app.use(async (ctx, next) => {
-    this.Raven = Raven;
+    ctx.Raven = Raven;
     await next();
   });
   app.ws.use(async (ctx, next) => {
-    this.Raven = Raven;
+    ctx.Raven = Raven;
     await next();
   });
 }
@@ -37,7 +38,7 @@ app.use(helmet());
 app.use(async (ctx, next) => {
   ctx.set('Server', 'Nintendo 64');
   if (ctx.req.headers['x-forwarded-proto'] === 'http') {
-    ctx.redirect(`https://${this.req.headers.host}${this.req.url}`);
+    ctx.redirect(`https://${ctx.req.headers.host}${ctx.req.url}`);
     return;
   }
   try {

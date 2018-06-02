@@ -1,7 +1,7 @@
 import angular from 'angular';
-import 'angular/route';
-import 'angular/resource';
-import 'angular-reconnecting-websocket';
+import 'angular-route';
+import 'angular-resource';
+import 'angular-reconnecting-websocket/angular-reconnecting-websocket';
 import 'angular-strap/dist/modules/dimensions';
 import 'angular-strap/dist/modules/compiler';
 import 'angular-strap/dist/modules/tooltip';

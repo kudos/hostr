@@ -1,11 +1,11 @@
 import co from 'co';
 import kue from 'kue';
-import raven from 'raven';
+import Raven from 'raven';
 import debuglog from 'debug';
 
 const debug = debuglog('hostr:worker');
 
-raven.config(process.env.SENTRY_DSN).install();
+Raven.config(process.env.SENTRY_DSN).install();
 
 const queue = kue.createQueue({
   redis: process.env.REDIS_URL,
@@ -16,7 +16,7 @@ function store(data, done) {
 
   }).catch((err) => {
     debug(err);
-    raven.captureException(err);
+    Raven.captureException(err);
     return done();
   });
 }

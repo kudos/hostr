@@ -10,7 +10,7 @@ body {
    min-height: 100%;
 }
 
-$icon-font-path: "../jspm_packages/npm/bootstrap-sass@3.3.6/assets/fonts/bootstrap/";
+$icon-font-path: "bootstrap-sass/assets/fonts/bootstrap/";
 
 // MAIN VARIABLES
 $body-bg: #0d0d1a;
@@ -44,7 +44,7 @@ $nav-link-hover-bg: rgba(255,255,255,0);
 
 
 // bower: scss
-@import '../jspm_packages/npm/bootstrap-sass@3.3.6/assets/stylesheets/bootstrap';
+@import 'bootstrap-sass/assets/stylesheets/bootstrap';
 // endbower
 html,
 body {

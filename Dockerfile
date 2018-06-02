@@ -11,7 +11,7 @@ RUN yarn
 
 COPY . .
 
-RUN yarn run jspm && yarn run build
+RUN yarn run build
 
 ENV PORT 3000
 EXPOSE 3000
