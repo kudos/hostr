@@ -23,7 +23,9 @@
     "watch": "parallelshell \"npm run watch-js\" \"npm run watch-sass\" \"npm run watch-server\"",
     "watch-js": "babel -Dw -m system -d web/public/build web/public/src",
     "watch-server": "nodemon -r babel-register app.js",
-    "watch-sass": "node-sass -w -r -o web/public/styles/ web/public/styles/"
+    "watch-sass": "node-sass -w -r -o web/public/styles/ web/public/styles/",
+    "snyk-protect": "snyk protect",
+    "prepare": "npm run snyk-protect"
   },
   "dependencies": {
     "aws-sdk": "^2.3.19",
@@ -80,7 +82,8 @@
     "statsy": "~0.2.0",
     "stripe": "^4.7.0",
     "swig": "~1.4.2",
-    "validate-ip": "^1.0.1"
+    "validate-ip": "^1.0.1",
+    "snyk": "^1.83.0"
   },
   "devDependencies": {
     "babel-eslint": "^6.0.4",
@@ -119,5 +122,6 @@
   "cacheDirectories": [
     "node_modules",
     "web/public/jspm_packages"
-  ]
+  ],
+  "snyk": true
 }
