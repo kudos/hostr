@@ -53,7 +53,7 @@
     "image-size": "^0.6.2",
     "image-type": "^3.0.0",
     "jimp": "0.2.28",
-    "jquery": "^2.2.4",
+    "jquery": "^3.3.1",
     "kcors": "^2.2.1",
     "koa": "^2.5.1",
     "koa-bodyparser": "^4.2.1",
