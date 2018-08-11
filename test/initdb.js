@@ -8,4 +8,5 @@ co(async function sync() {
   debug('Syncing schema');
   await models.sequelize.sync();
   debug('Schema synced');
+  process.exit();
 });

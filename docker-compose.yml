@@ -27,6 +27,7 @@ services:
     volumes:
       - ./:/app:cached
       - uploads:/hostr/uploads
+      - export:/export
     ports:
       - "3000:3000"
     command: yarn run watch
