@@ -35,7 +35,14 @@ router.use(async (ctx, next) => {
   await next();
 });
 
-router.use(new CSRF());
+router.use(new CSRF({
+  invalidSessionSecretMessage: 'Invalid session secret',
+  invalidSessionSecretStatusCode: 403,
+  invalidTokenMessage: 'Invalid CSRF token',
+  invalidTokenStatusCode: 403,
+  excludedMethods: ['GET', 'HEAD', 'OPTIONS'],
+  disableQuery: false,
+}));
 
 router.use(views(path.join(__dirname, 'views'), {
   extension: 'ejs',

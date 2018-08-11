@@ -13,7 +13,6 @@ import debugname from 'debug';
 import * as redis from './lib/redis';
 import api, { ws } from './api/app';
 import web from './web/app';
-import { isContext } from 'vm';
 
 const debug = debugname('hostr');
 

@@ -1,13 +1,13 @@
 import path from 'path';
 import views from 'co-views';
 import Stripe from 'stripe';
-import sendgridInit from 'sendgrid';
+import sendgrid from '@sendgrid/mail';
 
 import models from '../../models';
 
 const render = views(path.join(__dirname, '/../views'), { default: 'ejs' });
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-const sendgrid = sendgridInit(process.env.SENDGRID_KEY);
+sendgrid.setApiKey(process.env.SENDGRID_KEY);
 
 const from = process.env.EMAIL_FROM;
 const fromname = process.env.EMAIL_NAME;
@@ -55,16 +55,17 @@ export async function create(ctx) {
   — Jonathan Cremin, Hostr Founder
   `;
 
-  const mail = new sendgrid.Email({
+  sendgrid.send({
     to: ctx.user.email,
     subject: 'Hostr Pro',
     from,
     fromname,
     html,
     text,
+    categories: [
+      'pro-upgrade',
+    ],
   });
-  mail.addCategory('pro-upgrade');
-  sendgrid.send(mail);
 }
 
 export async function cancel(ctx) {

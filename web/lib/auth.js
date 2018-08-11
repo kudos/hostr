@@ -4,12 +4,12 @@ import passwords from 'passwords';
 import uuid from 'node-uuid';
 import views from 'co-views';
 import debugname from 'debug';
-import sendgridInit from 'sendgrid';
+import sendgrid from '@sendgrid/mail';
 import models from '../../models';
 
 const render = views(join(__dirname, '..', 'views'), { default: 'ejs' });
 const debug = debugname('hostr-web:auth');
-const sendgrid = sendgridInit(process.env.SENDGRID_KEY);
+sendgrid.setApiKey(process.env.SENDGRID_KEY);
 
 const from = process.env.EMAIL_FROM;
 const fromname = process.env.EMAIL_NAME;
@@ -133,16 +133,17 @@ ${process.env.WEB_BASE_URL}/activate/${user.activation.id}
 
 — Jonathan Cremin, Hostr Founder
 `;
-  const mail = new sendgrid.Email({
+  sendgrid.send({
     to: user.email,
     subject: 'Welcome to Hostr',
     from,
     fromname,
     html,
     text,
+    categories: [
+      'activate',
+    ],
   });
-  mail.addCategory('activate');
-  sendgrid.send(mail);
 }
 
 
@@ -163,16 +164,17 @@ export async function sendResetToken(email) {
     const text = `It seems you've forgotten your password :(
 Visit  ${process.env.WEB_BASE_URL}/forgot/${reset.id} to set a new one.
 `;
-    const mail = new sendgrid.Email({
+    sendgrid.send({
       to: user.email,
       from: 'jonathan@hostr.co',
       fromname: 'Jonathan from Hostr',
       subject: 'Hostr Password Reset',
       html,
       text,
+      categories: [
+        'password-reset',
+      ],
     });
-    mail.addCategory('password-reset');
-    sendgrid.send(mail);
   } else {
     throw new Error('There was an error looking up your email address.');
   }

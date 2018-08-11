@@ -41,7 +41,6 @@ export async function signup(ctx) {
     return;
   }
 
-  ctx.assertCSRF(ctx.request.body);
   if (ctx.request.body.email !== ctx.request.body.confirm_email) {
     await ctx.render('signup', { error: 'Emails do not match.', csrf: ctx.csrf });
     return;
@@ -69,7 +68,7 @@ export async function signup(ctx) {
   ctx.statsd.incr('auth.signup', 1);
   await ctx.render('signup', {
     message: 'Thanks for signing up, we\'ve sent you an email to activate your account.',
-    csrf: '',
+    csrf: ctx.csrf,
   });
 }
 
@@ -86,7 +85,7 @@ export async function forgot(ctx) {
       });
       return;
     }
-    ctx.assertCSRF(ctx.request.body);
+
     const user = await validateResetToken(token);
     if (user) {
       await updatePassword(user.userId, ctx.request.body.password);
@@ -109,7 +108,7 @@ export async function forgot(ctx) {
     }
     await ctx.render('forgot', { csrf: ctx.csrf, token });
   } else if (ctx.request.body.email) {
-    ctx.assertCSRF(ctx.request.body);
+
     try {
       const { email } = ctx.request.body;
       await sendResetToken.call(ctx, email);
