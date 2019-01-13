@@ -1,15 +1,15 @@
 # Hostr
 
 ## About
-Hostr is a project I started almost ten years ago when I set out to learn web development. Since then it's seen over 100,000 signups and served up over 2 billion file downloads.
+Hostr is a project I started over ten years ago when I set out to learn web development. Since then it's seen over 100,000 signups and served up over 2 billion file downloads.
 
-It has been through many iterations, but in its current incarnation Hostr uses [Koa](http://koajs.com/) for the backend, [Angular](https://angular.io/) and [JSPM](http://jspm.io) for the frontend, and [Babel](https://babeljs.io/) for both.
+It has been through many iterations, but in its current incarnation Hostr uses [Koa](http://koajs.com/) for the backend, [Angular](https://angular.io/) and [Webpack](http://jspm.io) for the frontend, and [Babel](https://babeljs.io/) for both.
 
 ## Getting Started
 
 ### Dependencies
 
-Everything is taken care of by an `make build`.
+Everything is taken care of by a `make build`.
 
 ### Enviroment Variable Configuration
 
@@ -34,8 +34,6 @@ $ make init migrate
 ```
 $ make test
 ```
-
-Running the tests will also set the indexes required for Mongo.
 
 ## Licence
 

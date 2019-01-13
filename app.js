@@ -53,7 +53,9 @@ app.use(async (ctx, next) => {
 app.use(session(app));
 
 app.use(redis.middleware());
-app.use(logger());
+if (process.env.DEBUG === 'true') {
+  app.use(logger());
+}
 app.use(compress());
 app.use(bodyparser());
 

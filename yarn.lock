@@ -1877,9 +1877,9 @@ double-ended-queue@^2.1.0-0:
   version "2.1.0-0"
   resolved "https://registry.yarnpkg.com/double-ended-queue/-/double-ended-queue-2.1.0-0.tgz#103d3527fd31528f40188130c841efdd78264e5c"
 
-dropzone@~4.0.1:
-  version "4.0.1"
-  resolved "https://registry.yarnpkg.com/dropzone/-/dropzone-4.0.1.tgz#9e6e3430a85bd5ee8f430f058abd0c877b25fbec"
+dropzone@~5.5.1:
+  version "5.5.1"
+  resolved "https://registry.yarnpkg.com/dropzone/-/dropzone-5.5.1.tgz#06e2f513e61d6aa363d4b556f18574f47cf7ba26"
 
 duplexer3@^0.1.4:
   version "0.1.4"
