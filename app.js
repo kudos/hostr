@@ -22,6 +22,11 @@ app.keys = [process.env.COOKIE_KEY];
 if (process.env.SENTRY_DSN) {
   Raven.config(process.env.SENTRY_DSN);
   Raven.install();
+  app.on('error', function (err) {
+    Raven.captureException(err, function (err, eventId) {
+      console.log('Reported error ' + eventId);
+    });
+  });
   app.use(async (ctx, next) => {
     ctx.Raven = Raven;
     await next();
