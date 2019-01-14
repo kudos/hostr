@@ -26,12 +26,6 @@ if (process.env.SENTRY_DSN) {
     dsn: process.env.SENTRY_DSN,
     release: process.env.GIT_REV,
   });
-  app.on('error', (err) => {
-    if (err.statusCode === 404) return;
-    Sentry.captureException(err, (_err, eventId) => {
-      debug('Reported error', eventId);
-    });
-  });
   app.context.Sentry = Sentry;
 }
 
@@ -71,6 +65,15 @@ app.use(web.prefix('').routes());
 
 app.ws.use(redis.middleware());
 app.ws.use(ws.prefix('/api').routes());
+
+app.on('error', (err) => {
+  if (err.statusCode === 404) return;
+  if (process.env.SENTRY_DSN) {
+    Sentry.captureException(err, (_err, eventId) => {
+      debug('Reported error', eventId);
+    });
+  }
+});
 
 if (!module.parent) {
   app.listen(process.env.PORT || 4040, () => {
