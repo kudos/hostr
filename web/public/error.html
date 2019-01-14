@@ -15,7 +15,7 @@
       <div class='row'>
         <div class='col-md-12'>
           <div class='error-logo'>
-            <a href='/'><img src='/images/logo-dark-r.png' width='26' height='22' /></a>
+            <a href='/'><img src='/images/logo-dark.png' width='26' height='22' /></a>
           </div>
         </div>
       </div>
@@ -23,13 +23,13 @@
         <div class='col-md-12'>
           <h2><%= status %></h2>
           <% if (status >= 500) { %>
-          <h1><%= error %></h1>
+          <h1>Oops, looks like we're having a problem with your request.</h1>
           <p>Refreshing might fix the problem. If not, sit tight! We're on it!</p>
           <% } else if (status === 404) { %>
           <h1>Sorry, it looks like the file you asked for is gone.</h1>
           <a href='/'>Take Me Home</a>
           <% } else { %>
-          <h1><%=  error %></h1>
+          <h1><%= error %></h1>
           <a href='/'>Take Me Home</a>
           <% } %>
           </p>
