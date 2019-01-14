@@ -49,8 +49,8 @@ router.use(async (ctx, next) => {
       };
     } else if (!err.status) {
       debug(err);
-      if (ctx.Raven) {
-        ctx.Raven.captureException(err);
+      if (ctx.Sentry) {
+        ctx.Sentry.captureException(err);
       }
       throw err;
     } else {

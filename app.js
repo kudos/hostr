@@ -8,7 +8,7 @@ import bodyparser from 'koa-bodyparser';
 import websockify from 'koa-websocket';
 import helmet from 'koa-helmet';
 import session from 'koa-session';
-import Raven from 'raven';
+import * as Sentry from '@sentry/node';
 import debugname from 'debug';
 import * as redis from './lib/redis';
 import api, { ws } from './api/app';
@@ -20,19 +20,19 @@ const app = websockify(new Koa());
 app.keys = [process.env.COOKIE_KEY];
 
 if (process.env.SENTRY_DSN) {
-  Raven.config(process.env.SENTRY_DSN);
-  Raven.install();
-  app.on('error', function (err) {
-    Raven.captureException(err, function (err, eventId) {
-      console.log('Reported error ' + eventId);
+  Sentry.init({ dsn: process.env.SENTRY_DSN });
+  app.on('error', (err) => {
+    if (err.statusCode === 404) return;
+    Sentry.captureException(err, (_err, eventId) => {
+      debug('Reported error', eventId);
     });
   });
   app.use(async (ctx, next) => {
-    ctx.Raven = Raven;
+    ctx.Sentry = Sentry;
     await next();
   });
   app.ws.use(async (ctx, next) => {
-    ctx.Raven = Raven;
+    ctx.Sentry = Sentry;
     await next();
   });
 }
@@ -49,7 +49,9 @@ app.use(async (ctx, next) => {
     await next();
   } catch (err) {
     if (!err.statusCode && process.env.SENTRY_DSN) {
-      Raven.captureException(err);
+      Sentry.captureException(err, (_err, eventId) => {
+        debug('Reported error', eventId);
+      });
     }
     throw err;
   }

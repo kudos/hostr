@@ -1,4 +1,4 @@
-FROM node:10.2.1-alpine
+FROM node:11.6.0-alpine
 
 WORKDIR /app
 

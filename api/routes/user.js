@@ -77,7 +77,7 @@ export async function events(ctx) {
       } catch (err) {
         debug('Invalid JSON for socket auth');
         ctx.websocket.send('Invalid authentication message. Bad JSON?');
-        ctx.Raven.captureException(err);
+        ctx.Sentry.captureException(err);
       }
       try {
         const reply = await ctx.redis.get(json.authorization);
@@ -90,7 +90,7 @@ export async function events(ctx) {
         }
       } catch (err) {
         debug(err);
-        ctx.Raven.captureException(err);
+        ctx.Sentry.captureException(err);
       }
     }));
   });
