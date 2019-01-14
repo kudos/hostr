@@ -20,7 +20,10 @@ const app = websockify(new Koa());
 app.keys = [process.env.COOKIE_KEY];
 
 if (process.env.SENTRY_DSN) {
-  Sentry.init({ dsn: process.env.SENTRY_DSN });
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    release: `hostr@${process.env.GIT_REV}`,
+  });
   app.on('error', (err) => {
     if (err.statusCode === 404) return;
     Sentry.captureException(err, (_err, eventId) => {
