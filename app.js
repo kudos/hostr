@@ -19,6 +19,8 @@ const debug = debugname('hostr');
 const app = websockify(new Koa());
 app.keys = [process.env.COOKIE_KEY];
 
+app.use(bodyparser());
+
 if (process.env.SENTRY_DSN) {
   Sentry.init({
     dsn: process.env.SENTRY_DSN,
@@ -30,14 +32,7 @@ if (process.env.SENTRY_DSN) {
       debug('Reported error', eventId);
     });
   });
-  app.use(async (ctx, next) => {
-    ctx.Sentry = Sentry;
-    await next();
-  });
-  app.ws.use(async (ctx, next) => {
-    ctx.Sentry = Sentry;
-    await next();
-  });
+  app.context.Sentry = Sentry;
 }
 
 app.use(helmet());
@@ -63,11 +58,10 @@ app.use(async (ctx, next) => {
 app.use(session(app));
 
 app.use(redis.middleware());
-if (process.env.DEBUG === 'true') {
+if (app.env === 'development') {
   app.use(logger());
 }
 app.use(compress());
-app.use(bodyparser());
 
 app.use(favicon(path.join(__dirname, 'web/public/images/favicon.png')));
 app.use(serve(path.join(__dirname, 'web/public/'), { maxage: 31536000000 }));
