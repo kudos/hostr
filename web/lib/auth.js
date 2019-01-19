@@ -48,6 +48,7 @@ export async function authenticate(email, password) {
   });
 
   if (user && user.password) {
+    login.userId = user.id;
     if (await passwords.verify(password, user.password)) {
       debug('Password verified');
       login.successful = true;
@@ -55,7 +56,6 @@ export async function authenticate(email, password) {
       return user;
     }
     debug('Password invalid');
-    login.userId = user.id;
   }
   await login.save();
   return false;

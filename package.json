@@ -8,18 +8,18 @@
     "node": "^11.6.0"
   },
   "scripts": {
-    "build": "npm run build-js && npm run build-sass",
+    "build": "yarn run build-js && yarn run build-sass",
     "build-js": "webpack --progress -p -c webpack.config.js",
     "build-sass": "node-sass --include-path ./node_modules/ -r -o web/public/styles/ web/public/styles/",
     "cover": "istanbul cover _mocha -- -r babel-register test/**/*.spec.js",
-    "heroku-postbuild": "npm run build",
+    "heroku-postbuild": "yarn run build",
     "init": "babel-node -e \"require('./lib/storage').default();\"",
     "initdb": "node -r babel-register test/initdb.js",
     "lint": "eslint .",
     "start": "node -r babel-register app.js",
-    "test": "npm run test-seed && mocha -r babel-register test/**/*.spec.js",
+    "test": "yarn run test-seed && mocha -r babel-register test/**/*.spec.js",
     "test-seed": "babel-node test/fixtures/user.js",
-    "watch": "concurrently -k -n watch-js,watch-server \"npm run watch-js\" \"npm run watch-server\"",
+    "watch": "concurrently -k -n watch-js,watch-sass \"yarn run watch-js\" \"yarn run watch-sass\"",
     "watch-js": "webpack --mode=development --progress -c webpack.config.js",
     "watch-server": "nodemon -r babel-register -i web/public",
     "watch-sass": "node-sass --include-path ./node_modules/ -w -r -o web/public/styles/ web/public/styles/"

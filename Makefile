@@ -28,7 +28,7 @@ migrate: ## Migrate database schema
 init: ## Migrate database schema
 	docker-compose run --rm app yarn run init
 
-.PHONY: watch
+.PHONY: watch-frontend
 watch-frontend: ## Build and watch for changes
 	docker-compose run --rm app yarn run watch
 
