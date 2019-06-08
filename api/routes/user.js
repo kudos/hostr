@@ -45,7 +45,7 @@ export async function settings(ctx) {
     ctx.request.body.current_password, 400,
     '{"error": {"message": "Current Password required to update account.", "code": 612}}',
   );
-  const user = await models.user.findById(ctx.user.id);
+  const user = await models.user.findByPk(ctx.user.id);
   ctx.assert(
     await passwords.match(ctx.request.body.current_password, user.password), 400,
     '{"error": {"message": "Incorrect password", "code": 606}}',

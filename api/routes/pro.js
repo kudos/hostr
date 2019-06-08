@@ -29,7 +29,7 @@ export async function create(ctx) {
 
   delete customer.subscriptions;
 
-  const user = await models.user.findById(ctx.user.id);
+  const user = await models.user.findByPk(ctx.user.id);
   user.plan = 'Pro';
   await user.save();
 
@@ -69,7 +69,7 @@ export async function create(ctx) {
 }
 
 export async function cancel(ctx) {
-  const user = await models.user.findById(ctx.user.id);
+  const user = await models.user.findByPk(ctx.user.id);
   const transactions = await user.getTransactions();
   const transaction = transactions[0];
 

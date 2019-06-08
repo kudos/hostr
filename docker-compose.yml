@@ -25,7 +25,7 @@ services:
       VIRUSTOTAL_KEY:
       SENTRY_DSN:
     volumes:
-      - ./:/app:cached
+      - ./:/app
       - uploads:/hostr/uploads
       - export:/export
     ports:
@@ -55,7 +55,7 @@ services:
       VIRUSTOTAL_KEY:
       SENTRY_DSN:
     volumes:
-      - ./:/app:cached
+      - ./:/app
       - uploads:/hostr/uploads
     ports:
       - "3001:3000"

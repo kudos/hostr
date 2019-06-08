@@ -89,7 +89,7 @@ export async function forgot(ctx) {
     const user = await validateResetToken(token);
     if (user) {
       await updatePassword(user.userId, ctx.request.body.password);
-      const reset = await models.reset.findById(token);
+      const reset = await models.reset.findByPk(token);
       reset.destroy();
       await setupSession.call(ctx, user);
       ctx.statsd.incr('auth.reset.success', 1);

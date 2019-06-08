@@ -183,24 +183,24 @@ Visit  ${process.env.WEB_BASE_URL}/forgot/${reset.id} to set a new one.
 
 export async function fromToken(token) {
   const userId = await this.redis.get(token);
-  return models.user.findById(userId);
+  return models.user.findByPk(userId);
 }
 
 
 export async function fromCookie(rememberId) {
-  const userId = await models.remember.findById(rememberId);
-  return models.user.findById(userId);
+  const userId = await models.remember.findByPk(rememberId);
+  return models.user.findByPk(userId);
 }
 
 
 export async function validateResetToken(resetId) {
-  return models.reset.findById(resetId);
+  return models.reset.findByPk(resetId);
 }
 
 
 export async function updatePassword(userId, password) {
   const cryptedPassword = await passwords.crypt(password);
-  const user = await models.user.findById(userId);
+  const user = await models.user.findByPk(userId);
   user.password = cryptedPassword;
   await user.save();
 }

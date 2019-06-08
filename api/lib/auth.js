@@ -20,7 +20,7 @@ export default async (ctx, next) => {
     const userToken = await ctx.redis.get(ctx.req.headers.authorization.substr(1));
     ctx.assert(userToken, 401, '{"error": {"message": "Invalid token.", "code": 606}}');
     debug('Token found');
-    user = await models.user.findById(userToken);
+    user = await models.user.findByPk(userToken);
     if (!user) {
       login.save();
       return;
