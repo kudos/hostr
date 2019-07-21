@@ -64,6 +64,24 @@ export async function settings(ctx) {
   ctx.body = {};
 }
 
+export async function deleteUser(ctx) {
+  ctx.assert(
+    ctx.request.body, 400,
+    '{"error": {"message": "Current Password required to update account.", "code": 612}}',
+  );
+  ctx.assert(
+    ctx.request.body.current_password, 400,
+    '{"error": {"message": "Current Password required to update account.", "code": 612}}',
+  );
+  const user = await models.user.findByPk(ctx.user.id);
+  ctx.assert(
+    await passwords.match(ctx.request.body.current_password, user.password), 400,
+    '{"error": {"message": "Incorrect password", "code": 606}}',
+  );
+  await user.destroy();
+  ctx.body = '{"action":"logout", "message": "Account deleted"}';
+}
+
 export async function events(ctx) {
   const pubsub = redis.createClient(redisUrl);
   pubsub.on('message', (channel, message) => {

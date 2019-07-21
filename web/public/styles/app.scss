@@ -917,8 +917,11 @@ a {
     color: #FF524F;
   }
 
-  .btn-danger {
-    float: right;
+  .panel-danger {
+    margin-top: 75px;
+    h3 {
+      color: #FF524F;
+    }
   }
 
   form {

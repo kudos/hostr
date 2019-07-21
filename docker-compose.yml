@@ -30,7 +30,7 @@ services:
       - export:/export
     ports:
       - "3000:3000"
-    command: yarn run start
+    command: yarn run watch-server
   worker:
     build: ./
     environment:

@@ -63,6 +63,7 @@ router.get('/user/token', auth, user.token);
 router.get('/token', auth, user.token);
 router.get('/user/transaction', auth, user.transaction);
 router.post('/user/settings', auth, user.settings);
+router.post('/user/delete', auth, user.deleteUser);
 router.post('/user/pro', auth, pro.create);
 router.delete('/user/pro', auth, pro.cancel);
 router.get('/file', auth, file.list);

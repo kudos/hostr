@@ -84,6 +84,9 @@ export class SettingService {
     service.update = (data) => {
       return $http.post(window.settings.apiURL + '/user/settings', data);
     };
+    service.delete = (data) => {
+      return $http.post(window.settings.apiURL + '/user/delete', data);
+    };
     return service;
   }
 

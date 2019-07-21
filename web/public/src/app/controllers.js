@@ -91,6 +91,16 @@ export class AccountController {
         $scope.error = response.data.error.message;
       });
     };
+    $scope.delete = (form) => {
+      $scope.updated = false;
+      $scope.error = false;
+      SettingService.delete(form).then(() => {
+        delete $scope.user.current_password;
+        window.location = '/logout';
+      }, (response) => {
+        $scope.error = response.data.error.message;
+      });
+    };
   }
 }
 AccountController.$inject = ['$scope', 'UserService', 'SettingService'];

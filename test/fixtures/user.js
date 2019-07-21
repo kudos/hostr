@@ -1,4 +1,5 @@
 import co from 'co';
+import passwords from 'passwords';
 
 import models from '../../models';
 
@@ -6,9 +7,10 @@ import debugname from 'debug';
 const debug = debugname('hostr:db');
 
 function *createUser() {
+  const password = yield passwords.hash('test-password');
   const user = yield models.user.create({
     'email': 'test@hostr.co',
-    'password': '$pbkdf2-256-1$2$kBhIDRqFwnF/1ms6ZHfME2o2$a48e8c350d26397fcc88bf0a7a2817b1cdcd1ffffe0521a5',
+    'password': password,
     'ip': '127.0.0.1',
     'plan': 'Free',
     'activated': true,

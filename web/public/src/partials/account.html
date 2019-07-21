@@ -39,16 +39,16 @@
                   <div class="alert alert-danger" ng-show="error">{{error}}</div>
                   <div class="alert alert-success" ng-show="updated">Updated your details successfully</div>
                     <div class="form-group">
-                        <label for="fname">Email</label>
-                        <input type="email" class="form-control" id="fname" value="{{user.email}}" ng-model="user.email">
+                        <label for="email">Email</label>
+                        <input type="email" class="form-control" id="email" value="{{user.email}}" ng-model="user.email">
 
                         <span>
                             <strong>Required.</strong> Password resets will be sent to this address.</span>
                     </div>
 
                     <div class="form-group">
-                        <label for="fname">New Password</label>
-                        <input type="password" class="form-control" id="fname"   ng-model="user.new_password">
+                        <label for="newPassword">New Password</label>
+                        <input type="password" class="form-control" id="newPassword" autocomplete="new-password" ng-model="user.new_password">
 
                         <span>Leave this field blank unless you want to update your password.</span>
                     </div>
@@ -56,17 +56,43 @@
                     <hr>
 
                     <div class="form-group">
-                        <label for="fname">Current Password</label>
-                        <input type="password" class="form-control" id="fname"  ng-model="user.current_password">
+                        <label for="password">Current Password</label>
+                        <input type="password" class="form-control" id="password" ng-model="user.current_password">
 
                         <span><strong>Required.</strong> When updating your details we require your current password.</span>
                     </div>
 
                     <button type="submit" href="#" class="btn btn-signup">Save Changes</button>
-                    <!-- <button type="button" href="#" class="btn">Cancel</button> -->
-                    <!-- <button type="button" class="btn btn-danger">Delete Account</button> -->
                 </form>
 
+                <hr>
+
+                <div class="panel panel-default panel-danger">
+                    <div class="panel-body">
+                <h3>Danger Zone</h3>
+
+
+                <form role="form" ng-submit="delete(userDelete)">
+                    <div class="alert alert-danger" ng-show="error">{{error}}</div>
+
+                      <div class="form-group">
+
+                          <label for="deletePassword">Current Password</label>
+                          <input type="password" class="form-control" id="deletePassword" autocomplete="new-password" ng-model="userDelete.current_password">
+  
+                          <span><strong>Required.</strong> When deleting your account we require your current password.</span>
+                      </div>
+
+                      <div class="form-group">
+                            <label for="deleteConfirm">Please enter "DELETE" below</label>
+                            <input type="input" class="form-control" id="deleteConfirm" ng-model="userDelete.delete_confirm">
+                        </div>
+
+                      <button type="submit" class="btn btn-danger" ng-disabled="userDelete.delete_confirm!=='DELETE'">Delete Account</button>
+                      <button type="button" href="#" class="btn">Cancel</button>
+                  </form>
+                </div>
+                </div>
             </div>
         </div>
 </section>
