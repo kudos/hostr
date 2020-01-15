@@ -84,7 +84,7 @@
     "statsy": "~0.2.0",
     "stripe": "^7.1.0",
     "webpack": "^4.29.3",
-    "webpack-cli": "^3.2.3",
+    "webpack-cli": "^3.3.10",
     "zeroclipboard": "^2.2.0"
   },
   "devDependencies": {
