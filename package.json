@@ -44,7 +44,7 @@
     "co": "~4.6.0",
     "co-redis": "^2.1.0",
     "co-views": "~2.1.0",
-    "copy-webpack-plugin": "^5.0.3",
+    "copy-webpack-plugin": "^5.1.1",
     "debug": "~4.1.1",
     "dropzone": "~5.5.1",
     "ejs": "^2.6.1",
