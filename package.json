@@ -57,7 +57,7 @@
     "koa": "^2.11.0",
     "koa-bodyparser": "^4.2.1",
     "koa-compress": "~3.0.0",
-    "koa-csrf": "^3.0.7",
+    "koa-csrf": "^3.0.8",
     "koa-error": "^3.2.0",
     "koa-favicon": "~2.0.1",
     "koa-generic-session": "^2.0.1",
