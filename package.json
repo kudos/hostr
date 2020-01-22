@@ -82,7 +82,7 @@
     "sequelize": "^5.21.3",
     "smooth-scroll": "https://github.com/cferdinandi/smooth-scroll#5.3.7",
     "statsy": "~0.2.0",
-    "stripe": "^8.3.0",
+    "stripe": "^8.4.1",
     "webpack": "^4.29.3",
     "webpack-cli": "^3.3.10",
     "zeroclipboard": "^2.2.0"
