@@ -31,7 +31,7 @@
     "angular-resource": "^1.7.7",
     "angular-route": "^1.7.7",
     "angular-strap": "^2.3.8",
-    "aws-sdk": "^2.603.0",
+    "aws-sdk": "^2.608.0",
     "babel": "^6.5.2",
     "babel-cli": "^6.10.1",
     "babel-plugin-transform-es2015-destructuring": "^6.23.0",
