@@ -745,10 +745,10 @@ angular-resource@^1.7.7:
   resolved "https://registry.yarnpkg.com/angular-resource/-/angular-resource-1.7.8.tgz#9577dbcc02cdbb76398febc5fc7ee103c86c5c50"
   integrity sha512-zuPQ0ZX9Q8WnZ0KMtJlKYUSIXWRQSbFzMkRV9zG8cYYSsMAZlXar5Hqmd5gzxC3O28AGM7BCEJ+iYs3UNL4qdA==
 
-angular-route@^1.7.7:
-  version "1.7.8"
-  resolved "https://registry.yarnpkg.com/angular-route/-/angular-route-1.7.8.tgz#d502aa605dcbb253a93e844c0adf51c9bc36b9fa"
-  integrity sha512-VVk89PH0fsY5kfbx+N7IVX1IwnaPWYhMGY0uA+rjej2v1sjvrTx1SLkxUK4E0UpW1hXeLJhN7ncBcwoBiPtAtA==
+angular-route@^1.7.9:
+  version "1.7.9"
+  resolved "https://registry.yarnpkg.com/angular-route/-/angular-route-1.7.9.tgz#f9910a2af0ba3ad7a969c5dd369b8360d0d5e4ef"
+  integrity sha512-vRoj5hzdQtWbODhWJqDzD1iNOEfCKshO6GFBuPVV7RHlPjzIc4R2dHCc7Qiv/8F3LDxJDohc6vSnTDMLHuaqeA==
 
 angular-strap@^2.3.8:
   version "2.3.12"
