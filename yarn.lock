@@ -735,10 +735,10 @@ amdefine@>=0.0.4:
   version "0.1.0"
   resolved "https://github.com/adieu/angular-reconnecting-websocket#fd1d548d072a5a06eb96398234ae0970ae98f8d1"
 
-angular-resource@^1.7.7:
-  version "1.7.8"
-  resolved "https://registry.yarnpkg.com/angular-resource/-/angular-resource-1.7.8.tgz#9577dbcc02cdbb76398febc5fc7ee103c86c5c50"
-  integrity sha512-zuPQ0ZX9Q8WnZ0KMtJlKYUSIXWRQSbFzMkRV9zG8cYYSsMAZlXar5Hqmd5gzxC3O28AGM7BCEJ+iYs3UNL4qdA==
+angular-resource@^1.7.9:
+  version "1.7.9"
+  resolved "https://registry.yarnpkg.com/angular-resource/-/angular-resource-1.7.9.tgz#fa53623fae2c60debe2410d692447dcb0ba02396"
+  integrity sha512-rXXhCE2qT31Pn4Sl+2XL+ntv4zxnA2OzY+clCl8/pOp/s/gIzxpQlEtXipo3QK8Qur3glbIkeF/bJw+gjVAdUw==
 
 angular-route@^1.7.9:
   version "1.7.9"
