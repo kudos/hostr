@@ -47,7 +47,7 @@
     "copy-webpack-plugin": "^5.1.1",
     "debug": "~4.1.1",
     "dropzone": "~5.5.1",
-    "ejs": "^2.6.1",
+    "ejs": "^3.0.1",
     "form-data": "^3.0.0",
     "http-errors": "^1.7.3",
     "image-size": "^0.8.3",
