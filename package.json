@@ -83,7 +83,7 @@
     "smooth-scroll": "https://github.com/cferdinandi/smooth-scroll#v16.1.2",
     "statsy": "~0.2.0",
     "stripe": "^8.6.0",
-    "webpack": "^4.29.3",
+    "webpack": "^4.41.5",
     "webpack-cli": "^3.3.10",
     "zeroclipboard": "^2.2.0"
   },
