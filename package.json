@@ -83,7 +83,7 @@
     "smooth-scroll": "^16.1.2",
     "statsy": "~0.2.0",
     "stripe": "^8.24.0",
-    "webpack": "^4.41.5",
+    "webpack": "^4.42.1",
     "webpack-cli": "^3.3.11",
     "zeroclipboard": "^2.2.0"
   },
