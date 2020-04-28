@@ -1,8 +1,6 @@
-FROM node:11.13.0-alpine
+FROM node:13.13.0
 
 WORKDIR /app
-
-RUN apk add --update git python make gcc g++
 
 COPY package.json package.json
 COPY yarn.lock yarn.lock

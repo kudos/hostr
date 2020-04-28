@@ -27,7 +27,10 @@ describe('hostr-web user', function() {
           .send({'email': 'test@hostr.co', 'password': 'test-password', '_csrf': csrf})
           .expect(302)
           .expect('Location', '/')
-          .end();
+          .end(function() {
+            // Hax
+            process.exit();
+          });
       });
     });
   });
