@@ -66,11 +66,14 @@ app.use(web.prefix('').routes());
 app.ws.use(redis.middleware());
 app.ws.use(ws.prefix('/api').routes());
 
-app.on('error', (err) => {
+app.on('error', (err, ctx) => {
   if (err.statusCode === 404) return;
   if (process.env.SENTRY_DSN) {
-    Sentry.captureException(err, (_err, eventId) => {
-      debug('Reported error', eventId);
+    Sentry.withScope(function(scope) {
+      scope.addEventProcessor(function(event) {
+        return Sentry.Handlers.parseRequest(event, ctx.request); 
+      });
+      Sentry.captureException(err);
     });
   }
 });
