@@ -24,7 +24,7 @@
     "watch-sass": "node-sass --include-path ./node_modules/ -w -r -o web/public/styles/ web/public/styles/"
   },
   "dependencies": {
-    "@sendgrid/mail": "^6.5.1",
+    "@sendgrid/mail": "^7.1.0",
     "@sentry/node": "^5.11.2",
     "angular": "^1.7.9",
     "angular-reconnecting-websocket": "https://github.com/adieu/angular-reconnecting-websocket#0.1.1",
