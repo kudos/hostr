@@ -8,6 +8,6 @@ module.exports = {
     path: path.resolve(__dirname, 'web', 'public', 'build')
   },
   plugins: [
-    new CopyWebpackPlugin([{ from: './web/public/src/partials', to: 'partials' }])
+    new CopyWebpackPlugin({patterns: [{ from: './web/public/src/partials', to: 'partials' }]})
   ]
 };

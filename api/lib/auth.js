@@ -12,7 +12,7 @@ export default async (ctx, next) => {
   let user = false;
   const remoteIp = ctx.req.headers['x-forwarded-for'] || ctx.req.connection.remoteAddress;
   const login = await models.login.create({
-    ip: remoteIp,
+    ip: remoteIp.split(',')[0],
     successful: false,
   });
   if (ctx.req.headers.authorization && ctx.req.headers.authorization[0] === ':') {
@@ -30,7 +30,7 @@ export default async (ctx, next) => {
     ctx.assert(authUser, 401, badLoginMsg);
     const count = await models.login.count({
       where: {
-        ip: remoteIp,
+        ip: remoteIp.split(',')[0],
         successful: false,
         createdAt: {
           $gt: new Date(Date.now() - 600000),

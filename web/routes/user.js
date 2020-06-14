@@ -10,7 +10,7 @@ const debug = debugname('hostr-web:user');
 
 export async function signin(ctx) {
   if (!ctx.request.body.email) {
-    await ctx.render('signin', { csrf: ctx.csrf });
+    await ctx.render('signin', { csrf: ctx.csrf, async: true });
     return;
   }
 
@@ -18,14 +18,15 @@ export async function signin(ctx) {
 
   const user = await authenticate.call(ctx, ctx.request.body.email, ctx.request.body.password);
 
-  if (!user) {
+  if (!user || !user.id) {
     ctx.statsd.incr('auth.failure', 1);
-    await ctx.render('signin', { error: 'Invalid login details', csrf: ctx.csrf });
+    await ctx.render('signin', { error: 'Invalid login details', csrf: ctx.csrf, async: true });
     return;
   } else if (user.activationCode) {
     await ctx.render('signin', {
       error: 'Your account hasn\'t been activated yet. Check for an activation email.',
       csrf: ctx.csrf,
+      async: true, 
     });
     return;
   }
@@ -37,23 +38,25 @@ export async function signin(ctx) {
 
 export async function signup(ctx) {
   if (!ctx.request.body.email) {
-    await ctx.render('signup', { csrf: ctx.csrf });
+    await ctx.render('signup', { csrf: ctx.csrf, async: true });
     return;
   }
 
   if (ctx.request.body.email !== ctx.request.body.confirm_email) {
-    await ctx.render('signup', { error: 'Emails do not match.', csrf: ctx.csrf });
+    await ctx.render('signup', { error: 'Emails do not match.', csrf: ctx.csrf, async: true });
     return;
   } else if (ctx.request.body.email && !ctx.request.body.terms) {
     await ctx.render('signup', {
       error: 'You must agree to the terms of service.',
       csrf: ctx.csrf,
+      async: true,
     });
     return;
   } else if (ctx.request.body.password && ctx.request.body.password.length < 7) {
     await ctx.render('signup', {
       error: 'Password must be at least 7 characters long.',
       csrf: ctx.csrf,
+      async: true, 
     });
     return;
   }
@@ -62,13 +65,14 @@ export async function signup(ctx) {
   try {
     await signupUser.call(ctx, email, password, ip);
   } catch (e) {
-    await ctx.render('signup', { error: e.message, csrf: ctx.csrf });
+    await ctx.render('signup', { error: e.message, csrf: ctx.csrf, async: true  });
     return;
   }
   ctx.statsd.incr('auth.signup', 1);
   await ctx.render('signup', {
     message: 'Thanks for signing up, we\'ve sent you an email to activate your account.',
     csrf: ctx.csrf,
+    async: true,
   });
 }
 
@@ -82,6 +86,7 @@ export async function forgot(ctx) {
         error: 'Password needs to be at least 7 characters long.',
         csrf: ctx.csrf,
         token,
+        async: true,
       });
       return;
     }
@@ -103,10 +108,11 @@ export async function forgot(ctx) {
         error: 'Invalid password reset token. It might be expired, or has already been used.',
         csrf: ctx.csrf,
         token: null,
+        async: true,
       });
       return;
     }
-    await ctx.render('forgot', { csrf: ctx.csrf, token });
+    await ctx.render('forgot', { csrf: ctx.csrf, token, async: true });
   } else if (ctx.request.body.email) {
 
     try {
@@ -118,13 +124,14 @@ export async function forgot(ctx) {
         Be sure to check your spam folder if you it doesn't appear within a few minutes`,
         csrf: ctx.csrf,
         token: null,
+        async: true,
       });
       return;
     } catch (error) {
       debug(error);
     }
   } else {
-    await ctx.render('forgot', { csrf: ctx.csrf, token: null });
+    await ctx.render('forgot', { csrf: ctx.csrf, token: null, async: true });
   }
 }
 

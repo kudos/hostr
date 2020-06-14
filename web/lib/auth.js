@@ -23,7 +23,7 @@ export async function authenticate(email, password) {
   }
   const count = await models.login.count({
     where: {
-      ip: remoteIp,
+      ip: remoteIp.split(',')[0],
       successful: false,
       createdAt: {
         $gt: Math.ceil(Date.now()) - 600000,
@@ -43,7 +43,7 @@ export async function authenticate(email, password) {
   });
 
   const login = await models.login.create({
-    ip: remoteIp,
+    ip: remoteIp.split(',')[0],
     successful: false,
   });
 
@@ -65,6 +65,7 @@ export async function authenticate(email, password) {
 export async function setupSession(user) {
   debug('Setting up session');
   const token = uuid.v4();
+  debug(user)
   await this.redis.set(token, user.id, 'EX', 604800);
 
   const sessionUser = {

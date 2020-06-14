@@ -76,6 +76,7 @@ app.on('error', (err, ctx) => {
       Sentry.captureException(err);
     });
   }
+  debug(err);
 });
 
 if (!module.parent) {
