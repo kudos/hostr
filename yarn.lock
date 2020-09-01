@@ -419,29 +419,29 @@
   dependencies:
     mkdirp "^1.0.4"
 
-"@sendgrid/client@^7.2.0":
-  version "7.2.0"
-  resolved "https://registry.yarnpkg.com/@sendgrid/client/-/client-7.2.0.tgz#485112263458e177b8e98817fe12d6bf221b502c"
-  integrity sha512-ORlsU2cErvCUZsx96d5jaCCOajZ3kLiTInwr3yxFiXzqVRfP1ipCEajFxcS2LZDMoww/uCSflRcOVLmttBdJbw==
+"@sendgrid/client@^7.2.4":
+  version "7.2.4"
+  resolved "https://registry.yarnpkg.com/@sendgrid/client/-/client-7.2.4.tgz#8a7aaa4b16c05c514a1ff93b8ac2613ef80813e8"
+  integrity sha512-zL56B6f/ftJVnJKtJnXA8g/cvRGOyHAbXeAizYVsG+bjqd4hyRVDAKimHW59b2BvFXLLrphc9yGBt7AKOLJ5Tg==
   dependencies:
-    "@sendgrid/helpers" "^7.2.0"
+    "@sendgrid/helpers" "^7.2.4"
     axios "^0.19.2"
 
-"@sendgrid/helpers@^7.2.0":
-  version "7.2.0"
-  resolved "https://registry.yarnpkg.com/@sendgrid/helpers/-/helpers-7.2.0.tgz#75cbde76815fa0f8b7966b3e2a0650fc125c3276"
-  integrity sha512-Ps8rc3xFpaQvIWoW1zlWi9G7QnxYwXFOeq0915DzXf5knoiOgXdFk/XBXbCFjr2lf/JIzjgFUtAV/dN8Z8jzHw==
+"@sendgrid/helpers@^7.2.4":
+  version "7.2.4"
+  resolved "https://registry.yarnpkg.com/@sendgrid/helpers/-/helpers-7.2.4.tgz#82544a4b7d9a905ce5e0b4f96fcd9b2a73129337"
+  integrity sha512-h8bBRXpjQLM0Zl08EGJPxVOPWBaXjEZZCM3IurxWn8RaVFYDGPVZ4pv4ZW9AAmsujntZXuIxSsmB4aQczg/ivw==
   dependencies:
     chalk "^2.0.1"
     deepmerge "^4.2.2"
 
-"@sendgrid/mail@^7.1.1":
-  version "7.2.0"
-  resolved "https://registry.yarnpkg.com/@sendgrid/mail/-/mail-7.2.0.tgz#262fde8a93093074fc873c42103cfa842134327b"
-  integrity sha512-iAA4LCd4eBpBVsYVgHPUd1B9CSwDVS/LNApT4Wn79nikAEfkJCT2n3BipU6CO2vPYUJNRQiStJ55RfdKe9Hulg==
+"@sendgrid/mail@^7.2.4":
+  version "7.2.4"
+  resolved "https://registry.yarnpkg.com/@sendgrid/mail/-/mail-7.2.4.tgz#7633a5ff8cacf6e8df1f51ff2e24cae6c72d448c"
+  integrity sha512-aBq1LJfp/1yFPVso/hG8FvWdWaVlYQJFVhzMQD8SW8H2MVhPN6WEJsnXw/zNGHxPa5uzO8r7j36ugDOh1LMPDA==
   dependencies:
-    "@sendgrid/client" "^7.2.0"
-    "@sendgrid/helpers" "^7.2.0"
+    "@sendgrid/client" "^7.2.4"
+    "@sendgrid/helpers" "^7.2.4"
 
 "@sentry/apm@5.17.0":
   version "5.17.0"
