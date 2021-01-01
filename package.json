@@ -26,7 +26,7 @@
   "dependencies": {
     "@sendgrid/mail": "^7.1.1",
     "@sentry/node": "^5.27.6",
-    "angular": "^1.7.9",
+    "angular": "^1.8.2",
     "angular-reconnecting-websocket": "https://github.com/adieu/angular-reconnecting-websocket#0.1.1",
     "angular-resource": "^1.7.9",
     "angular-route": "^1.7.9",
