@@ -837,10 +837,10 @@ angular-strap@^2.3.8:
   resolved "https://registry.yarnpkg.com/angular-strap/-/angular-strap-2.3.12.tgz#fae21655cd77079671bf918ab7ed6227783062fa"
   integrity sha1-+uIWVc13B5Zxv5GKt+1iJ3gwYvo=
 
-angular@^1.7.9:
-  version "1.8.0"
-  resolved "https://registry.yarnpkg.com/angular/-/angular-1.8.0.tgz#b1ec179887869215cab6dfd0df2e42caa65b1b51"
-  integrity sha512-VdaMx+Qk0Skla7B5gw77a8hzlcOakwF8mjlW13DpIWIDlfqwAbSSLfd8N/qZnzEmQF4jC4iofInd3gE7vL8ZZg==
+angular@^1.8.2:
+  version "1.8.2"
+  resolved "https://registry.yarnpkg.com/angular/-/angular-1.8.2.tgz#5983bbb5a9fa63e213cb7749199e0d352de3a2f1"
+  integrity sha512-IauMOej2xEe7/7Ennahkbb5qd/HFADiNuLSESz9Q27inmi32zB0lnAsFeLEWcox3Gd1F6YhNd1CP7/9IukJ0Gw==
 
 ansi-align@^3.0.0:
   version "3.0.0"
