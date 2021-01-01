@@ -5093,10 +5093,10 @@ koa-favicon@~2.1.0:
   dependencies:
     mz "^2.7.0"
 
-koa-generic-session@^2.0.4:
-  version "2.0.4"
-  resolved "https://registry.yarnpkg.com/koa-generic-session/-/koa-generic-session-2.0.4.tgz#e212395d344a52c24ce2567f04dbd30c32dc0aa2"
-  integrity sha512-1y17Xxwr0J3L7Icxm94KwfFBJwrnGbXKgENz4mzPQZ4AGP9Wmli/SuqJJ2jg3EUd9h11wNp7D144/+3A4Om2uw==
+koa-generic-session@^2.1.1:
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/koa-generic-session/-/koa-generic-session-2.1.1.tgz#0f5b34ebad9ce635dc710650fb07dcd7fdf3416b"
+  integrity sha512-ZWsq0klIGnsDHcPWETTYVR4FKBRm+hMexJV7HxZdtALO54dQaOGV7GxMZSZNwnNqr9yVPldRUXDcJZsd9AHozw==
   dependencies:
     copy-to "~2.0.1"
     crc "~3.5.0"
