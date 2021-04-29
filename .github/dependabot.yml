@@ -1,0 +1,23 @@
+version: 2
+updates:
+- package-ecosystem: npm
+  directory: "/"
+  schedule:
+    interval: monthly
+  open-pull-requests-limit: 10
+  assignees:
+  - kudos
+  ignore:
+  - dependency-name: webpack-cli
+    versions:
+    - 4.3.1
+    - 4.4.0
+  - dependency-name: sequelize
+    versions:
+    - 6.3.5
+  - dependency-name: "@sendgrid/mail"
+    versions:
+    - 7.4.0
+  - dependency-name: elliptic
+    versions:
+    - 6.5.3
