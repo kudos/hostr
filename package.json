@@ -75,7 +75,7 @@
     "moment": "^2.29.1",
     "mz": "^2.7.0",
     "node-fetch": "^2.6.1",
-    "node-sass": "^4.14.0",
+    "node-sass": "^7.0.0",
     "node-uuid": "^1.4.8",
     "passwords": "^1.3.1",
     "pg": "^8.0.3",
