@@ -37,6 +37,10 @@ export async function signin(ctx) {
 
 
 export async function signup(ctx) {
+
+  await ctx.render('signup', { error: 'Signups are disabled.', csrf: ctx.csrf, async: true });
+  return;
+
   if (!ctx.request.body.email) {
     await ctx.render('signup', { csrf: ctx.csrf, async: true });
     return;

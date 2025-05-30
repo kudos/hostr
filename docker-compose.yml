@@ -25,7 +25,7 @@ services:
       VIRUSTOTAL_KEY:
       SENTRY_DSN:
     volumes:
-      - ./:/app
+      - ./:/app:z
       - uploads:/hostr/uploads
       - export:/export
     ports:
@@ -75,7 +75,7 @@ services:
   minio:
     image: minio/minio
     volumes:
-     - export:/export
+      - export:/export
     command: server /export
     environment:
       MINIO_ACCESS_KEY: 7HYV3KPRGQ8Z5YCDNWC6
