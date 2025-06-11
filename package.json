@@ -27,7 +27,7 @@
     "@sendgrid/mail": "^7.1.1",
     "@sentry/node": "^5.17.0",
     "angular": "^1.7.9",
-    "angular-reconnecting-websocket": "https://github.com/adieu/angular-reconnecting-websocket#0.1.1",
+    "angular-reconnecting-websocket": "https://github.com/adieu/angular-reconnecting-websocket#v0.1.1",
     "angular-resource": "^1.7.9",
     "angular-route": "^1.7.9",
     "angular-strap": "^2.3.8",
