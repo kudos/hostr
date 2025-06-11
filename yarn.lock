@@ -842,9 +842,9 @@ amdefine@>=0.0.4:
   resolved "https://github.com/adieu/angular-reconnecting-websocket#fd1d548d072a5a06eb96398234ae0970ae98f8d1"
 
 angular-resource@^1.7.9:
-  version "1.8.0"
-  resolved "https://registry.yarnpkg.com/angular-resource/-/angular-resource-1.8.0.tgz#578ef122e7cb7bcc6c0ad6c2451dc3d27fd570ba"
-  integrity sha512-9woUq3kDwoT7R6SjKX8vaJMhOplYBm9sqRAxKgDhDIdPyA8iBowqQIusf9+8Q+z/HlXb8ZXvKspJyKXrxmKdvg==
+  version "1.8.3"
+  resolved "https://registry.yarnpkg.com/angular-resource/-/angular-resource-1.8.3.tgz#013994c332f0e084f2735fe28af7bccc82f0774c"
+  integrity sha512-x3+4w2SyIDEIe6PUBTzcjDFI5MhZNWAPELUxkYK0QMOkOo4w3BN/qhpd+fO1deFiDS23mZKqT8kfctO1IDkCDA==
 
 angular-route@^1.7.9:
   version "1.8.0"
