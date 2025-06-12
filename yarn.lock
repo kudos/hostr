@@ -837,8 +837,9 @@ amdefine@>=0.0.4:
   resolved "https://registry.yarnpkg.com/amdefine/-/amdefine-1.0.1.tgz#4a5282ac164729e93619bcfd3ad151f817ce91f5"
   integrity sha1-SlKCrBZHKek2Gbz9OtFR+BfOkfU=
 
-"angular-reconnecting-websocket@https://github.com/adieu/angular-reconnecting-websocket#0.1.1":
+"angular-reconnecting-websocket@https://github.com/adieu/angular-reconnecting-websocket#v0.1.1":
   version "0.1.0"
+  uid fd1d548d072a5a06eb96398234ae0970ae98f8d1
   resolved "https://github.com/adieu/angular-reconnecting-websocket#fd1d548d072a5a06eb96398234ae0970ae98f8d1"
 
 angular-resource@^1.7.9:
