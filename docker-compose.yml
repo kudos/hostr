@@ -69,7 +69,7 @@ services:
       POSTGRES_USER: "hostr"
       POSTGRES_DB: "hostr"
   redis:
-    image: "redis:4.0.2-alpine"
+    image: "redis:4.0.14-alpine"
     ports:
       - "6379:6379"
   minio:
