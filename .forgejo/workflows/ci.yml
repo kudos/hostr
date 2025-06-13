@@ -6,28 +6,6 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
 
-services:
-  database:
-    image: postgres:10-alpine
-    env:
-      POSTGRES_PASSWORD: hostr
-      POSTGRES_USER: hostr
-      POSTGRES_DB: hostr
-    ports:
-      - 5432:5432
-  redis:
-    image: redis:4.0.2-alpine
-    ports:
-      - 6379:6379
-  minio:
-    image: minio/minio
-    env:
-      MINIO_ACCESS_KEY: 7HYV3KPRGQ8Z5YCDNWC6
-      MINIO_SECRET_KEY: 0kWP/ZkgIwQzgL9t4SGv9Uc93rO//OdyqMH329b/
-    ports:
-      - 9000:9000
-    cmd: server /export
-
 jobs:
   build-image:
     runs-on: self-hosted
@@ -42,6 +20,7 @@ jobs:
           registry: cremin.dev
           username: ${{ github.actor }}
           password: ${{ secrets.FORGEJO_REGISTRY_TOKEN }}
+          logout: false
       - name: Check out repository
         uses: https://cremin.dev/actions/checkout@v4
       - name: Build image
@@ -51,19 +30,34 @@ jobs:
           context: ./
           oci: true
           layers: true
-          image: hostr
+          image: cremin.dev/jonathan/hostr
           tags: latest ${{ github.sha }}
       - name: Push image
         uses: https://cremin.dev/actions/push-to-registry@v2
         with:
-          registry: cremin.dev/jonathan
+          registry: cremin.dev
           username: ${{ github.actor }}
           password: ${{ secrets.FORGEJO_REGISTRY_TOKEN }}
-          image: hostr
+          image: jonathan/hostr
           tags: latest ${{ github.sha }}
   test-image:
     runs-on: self-hosted
     needs: build-image
+    services:
+      database:
+        image: postgres:14-alpine
+        env:
+          POSTGRES_PASSWORD: hostr
+          POSTGRES_USER: hostr
+          POSTGRES_DB: hostr
+      redis:
+        image: redis:4.0.2-alpine
+      minio:
+        image: minio/minio
+        env:
+          MINIO_ACCESS_KEY: 7HYV3KPRGQ8Z5YCDNWC6
+          MINIO_SECRET_KEY: 0kWP/ZkgIwQzgL9t4SGv9Uc93rO//OdyqMH329b/
+        cmd: ["server", "/export"]
     steps:
       - name: Check out repository
         uses: https://cremin.dev/actions/checkout@v4
