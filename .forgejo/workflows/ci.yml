@@ -1,0 +1,85 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+services:
+  database:
+    image: postgres:10-alpine
+    env:
+      POSTGRES_PASSWORD: hostr
+      POSTGRES_USER: hostr
+      POSTGRES_DB: hostr
+    ports:
+      - 5432:5432
+  redis:
+    image: redis:4.0.2-alpine
+    ports:
+      - 6379:6379
+  minio:
+    image: minio/minio
+    env:
+      MINIO_ACCESS_KEY: 7HYV3KPRGQ8Z5YCDNWC6
+      MINIO_SECRET_KEY: 0kWP/ZkgIwQzgL9t4SGv9Uc93rO//OdyqMH329b/
+    ports:
+      - 9000:9000
+    cmd: server /export
+
+jobs:
+  build-image:
+    runs-on: self-hosted
+    steps:
+      - name: Set current date as env variable
+        run: echo "NOW=$(date +'%Y%m%d-%H%M%S')" >> $GITHUB_ENV
+      - name: Fix for bad os check
+        run: echo "RUNNER_OS=Linux" >> $GITHUB_ENV
+      - name: Login to Forgejo Registry
+        uses: https://cremin.dev/actions/podman-login@v1
+        with:
+          registry: cremin.dev
+          username: ${{ github.actor }}
+          password: ${{ secrets.FORGEJO_REGISTRY_TOKEN }}
+      - name: Check out repository
+        uses: https://cremin.dev/actions/checkout@v4
+      - name: Build image
+        uses: https://cremin.dev/actions/buildah-build@v2
+        with:
+          containerfiles: ./Containerfile
+          context: ./
+          oci: true
+          layers: true
+          image: hostr
+          tags: latest ${{ github.sha }}
+      - name: Push image
+        uses: https://cremin.dev/actions/push-to-registry@v2
+        with:
+          registry: cremin.dev/jonathan
+          username: ${{ github.actor }}
+          password: ${{ secrets.FORGEJO_REGISTRY_TOKEN }}
+          image: hostr
+          tags: latest ${{ github.sha }}
+  test-image:
+    runs-on: self-hosted
+    needs: build-image
+    steps:
+      - name: Check out repository
+        uses: https://cremin.dev/actions/checkout@v4
+      - name: Test image
+        env:
+          WEB_BASE_URL: http://localhost:3000
+          API_BASE_URL: http://localhost:3000/api
+          UPLOAD_STORAGE_PATH: /hostr/uploads
+          COOKIE_KEY: TESTING
+          EMAIL_FROM: jonathan@hostr.co
+          EMAIL_NAME: "Jonathan from Hostr"
+          DATABASE_URL: postgresql://hostr:hostr@database:5432/hostr
+          REDIS_URL: redis://redis:6379
+          AWS_ENDPOINT: http://minio:9000
+          AWS_ACCESS_KEY_ID: 7HYV3KPRGQ8Z5YCDNWC6
+          AWS_SECRET_ACCESS_KEY: 0kWP/ZkgIwQzgL9t4SGv9Uc93rO//OdyqMH329b/
+          AWS_BUCKET: hostr
+        run: |
+          podman run --rm --env-host -it cremin.dev/jonathan/hostr:${{ github.sha }} yarn test

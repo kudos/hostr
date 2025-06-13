@@ -1,0 +1,25 @@
+export DEBUG="hostr*"
+
+export NODE_ENV=development
+export PORT=4040
+export WEB_BASE_URL=http://localhost:$PORT
+export API_BASE_URL=$WEB_BASE_URL/api
+export UPLOAD_STORAGE_PATH=$HOME/.hostr/uploads
+export COOKIE_KEY=INSECURE
+export EMAIL_FROM=
+export EMAIL_NAME=
+
+export STATSD_HOST=localhost
+export DATABASE_URL=postgresql://hostr:hostr@database:5432/hostr
+export REDIS_URL=redis://localhost:6379
+export SENDGRID_KEY=
+export STRIPE_SECRET_KEY=
+export STRIPE_PUBLIC_KEY=
+
+# optional, some functionality will be disabled
+export AWS_ENDPOINT= # only for AWS-like providers, not AWS
+export AWS_ACCESS_KEY_ID=
+export AWS_SECRET_ACCESS_KEY=
+export AWS_BUCKET=
+export VIRUSTOTAL_KEY=
+export SENTRY_DSN=
