@@ -55,7 +55,7 @@
     "jimp": "^0.13.0",
     "jquery": "^3.5.0",
     "kcors": "^2.2.2",
-    "koa": "^2.13.4",
+    "koa": "^3.0.1",
     "koa-bodyparser": "^4.3.0",
     "koa-compress": "~5.1.0",
     "koa-csrf": "^3.0.8",
