@@ -97,6 +97,6 @@
     "eslint-plugin-import": "^2.20.2",
     "mocha": "^8.0.0",
     "supertest": "^4.0.2",
-    "tmp": "0.2.1"
+    "tmp": "0.2.4"
   }
 }
