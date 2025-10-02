@@ -32,7 +32,7 @@ jobs:
           tags: cremin.dev/jonathan/hostr:latest,cremin.dev/jonathan/hostr:${{ github.sha }}
           push: true
   test-image:
-    runs-on: node22
+    runs-on: self-hosted
     needs: build-image
     services:
       database:
