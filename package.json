@@ -24,6 +24,8 @@
     "watch-sass": "sass --load-path=./node_modules/ -w web/public/styles/"
   },
   "dependencies": {
+    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/auto-instrumentations-node": "^0.65.0",
     "@sendgrid/mail": "^7.1.1",
     "@sentry/node": "^5.17.0",
     "angular": "^1.7.9",
