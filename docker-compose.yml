@@ -23,7 +23,6 @@ services:
       AWS_SECRET_ACCESS_KEY:
       AWS_BUCKET:
       VIRUSTOTAL_KEY:
-      SENTRY_DSN:
     volumes:
       - ./:/app:z
       - uploads:/hostr/uploads
@@ -53,7 +52,6 @@ services:
       AWS_SECRET_ACCESS_KEY:
       AWS_BUCKET:
       VIRUSTOTAL_KEY:
-      SENTRY_DSN:
     volumes:
       - ./:/app
       - uploads:/hostr/uploads

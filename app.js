@@ -8,7 +8,6 @@ import bodyparser from "koa-bodyparser";
 import websockify from "koa-websocket";
 import helmet from "koa-helmet";
 import session from "koa-session";
-import * as Sentry from "@sentry/node";
 import debugname from "debug";
 import * as redis from "./lib/redis";
 import api, { ws } from "./api/app";
@@ -22,14 +21,6 @@ app.keys = [process.env.COOKIE_KEY];
 
 app.use(bodyparser());
 
-if (process.env.SENTRY_DSN) {
-  Sentry.init({
-    dsn: process.env.SENTRY_DSN,
-    release: process.env.GIT_REV,
-  });
-  app.context.Sentry = Sentry;
-}
-
 app.use(helmet());
 
 app.use(async (ctx, next) => {
@@ -38,16 +29,7 @@ app.use(async (ctx, next) => {
     ctx.redirect(`https://${ctx.req.headers.host}${ctx.req.url}`);
     return;
   }
-  try {
-    await next();
-  } catch (err) {
-    if (!err.statusCode && process.env.SENTRY_DSN) {
-      Sentry.captureException(err, (_err, eventId) => {
-        debug("Reported error", eventId);
-      });
-    }
-    throw err;
-  }
+  await next();
 });
 
 app.use(session(app));
@@ -83,14 +65,6 @@ app.ws.use(ws.prefix("/api").routes());
 
 app.on("error", (err, ctx) => {
   if (err.statusCode === 404) return;
-  if (process.env.SENTRY_DSN) {
-    Sentry.withScope(function (scope) {
-      scope.addEventProcessor(function (event) {
-        return Sentry.Handlers.parseRequest(event, ctx.request);
-      });
-      Sentry.captureException(err);
-    });
-  }
   debug(err);
 });
 
