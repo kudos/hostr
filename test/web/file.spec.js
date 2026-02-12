@@ -1,6 +1,6 @@
 import path from 'path';
 import assert from 'assert';
-import sizeOf from 'image-size';
+import { imageSize as sizeOf } from 'image-size';
 import { agent } from 'supertest';
 import app from '../../app.js';
 

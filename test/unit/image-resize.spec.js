@@ -4,10 +4,10 @@ import { join } from 'path';
 import assert from 'assert';
 import tmp from 'tmp';
 import resize from '../../lib/resize.js';
-import sizeOf from 'image-size';
+import { imageSize as sizeOf } from 'image-size';
 
 function testResize(path, done) {
-  const size = sizeOf(path);
+  const size = sizeOf(fs.readFileSync(path));
   resize(path, size.type, size, {width: 100, height: 100}).then((image) => {
     const tmpFile = tmp.tmpNameSync() + '.' + size.type;
     fsp.writeFile(tmpFile, image).then(() => {

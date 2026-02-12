@@ -17,17 +17,17 @@ export async function create(ctx) {
 
   const ip = ctx.request.headers['x-forwarded-for'] || ctx.req.connection.remoteAddress;
 
-  const createCustomer = {
-    card: stripeToken.id,
-    plan: 'usd_monthly',
+  const customer = await stripe.customers.create({
+    source: stripeToken.id,
     email: ctx.user.email,
-  };
+  });
 
-  const customer = await stripe.customers.create(createCustomer);
+  const subscription = await stripe.subscriptions.create({
+    customer: customer.id,
+    items: [{ price: 'usd_monthly' }],
+  });
 
-  ctx.assert(customer.subscription.status === 'active', 400, '{"status": "error"}');
-
-  delete customer.subscriptions;
+  ctx.assert(subscription.status === 'active', 400, '{"status": "error"}');
 
   const user = await models.user.findByPk(ctx.user.id);
   user.plan = 'Pro';
@@ -35,9 +35,9 @@ export async function create(ctx) {
 
   const transaction = await models.transaction.create({
     userId: ctx.user.id,
-    amount: customer.subscription.plan.amount,
-    description: customer.subscription.plan.name,
-    data: customer,
+    amount: subscription.plan.amount,
+    description: subscription.plan.name,
+    data: { ...customer, subscription },
     type: 'direct',
     ip,
   });
@@ -73,11 +73,7 @@ export async function cancel(ctx) {
   const transactions = await user.getTransactions();
   const transaction = transactions[0];
 
-  await stripe.customers.cancelSubscription(
-    transaction.data.id,
-    transaction.data.subscription.id,
-    { at_period_end: false },
-  );
+  await stripe.subscriptions.cancel(transaction.data.subscription.id);
 
   user.plan = 'Free';
   await user.save();
