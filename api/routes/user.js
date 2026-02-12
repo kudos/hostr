@@ -119,6 +119,6 @@ export async function events(ctx) {
   });
   ctx.websocket.on("close", () => {
     debug("Socket closed");
-    pubsub.quit();
+    pubsub.close();
   });
 }

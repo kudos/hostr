@@ -99,6 +99,6 @@ export async function events(ctx) {
     ctx.websocket.send(message);
   });
   ctx.websocket.on('close', () => {
-    pubsub.quit();
+    pubsub.close();
   });
 }
