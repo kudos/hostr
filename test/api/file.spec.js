@@ -1,7 +1,7 @@
 import path from 'path';
 import assert from 'assert';
 import { agent } from 'supertest';
-import app from '../../app';
+import app from '../../app.js';
 
 const request = agent(app.listen());
 
@@ -26,7 +26,7 @@ describe('hostr-api file', function file() {
       this.timeout(30000);
       request
         .post('/api/file')
-        .attach('file', path.join(__dirname, '..', 'fixtures', 'utah-arches.jpg'))
+        .attach('file', path.join(import.meta.dirname, '..', 'fixtures', 'utah-arches.jpg'))
         .auth('test@hostr.co', 'test-password')
         .expect(201)
         .expect((response) => {

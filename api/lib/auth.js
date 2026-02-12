@@ -1,8 +1,9 @@
 import passwords from 'passwords';
 import auth from 'basic-auth';
 import debugname from 'debug';
+import { Op } from 'sequelize';
 
-import models from '../../models';
+import models from '../../models/index.js';
 
 const debug = debugname('hostr-api:auth');
 
@@ -33,7 +34,7 @@ export default async (ctx, next) => {
         ip: remoteIp.split(',')[0],
         successful: false,
         createdAt: {
-          $gt: new Date(Date.now() - 600000),
+          [Op.gt]: new Date(Date.now() - 600000),
         },
       },
     });
@@ -77,7 +78,7 @@ export default async (ctx, next) => {
     where: {
       userId: user.id,
       createdAt: {
-        $gt: Date.now() - 86400000,
+        [Op.gt]: Date.now() - 86400000,
       },
     },
   });

@@ -3,9 +3,9 @@ import views from 'co-views';
 import Stripe from 'stripe';
 import sendgrid from '@sendgrid/mail';
 
-import models from '../../models';
+import models from '../../models/index.js';
 
-const render = views(path.join(__dirname, '/../views'), { default: 'ejs' });
+const render = views(path.join(import.meta.dirname, '/../views'), { default: 'ejs' });
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 sendgrid.setApiKey(process.env.SENDGRID_KEY);
 

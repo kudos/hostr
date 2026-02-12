@@ -2,7 +2,7 @@ import path from 'path';
 import assert from 'assert';
 import sizeOf from 'image-size';
 import { agent } from 'supertest';
-import app from '../../app';
+import app from '../../app.js';
 
 const request = agent(app.listen());
 
@@ -13,7 +13,7 @@ describe('setup hostr-web file', function() {
       this.timeout(30000);
       request
         .post('/api/file')
-        .attach('file', path.join(__dirname, '..', 'fixtures', 'utah-arches.jpg'))
+        .attach('file', path.join(import.meta.dirname, '..', 'fixtures', 'utah-arches.jpg'))
         .auth('test@hostr.co', 'test-password')
         .expect(201)
         .expect(function(response) {

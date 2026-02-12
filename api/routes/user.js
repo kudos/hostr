@@ -1,10 +1,9 @@
-import uuid from "node-uuid";
-import redis from "redis";
-import co from "co";
+import { v4 as uuid } from "uuid";
+import { createClient } from "redis";
 import passwords from "passwords";
 import debugname from "debug";
 
-import models from "../../models";
+import models from "../../models/index.js";
 
 const debug = debugname("hostr-api:user");
 
@@ -15,8 +14,8 @@ export async function get(ctx) {
 }
 
 export async function token(ctx) {
-  const token = uuid.v4(); // eslint-disable-line no-shadow
-  await ctx.redis.set(token, ctx.user.id, "EX", 86400);
+  const token = uuid(); // eslint-disable-line no-shadow
+  await ctx.redis.set(token, ctx.user.id, { EX: 86400 });
   ctx.body = { token };
 }
 
@@ -90,35 +89,33 @@ export async function deleteUser(ctx) {
 }
 
 export async function events(ctx) {
-  const pubsub = redis.createClient(redisUrl);
-  pubsub.on("message", (channel, message) => {
-    ctx.websocket.send(message);
-  });
-  pubsub.on("ready", () => {
-    ctx.websocket.on(
-      "message",
-      co.wrap(async (message) => {
-        let json;
-        try {
-          json = JSON.parse(message);
-        } catch (err) {
-          debug("Invalid JSON for socket auth");
-          ctx.websocket.send("Invalid authentication message. Bad JSON?");
-        }
-        try {
-          const reply = await ctx.redis.get(json.authorization);
-          if (reply) {
-            pubsub.subscribe(`/user/${reply}`);
-            ctx.websocket.send('{"status":"active"}');
-            debug("Subscribed to: /user/%s", reply);
-          } else {
-            ctx.websocket.send("Invalid authentication token.");
-          }
-        } catch (err) {
-          debug(err);
-        }
-      }),
-    );
+  const pubsub = createClient({ url: redisUrl });
+  pubsub.on("error", (err) => debug("Redis pubsub error:", err));
+  await pubsub.connect();
+
+  ctx.websocket.on("message", async (message) => {
+    let json;
+    try {
+      json = JSON.parse(message);
+    } catch (err) {
+      debug("Invalid JSON for socket auth");
+      ctx.websocket.send("Invalid authentication message. Bad JSON?");
+      return;
+    }
+    try {
+      const reply = await ctx.redis.get(json.authorization);
+      if (reply) {
+        await pubsub.subscribe(`/user/${reply}`, (msg) => {
+          ctx.websocket.send(msg);
+        });
+        ctx.websocket.send('{"status":"active"}');
+        debug("Subscribed to: /user/%s", reply);
+      } else {
+        ctx.websocket.send("Invalid authentication token.");
+      }
+    } catch (err) {
+      debug(err);
+    }
   });
   ctx.websocket.on("close", () => {
     debug("Socket closed");

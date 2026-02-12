@@ -1,8 +1,8 @@
-import redis from 'redis';
+import { createClient } from 'redis';
 
-import models from '../../models';
-import { formatFile } from '../../lib/format';
-import Uploader from '../../lib/uploader';
+import models from '../../models/index.js';
+import { formatFile } from '../../lib/format.js';
+import Uploader from '../../lib/uploader.js';
 
 const redisUrl = process.env.REDIS_URL;
 
@@ -91,12 +91,11 @@ export async function del(ctx) {
 
 
 export async function events(ctx) {
-  const pubsub = redis.createClient(redisUrl);
-  pubsub.on('ready', () => {
-    pubsub.subscribe(ctx.path);
-  });
+  const pubsub = createClient({ url: redisUrl });
+  pubsub.on('error', (err) => {});
+  await pubsub.connect();
 
-  pubsub.on('message', (channel, message) => {
+  await pubsub.subscribe(ctx.path, (message) => {
     ctx.websocket.send(message);
   });
   ctx.websocket.on('close', () => {

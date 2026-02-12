@@ -2,15 +2,15 @@ import debugname from 'debug';
 import {
   authenticate, setupSession, signup as signupUser, activateUser, sendResetToken,
   validateResetToken, updatePassword,
-} from '../lib/auth';
+} from '../lib/auth.js';
 
-import models from '../../models';
+import models from '../../models/index.js';
 
 const debug = debugname('hostr-web:user');
 
 export async function signin(ctx) {
   if (!ctx.request.body.email) {
-    await ctx.render('signin', { csrf: ctx.csrf, async: true });
+    await ctx.render('signin', { csrf: ctx.state._csrf, async: true });
     return;
   }
 
@@ -20,12 +20,12 @@ export async function signin(ctx) {
 
   if (!user || !user.id) {
     ctx.statsd.incr('auth.failure', 1);
-    await ctx.render('signin', { error: 'Invalid login details', csrf: ctx.csrf, async: true });
+    await ctx.render('signin', { error: 'Invalid login details', csrf: ctx.state._csrf, async: true });
     return;
   } else if (user.activationCode) {
     await ctx.render('signin', {
       error: 'Your account hasn\'t been activated yet. Check for an activation email.',
-      csrf: ctx.csrf,
+      csrf: ctx.state._csrf,
       async: true, 
     });
     return;
@@ -38,28 +38,28 @@ export async function signin(ctx) {
 
 export async function signup(ctx) {
 
-  await ctx.render('signup', { error: 'Signups are disabled.', csrf: ctx.csrf, async: true });
+  await ctx.render('signup', { error: 'Signups are disabled.', csrf: ctx.state._csrf, async: true });
   return;
 
   if (!ctx.request.body.email) {
-    await ctx.render('signup', { csrf: ctx.csrf, async: true });
+    await ctx.render('signup', { csrf: ctx.state._csrf, async: true });
     return;
   }
 
   if (ctx.request.body.email !== ctx.request.body.confirm_email) {
-    await ctx.render('signup', { error: 'Emails do not match.', csrf: ctx.csrf, async: true });
+    await ctx.render('signup', { error: 'Emails do not match.', csrf: ctx.state._csrf, async: true });
     return;
   } else if (ctx.request.body.email && !ctx.request.body.terms) {
     await ctx.render('signup', {
       error: 'You must agree to the terms of service.',
-      csrf: ctx.csrf,
+      csrf: ctx.state._csrf,
       async: true,
     });
     return;
   } else if (ctx.request.body.password && ctx.request.body.password.length < 7) {
     await ctx.render('signup', {
       error: 'Password must be at least 7 characters long.',
-      csrf: ctx.csrf,
+      csrf: ctx.state._csrf,
       async: true, 
     });
     return;
@@ -69,13 +69,13 @@ export async function signup(ctx) {
   try {
     await signupUser.call(ctx, email, password, ip);
   } catch (e) {
-    await ctx.render('signup', { error: e.message, csrf: ctx.csrf, async: true  });
+    await ctx.render('signup', { error: e.message, csrf: ctx.state._csrf, async: true  });
     return;
   }
   ctx.statsd.incr('auth.signup', 1);
   await ctx.render('signup', {
     message: 'Thanks for signing up, we\'ve sent you an email to activate your account.',
-    csrf: ctx.csrf,
+    csrf: ctx.state._csrf,
     async: true,
   });
 }
@@ -88,7 +88,7 @@ export async function forgot(ctx) {
     if (ctx.request.body.password.length < 7) {
       await ctx.render('forgot', {
         error: 'Password needs to be at least 7 characters long.',
-        csrf: ctx.csrf,
+        csrf: ctx.state._csrf,
         token,
         async: true,
       });
@@ -110,13 +110,13 @@ export async function forgot(ctx) {
       ctx.statsd.incr('auth.reset.fail', 1);
       await ctx.render('forgot', {
         error: 'Invalid password reset token. It might be expired, or has already been used.',
-        csrf: ctx.csrf,
+        csrf: ctx.state._csrf,
         token: null,
         async: true,
       });
       return;
     }
-    await ctx.render('forgot', { csrf: ctx.csrf, token, async: true });
+    await ctx.render('forgot', { csrf: ctx.state._csrf, token, async: true });
   } else if (ctx.request.body.email) {
 
     try {
@@ -126,7 +126,7 @@ export async function forgot(ctx) {
       await ctx.render('forgot', {
         message: `We've sent an email with a link to reset your password.
         Be sure to check your spam folder if you it doesn't appear within a few minutes`,
-        csrf: ctx.csrf,
+        csrf: ctx.state._csrf,
         token: null,
         async: true,
       });
@@ -135,7 +135,7 @@ export async function forgot(ctx) {
       debug(error);
     }
   } else {
-    await ctx.render('forgot', { csrf: ctx.csrf, token: null, async: true });
+    await ctx.render('forgot', { csrf: ctx.state._csrf, token: null, async: true });
   }
 }
 

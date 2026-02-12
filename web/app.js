@@ -1,20 +1,20 @@
 import path from 'path';
-import Router from 'koa-router';
+import Router from '@koa/router';
 import CSRF from 'koa-csrf';
-import views from 'koa-views';
+import views from '@ladjs/koa-views';
 import StatsD from 'statsy';
 import errors from 'koa-error';
 
-import stats from '../lib/koa-statsd';
-import * as index from './routes/index';
-import * as file from './routes/file';
-import * as user from './routes/user';
+import stats from '../lib/koa-statsd.js';
+import * as index from './routes/index.js';
+import * as file from './routes/file.js';
+import * as user from './routes/user.js';
 
 const router = new Router();
 
 router.use(errors({
   engine: 'ejs',
-  template: path.join(__dirname, 'public', 'error.html'),
+  template: path.join(import.meta.dirname, 'public', 'error.html'),
 }));
 
 const statsdOpts = { prefix: 'hostr-web', host: process.env.STATSD_HOST };
@@ -26,25 +26,24 @@ router.use(async (ctx, next) => {
 });
 
 router.use(async (ctx, next) => {
-  ctx.state = {
+  Object.assign(ctx.state, {
     session: ctx.session,
     baseURL: process.env.WEB_BASE_URL,
     apiURL: process.env.API_BASE_URL,
     stripePublic: process.env.STRIPE_PUBLIC_KEY,
-  };
+  });
   await next();
 });
 
 router.use(new CSRF({
-  invalidSessionSecretMessage: 'Invalid session secret',
-  invalidSessionSecretStatusCode: 403,
-  invalidTokenMessage: 'Invalid CSRF token',
-  invalidTokenStatusCode: 403,
   excludedMethods: ['GET', 'HEAD', 'OPTIONS'],
   disableQuery: false,
+  errorHandler(ctx) {
+    ctx.throw(403, 'Invalid CSRF token');
+  },
 }));
 
-router.use(views(path.join(__dirname, 'views'), {
+router.use(views(path.join(import.meta.dirname, 'views'), {
   extension: 'ejs',
 }));
 

@@ -1,5 +1,5 @@
 import { agent } from 'supertest';
-import app from '../../app';
+import app from '../../app.js';
 
 const request = agent(app.listen());
 

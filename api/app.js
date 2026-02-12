@@ -1,13 +1,13 @@
-import Router from 'koa-router';
-import cors from 'kcors';
+import Router from '@koa/router';
+import cors from '@koa/cors';
 import StatsD from 'statsy';
 import debugname from 'debug';
 
-import stats from '../lib/koa-statsd';
-import auth from './lib/auth';
-import * as user from './routes/user';
-import * as file from './routes/file';
-import * as pro from './routes/pro';
+import stats from '../lib/koa-statsd.js';
+import auth from './lib/auth.js';
+import * as user from './routes/user.js';
+import * as file from './routes/file.js';
+import * as pro from './routes/pro.js';
 
 const debug = debugname('hostr-api');
 
@@ -72,7 +72,7 @@ router.get('/file/:id', file.get);
 
 
 // Hack, if no route matches here, router does not dispatch at all
-router.get('/(.*)', async (ctx) => {
+router.get('{/*path}', async (ctx) => {
   ctx.throw(404);
 });
 

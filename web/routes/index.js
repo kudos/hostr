@@ -1,5 +1,5 @@
-import uuid from 'node-uuid';
-import { fromToken, fromCookie, setupSession } from '../lib/auth';
+import { v4 as uuid } from 'uuid';
+import { fromToken, fromCookie, setupSession } from '../lib/auth.js';
 
 export async function main(ctx) {
   if (ctx.session.user) {
@@ -7,8 +7,8 @@ export async function main(ctx) {
       ctx.redirect('/');
       return;
     }
-    const token = uuid.v4();
-    await ctx.redis.set(token, ctx.session.user.id, 'EX', 604800);
+    const token = uuid();
+    await ctx.redis.set(token, ctx.session.user.id, { EX: 604800 });
     ctx.session.user.token = token;
     await ctx.render('index', { user: ctx.session.user });
   } else if (ctx.query['app-token']) {
@@ -26,8 +26,8 @@ export async function main(ctx) {
 
 export async function staticPage(ctx, next) {
   if (ctx.session.user) {
-    const token = uuid.v4();
-    await ctx.redis.set(token, ctx.session.user.id, 'EX', 604800);
+    const token = uuid();
+    await ctx.redis.set(token, ctx.session.user.id, { EX: 604800 });
     ctx.session.user.token = token;
     await ctx.render('index', { user: ctx.session.user });
   } else {

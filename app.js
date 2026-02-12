@@ -4,14 +4,14 @@ import logger from "koa-logger";
 import serve from "koa-static";
 import favicon from "koa-favicon";
 import compress from "koa-compress";
-import bodyparser from "koa-bodyparser";
+import { bodyParser } from "@koa/bodyparser";
 import websockify from "koa-websocket";
 import helmet from "koa-helmet";
 import session from "koa-session";
 import debugname from "debug";
-import * as redis from "./lib/redis";
-import api, { ws } from "./api/app";
-import web from "./web/app";
+import * as redis from "./lib/redis.js";
+import api, { ws } from "./api/app.js";
+import web from "./web/app.js";
 import { constants } from "zlib";
 
 const debug = debugname("hostr");
@@ -19,9 +19,9 @@ const debug = debugname("hostr");
 const app = websockify(new Koa());
 app.keys = [process.env.COOKIE_KEY];
 
-app.use(bodyparser());
+app.use(bodyParser());
 
-app.use(helmet());
+app.use(helmet({ contentSecurityPolicy: false }));
 
 app.use(async (ctx, next) => {
   ctx.set("Server", "Nintendo 64");
@@ -32,7 +32,7 @@ app.use(async (ctx, next) => {
   await next();
 });
 
-app.use(session(app));
+app.use(session({ key: 'koa.sess' }, app));
 
 app.use(redis.middleware());
 if (app.env === "development") {
@@ -54,8 +54,8 @@ app.use(
   }),
 );
 
-app.use(favicon(path.join(__dirname, "web/public/images/favicon.png")));
-app.use(serve(path.join(__dirname, "web/public/"), { maxage: 31536000000 }));
+app.use(favicon(path.join(import.meta.dirname, "web/public/images/favicon.png")));
+app.use(serve(path.join(import.meta.dirname, "web/public/"), { maxage: 31536000000 }));
 
 app.use(api.prefix("/api").routes());
 app.use(web.prefix("").routes());
@@ -68,7 +68,7 @@ app.on("error", (err, ctx) => {
   debug(err);
 });
 
-if (!module.parent) {
+if (process.argv[1] === import.meta.filename) {
   app.listen(process.env.PORT || 4040, () => {
     debug("Koa HTTP server listening on port ", process.env.PORT || 4040);
   });

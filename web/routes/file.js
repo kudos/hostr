@@ -1,8 +1,8 @@
 import { join } from 'path';
 import mime from 'mime-types';
-import models from '../../models';
-import hostrFileStream from '../../lib/hostr-file-stream';
-import { formatFile } from '../../lib/format';
+import models from '../../models/index.js';
+import hostrFileStream from '../../lib/hostr-file-stream.js';
+import { formatFile } from '../../lib/format.js';
 
 const storePath = process.env.UPLOAD_STORAGE_PATH;
 

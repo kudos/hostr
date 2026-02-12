@@ -1,13 +1,14 @@
 import crypto from "crypto";
 import { join } from "path";
 import passwords from "passwords";
-import uuid from "node-uuid";
+import { v4 as uuid } from "uuid";
 import views from "co-views";
 import debugname from "debug";
 import sendgrid from "@sendgrid/mail";
-import models from "../../models";
+import { Op } from "sequelize";
+import models from "../../models/index.js";
 
-const render = views(join(__dirname, "..", "views"), { default: "ejs" });
+const render = views(join(import.meta.dirname, "..", "views"), { default: "ejs" });
 const debug = debugname("hostr-web:auth");
 sendgrid.setApiKey(process.env.SENDGRID_KEY);
 
@@ -26,7 +27,7 @@ export async function authenticate(email, password) {
       ip: remoteIp.split(",")[0],
       successful: false,
       createdAt: {
-        $gt: Math.ceil(Date.now()) - 600000,
+        [Op.gt]: Math.ceil(Date.now()) - 600000,
       },
     },
   });
@@ -63,9 +64,9 @@ export async function authenticate(email, password) {
 
 export async function setupSession(user) {
   debug("Setting up session");
-  const token = uuid.v4();
+  const token = uuid();
 
-  await this.redis.set(token, user.id, "EX", 604800);
+  await this.redis.set(token, user.id, { EX: 604800 });
 
   const sessionUser = {
     id: user.id,
@@ -154,7 +155,7 @@ export async function sendResetToken(email) {
   });
   if (user) {
     const reset = await models.reset.create({
-      id: uuid.v4(),
+      id: uuid(),
       userId: user.id,
     });
     const html = await render("email/inlined/forgot", {
