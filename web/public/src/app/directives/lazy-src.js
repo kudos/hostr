@@ -1,13 +1,9 @@
-import $ from 'jquery';
-
-export default function lazySrc($window, $document) {
+export default function lazySrc($window) {
   var lazyLoader = (function() {
     var images = [];
     var renderTimer = null;
     var renderDelay = 100;
-    var win = $($window);
-    var doc = $($document);
-    var documentHeight = doc.height();
+    var documentHeight = document.documentElement.scrollHeight;
     var documentTimer = null;
     var documentDelay = 2000;
     var isWatchingWindow = false;
@@ -51,8 +47,8 @@ export default function lazySrc($window, $document) {
     function checkImages() {
       var visible = [];
       var hidden = [];
-      var windowHeight = win.height();
-      var scrollTop = win.scrollTop();
+      var windowHeight = $window.innerHeight;
+      var scrollTop = $window.scrollY;
       var topFoldOffset = scrollTop;
       var bottomFoldOffset = ( topFoldOffset + windowHeight );
 
@@ -87,7 +83,7 @@ export default function lazySrc($window, $document) {
         return;
       }
 
-      var currentDocumentHeight = doc.height();
+      var currentDocumentHeight = document.documentElement.scrollHeight;
       if ( currentDocumentHeight === documentHeight ) {
         return;
       }
@@ -107,8 +103,8 @@ export default function lazySrc($window, $document) {
 
       isWatchingWindow = true;
 
-      win.on( 'resize.lazySrc', windowChanged );
-      win.on( 'scroll.lazySrc', windowChanged );
+      $window.addEventListener( 'resize', windowChanged );
+      $window.addEventListener( 'scroll', windowChanged );
 
       documentTimer = setInterval( checkDocumentHeight, documentDelay );
     }
@@ -116,8 +112,8 @@ export default function lazySrc($window, $document) {
     function stopWatchingWindow() {
       isWatchingWindow = false;
 
-      win.off( 'resize.lazySrc' );
-      win.off( 'scroll.lazySrc' );
+      $window.removeEventListener( 'resize', windowChanged );
+      $window.removeEventListener( 'scroll', windowChanged );
 
       clearInterval( documentTimer );
     }
@@ -133,23 +129,23 @@ export default function lazySrc($window, $document) {
     var isRendered = false;
     var height = null;
 
-    element = $(element);
+    var el = element[0];
 
     // ---
     // PUBLIC METHODS.
     // ---
     function isVisible( topFoldOffset, bottomFoldOffset ) {
-      if (!element.is(':visible')) {
+      if (el.offsetParent === null) {
         //return( false );
       }
 
       bottomFoldOffset = bottomFoldOffset + 50;
 
       if ( height === null ) {
-        height = element.height();
+        height = el.offsetHeight;
       }
 
-      var top = element.offset().top;
+      var top = el.getBoundingClientRect().top + $window.scrollY;
       var bottom = ( top + height );
 
       return (
@@ -172,8 +168,8 @@ export default function lazySrc($window, $document) {
     }
 
     function renderSource() {
-      element[ 0 ].src = source;
-      element[ 0 ].classList.add('loaded');
+      el.src = source;
+      el.classList.add('loaded');
     }
 
     function render() {

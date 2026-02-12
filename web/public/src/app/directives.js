@@ -1,5 +1,3 @@
-import $ from 'jquery';
-
 export function appHeader() {
   return {
     restrict: 'E',
@@ -32,17 +30,17 @@ export function menuDropdown() {
   return ($scope, element) => {
     $scope.$root.overlayClick = function overlayClick() {
       $scope.$root.showDropdown = false;
-      $('.dropdown').hide();
+      document.querySelectorAll('.dropdown').forEach((el) => { el.style.display = 'none'; });
     };
-    const activeDropdown = $(element).find('.dropdown');
+    const activeDropdown = element[0].querySelector('.dropdown');
     element.on('click', (e) => {
-      if (activeDropdown.not(':visible').length > 0) {
-        $('.dropdown').hide();
+      if (activeDropdown.style.display === 'none' || activeDropdown.style.display === '') {
+        document.querySelectorAll('.dropdown').forEach((el) => { el.style.display = 'none'; });
         $scope.$root.showDropdown = true;
-        activeDropdown.show();
-      } else if (e.target === element.find('img')[0]) {
+        activeDropdown.style.display = 'block';
+      } else if (e.target === element[0].querySelector('img')) {
         $scope.$root.showDropdown = false;
-        activeDropdown.hide();
+        activeDropdown.style.display = 'none';
       }
       $scope.$apply();
     });

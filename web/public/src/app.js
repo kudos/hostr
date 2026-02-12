@@ -36,7 +36,7 @@ app.directive('appHeader', [appHeader]);
 app.directive('appFooter', [appFooter]);
 app.directive('dropzone', ['FileService', '$cacheFactory', '$window', dropzone]);
 app.directive('menuDropdown', [menuDropdown]);
-app.directive('lazySrc', ['$window', '$document', lazySrc]);
+app.directive('lazySrc', ['$window', lazySrc]);
 app.directive('searchShortcut', ['$document', searchShortcut]);
 app.directive('stripeSubscribe', ['$http', stripeSubscribe]);
 
