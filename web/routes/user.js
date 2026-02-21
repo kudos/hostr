@@ -9,7 +9,7 @@ import models from '../../models/index.js';
 const debug = debugname('hostr-web:user');
 
 export async function signin(ctx) {
-  if (!ctx.request.body.email) {
+  if (!ctx.request.body?.email) {
     await ctx.render('signin', { csrf: ctx.state._csrf, async: true });
     return;
   }
@@ -84,7 +84,7 @@ export async function signup(ctx) {
 export async function forgot(ctx) {
   const { token } = ctx.params;
 
-  if (ctx.request.body.password) {
+  if (ctx.request.body?.password) {
     if (ctx.request.body.password.length < 7) {
       await ctx.render('forgot', {
         error: 'Password needs to be at least 7 characters long.',
@@ -117,7 +117,7 @@ export async function forgot(ctx) {
       return;
     }
     await ctx.render('forgot', { csrf: ctx.state._csrf, token, async: true });
-  } else if (ctx.request.body.email) {
+  } else if (ctx.request.body?.email) {
 
     try {
       const { email } = ctx.request.body;
