@@ -69,7 +69,7 @@
     "pg": "^8.13.0",
     "redis": "^5.0.0",
     "sass": "^1.89.2",
-    "sequelize": "^6.0.0",
+    "sequelize": "^6.37.8",
     "smooth-scroll": "https://github.com/cferdinandi/smooth-scroll#5.3.7",
     "statsy": "~0.2.0",
     "stripe": "^20.0.0",
