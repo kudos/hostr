@@ -25,14 +25,10 @@ app.use(helmet({ contentSecurityPolicy: false }));
 
 app.use(async (ctx, next) => {
   ctx.set("Server", "Nintendo 64");
-  if (ctx.req.headers["x-forwarded-proto"] === "http") {
-    ctx.redirect(`https://${ctx.req.headers.host}${ctx.req.url}`);
-    return;
-  }
   await next();
 });
 
-app.use(session({ key: 'koa.sess' }, app));
+app.use(session({ key: "koa.sess" }, app));
 
 app.use(redis.middleware());
 if (app.env === "development") {
@@ -54,8 +50,12 @@ app.use(
   }),
 );
 
-app.use(favicon(path.join(import.meta.dirname, "web/public/images/favicon.png")));
-app.use(serve(path.join(import.meta.dirname, "web/public/"), { maxage: 31536000000 }));
+app.use(
+  favicon(path.join(import.meta.dirname, "web/public/images/favicon.png")),
+);
+app.use(
+  serve(path.join(import.meta.dirname, "web/public/"), { maxage: 31536000000 }),
+);
 
 app.use(api.prefix("/api").routes());
 app.use(web.prefix("").routes());
