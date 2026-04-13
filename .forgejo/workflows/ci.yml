@@ -2,7 +2,7 @@ name: ci
 
 on:
   push:
-    branches: [main]
+    branches: [main, ci]
   pull_request:
     types: [opened, synchronize, reopened]
 
@@ -31,27 +31,59 @@ jobs:
           context: ./
           tags: cremin.dev/jonathan/hostr:latest,cremin.dev/jonathan/hostr:${{ github.sha }}
           push: true
-  # test-image:
-  #   runs-on: self-hosted
-  #   needs: build-image
-  #   services:
-  #     database:
-  #       image: postgres:14-alpine
-  #       env:
-  #         POSTGRES_PASSWORD: hostr
-  #         POSTGRES_USER: hostr
-  #         POSTGRES_DB: hostr
-  #     redis:
-  #       image: redis:4.0.2-alpine
-  #     minio:
-  #       image: minio/minio
-  #       env:
-  #         MINIO_ACCESS_KEY: 7HYV3KPRGQ8Z5YCDNWC6
-  #         MINIO_SECRET_KEY: 0kWP/ZkgIwQzgL9t4SGv9Uc93rO//OdyqMH329b/
-  #       cmd: ["server", "/export"]
-  #   steps:
-  #     - name: Check out repository
-  #       uses: https://cremin.dev/actions/checkout@v4
-  #     - name: Test image
-  #       run: |
-  #         docker run --env-file ./.forgejo/workflows/.env --rm -it cremin.dev/jonathan/hostr:${{ github.sha }} yarn test
+
+  test-image:
+    runs-on: self-hosted
+    needs: build-image
+    steps:
+      - name: Check out repository
+        uses: https://cremin.dev/actions/checkout@v4
+
+      - name: Clean up any leftover containers and network from previous runs
+        run: |
+          docker rm -f database redis minio || true
+          docker network rm hostr-test || true
+
+      - name: Create test network
+        run: docker network create hostr-test
+
+      - name: Start services
+        run: |
+          docker run -d --name database --network hostr-test \
+            -e POSTGRES_PASSWORD=hostr \
+            -e POSTGRES_USER=hostr \
+            -e POSTGRES_DB=hostr \
+            postgres:18-alpine
+
+          docker run -d --name redis --network hostr-test \
+            redis:8-alpine
+
+          docker run -d --name minio --network hostr-test \
+            -e MINIO_ACCESS_KEY=7HYV3KPRGQ8Z5YCDNWC6 \
+            -e MINIO_SECRET_KEY=0kWP/ZkgIwQzgL9t4SGv9Uc93rO//OdyqMH329b/ \
+            quay.io/minio/minio:RELEASE.2025-07-23T15-54-02Z \
+            server /export
+
+      - name: Wait for postgres to be ready
+        run: |
+          for i in $(seq 1 30); do
+            docker exec database pg_isready -U hostr && break
+            echo "Waiting for postgres... ($i/30)"
+            sleep 2
+          done
+          docker exec database pg_isready -U hostr
+
+      - name: Test image
+        run: |
+          docker run \
+            --network hostr-test \
+            --env-file ./.forgejo/workflows/.env \
+            --rm \
+            cremin.dev/jonathan/hostr:${{ github.sha }} \
+            sh -c "mkdir -p /tmp/uploads /export && yarn run init && yarn test"
+
+      - name: Cleanup
+        if: always()
+        run: |
+          docker rm -f database redis minio || true
+          docker network rm hostr-test || true

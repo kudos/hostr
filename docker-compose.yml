@@ -31,7 +31,7 @@ services:
       - "3000:3000"
     command: yarn run watch-server
   database:
-    image: "postgres:14-alpine"
+    image: "postgres:18-alpine"
     ports:
       - "5432:5432"
     environment:
