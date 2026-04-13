@@ -41,7 +41,7 @@ jobs:
 
       - name: Clean up any leftover containers and network from previous runs
         run: |
-          docker rm -f database redis minio || true
+          docker rm -f database redis || true
           docker network rm hostr-test || true
 
       - name: Create test network
@@ -57,12 +57,6 @@ jobs:
 
           docker run -d --name redis --network hostr-test \
             redis:8-alpine
-
-          docker run -d --name minio --network hostr-test \
-            -e MINIO_ACCESS_KEY=7HYV3KPRGQ8Z5YCDNWC6 \
-            -e MINIO_SECRET_KEY=0kWP/ZkgIwQzgL9t4SGv9Uc93rO//OdyqMH329b/ \
-            quay.io/minio/minio:RELEASE.2025-07-23T15-54-02Z \
-            server /export
 
       - name: Wait for postgres to be ready
         run: |
@@ -80,10 +74,10 @@ jobs:
             --env-file ./.forgejo/workflows/.env \
             --rm \
             cremin.dev/jonathan/hostr:${{ github.sha }} \
-            sh -c "mkdir -p /tmp/uploads /export && yarn run init && yarn test"
+            sh -c "mkdir -p /tmp/uploads && yarn run init && yarn test"
 
       - name: Cleanup
         if: always()
         run: |
-          docker rm -f database redis minio || true
+          docker rm -f database redis || true
           docker network rm hostr-test || true

@@ -8,7 +8,9 @@ import sendgrid from "@sendgrid/mail";
 import { Op } from "sequelize";
 import models from "../../models/index.js";
 
-const render = views(join(import.meta.dirname, "..", "views"), { default: "ejs" });
+const render = views(join(import.meta.dirname, "..", "views"), {
+  default: "ejs",
+});
 const debug = debugname("hostr-web:auth");
 sendgrid.setApiKey(process.env.SENDGRID_KEY);
 
@@ -74,16 +76,10 @@ export async function setupSession(user) {
     dailyUploadAllowance: 15,
     maxFileSize: 20971520,
     joined: user.createdAt,
-    plan: user.plan,
     uploadsToday: await models.file.count({ userId: user.id }),
     md5: crypto.createHash("md5").update(user.email).digest("hex"),
     token,
   };
-
-  if (sessionUser.plan === "Pro") {
-    sessionUser.maxFileSize = 524288000;
-    sessionUser.dailyUploadAllowance = "unlimited";
-  }
 
   this.session.user = sessionUser;
   if (this.request.body.remember && this.request.body.remember === "on") {
@@ -113,7 +109,6 @@ export async function signup(email, password, ip) {
       email,
       password: cryptedPassword,
       ip,
-      plan: "Free",
       activation: {
         id: uuid(),
         email,

@@ -1,8 +1,8 @@
-import { join } from 'path';
-import mime from 'mime-types';
-import models from '../../models/index.js';
-import hostrFileStream from '../../lib/hostr-file-stream.js';
-import { formatFile } from '../../lib/format.js';
+import { join } from "path";
+import fs from "fs";
+import mime from "mime-types";
+import models from "../../models/index.js";
+import { formatFile } from "../../lib/format.js";
 
 const storePath = process.env.UPLOAD_STORAGE_PATH;
 
@@ -20,7 +20,7 @@ function userAgentCheck(userAgent) {
 }
 
 function referrerCheck(referrer) {
-  return referrer && referrerRegexes.some(regex => referrer.match(regex));
+  return referrer && referrerRegexes.some((regex) => referrer.match(regex));
 }
 
 function hotlinkCheck(file, userAgent, referrer) {
@@ -28,7 +28,7 @@ function hotlinkCheck(file, userAgent, referrer) {
 }
 
 export async function get(ctx) {
-  if (ctx.params.size && ['150', '970'].indexOf(ctx.params.size) < 0) {
+  if (ctx.params.size && ["150", "970"].indexOf(ctx.params.size) < 0) {
     ctx.throw(404);
     return;
   }
@@ -41,12 +41,12 @@ export async function get(ctx) {
   });
   ctx.assert(file, 404);
 
-  if (!hotlinkCheck(file, ctx.headers['user-agent'], ctx.headers.referer)) {
+  if (!hotlinkCheck(file, ctx.headers["user-agent"], ctx.headers.referer)) {
     ctx.redirect(`/${file.id}`);
     return;
   }
 
-  if (!file.width && ctx.request.query.warning !== 'on') {
+  if (!file.width && ctx.request.query.warning !== "on") {
     ctx.redirect(`/${file.id}`);
     return;
   }
@@ -60,39 +60,45 @@ export async function get(ctx) {
   }
 
   let localPath = join(storePath, file.id[0], `${file.id}_${file.name}`);
-  let remotePath = join(file.id[0], `${file.id}_${file.name}`);
   if (ctx.params.size > 0) {
-    localPath = join(storePath, file.id[0], ctx.params.size, `${file.id}_${file.name}`);
-    remotePath = join(file.id[0], ctx.params.size, `${file.id}_${file.name}`);
+    localPath = join(
+      storePath,
+      file.id[0],
+      ctx.params.size,
+      `${file.id}_${file.name}`,
+    );
   }
 
   if (file.malware) {
-    ctx.statsd.incr('file.malware.download', 1);
+    ctx.statsd.incr("file.malware.download", 1);
   }
 
-  let type = 'application/octet-stream';
+  let type = "application/octet-stream";
   if (file.width > 0) {
     if (ctx.params.size) {
-      ctx.statsd.incr('file.view', 1);
+      ctx.statsd.incr("file.view", 1);
     }
     type = mime.lookup(file.name);
   } else {
-    ctx.statsd.incr('file.download', 1);
+    ctx.statsd.incr("file.download", 1);
   }
 
-  if (userAgentCheck(ctx.headers['user-agent'])) {
-    ctx.set('Content-Disposition', `attachment; filename=${file.name}`);
+  if (userAgentCheck(ctx.headers["user-agent"])) {
+    ctx.set("Content-Disposition", `attachment; filename=${file.name}`);
   }
 
-  ctx.set('Content-type', type);
-  ctx.set('Expires', new Date(2020, 1).toISOString());
-  ctx.set('Cache-control', 'max-age=2592000');
+  ctx.set("Content-type", type);
+  ctx.set("Expires", new Date(2020, 1).toISOString());
+  ctx.set("Cache-control", "max-age=2592000");
 
   if (!ctx.params.size || (ctx.params.size && ctx.params.size > 150)) {
     models.file.accessed(file.id);
   }
 
-  ctx.body = await hostrFileStream(localPath, remotePath);
+  if (!fs.existsSync(localPath)) {
+    ctx.throw(404);
+  }
+  ctx.body = fs.createReadStream(localPath);
 }
 
 export async function resized(ctx) {
@@ -106,13 +112,13 @@ export async function landing(ctx) {
     },
   });
   ctx.assert(file, 404);
-  if (userAgentCheck(ctx.headers['user-agent'])) {
+  if (userAgentCheck(ctx.headers["user-agent"])) {
     ctx.params.name = file.name;
     await get.call(ctx);
     return;
   }
 
-  ctx.statsd.incr('file.landing', 1);
+  ctx.statsd.incr("file.landing", 1);
   const formattedFile = formatFile(file);
-  await ctx.render('file', { file: formattedFile });
+  await ctx.render("file", { file: formattedFile });
 }

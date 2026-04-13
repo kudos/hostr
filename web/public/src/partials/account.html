@@ -7,34 +7,10 @@
             <ul class="nav nav-pills nav-stacked">
                 <li class="active"><a href="/account">Account</a>
                 </li>
-                <li><a href="/billing">Billing</a>
-                </li>
             </ul>
         </div>
         <div class="col-sm-10">
             <div class="holder">
-                <div ng-show="user.plan == 'Free'">
-                  <a href="/pro"><p class="lead bg-primary"><strong>Go Pro</strong> and get 500MB per file upload, no daily upload limits, no advertising and more!</p></a>
-
-                  <p class="info bg-info">
-                      <span>Plan</span>
-                      <span class="type">Free — 20 MB max filesize, 15 file daily upload limit.</span>
-
-                      <span class="type">
-                          <strong>{{user.uploads_today}}/15</strong> files uploaded today</span>
-                  </p>
-                </div>
-                <div ng-show="user.plan != 'Free'">
-                  <p class="info bg-info">
-                      <span>Plan</span>
-                      <span class="type">Pro — 500 MB max filesize, no daily upload limit.</span>
-
-                      <span class="type">
-                          <strong>0/&infin;</strong> files uploaded today</span>
-                  </p>
-                </div>
-                <hr>
-
                 <form role="form" ng-submit="submit(user)">
                   <div class="alert alert-danger" ng-show="error">{{error}}</div>
                   <div class="alert alert-success" ng-show="updated">Updated your details successfully</div>
@@ -79,7 +55,7 @@
 
                           <label for="deletePassword">Current Password</label>
                           <input type="password" class="form-control" id="deletePassword" autocomplete="new-password" ng-model="userDelete.current_password">
-  
+
                           <span><strong>Required.</strong> When deleting your account we require your current password.</span>
                       </div>
 

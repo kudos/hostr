@@ -16,17 +16,10 @@ services:
       DATABASE_URL:
       REDIS_URL:
       SENDGRID_KEY:
-      STRIPE_SECRET_KEY:
-      STRIPE_PUBLIC_KEY:
-      AWS_ENDPOINT:
-      AWS_ACCESS_KEY_ID:
-      AWS_SECRET_ACCESS_KEY:
-      AWS_BUCKET:
       VIRUSTOTAL_KEY:
     volumes:
       - ./:/app:z
       - uploads:/hostr/uploads
-      - export:/export
     ports:
       - "3000:3000"
     command: yarn run watch-server
@@ -42,15 +35,6 @@ services:
     image: "redis:8-alpine"
     ports:
       - "6379:6379"
-  minio:
-    image: quay.io/minio/minio:RELEASE.2025-07-23T15-54-02Z
-    volumes:
-      - export:/export
-    command: server /export
-    environment:
-      MINIO_ACCESS_KEY: 7HYV3KPRGQ8Z5YCDNWC6
-      MINIO_SECRET_KEY: "0kWP/ZkgIwQzgL9t4SGv9Uc93rO//OdyqMH329b/"
 
 volumes:
   uploads:
-  export:

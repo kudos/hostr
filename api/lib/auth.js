@@ -1,26 +1,37 @@
-import passwords from 'passwords';
-import auth from 'basic-auth';
-import debugname from 'debug';
-import { Op } from 'sequelize';
+import passwords from "passwords";
+import auth from "basic-auth";
+import debugname from "debug";
+import { Op } from "sequelize";
 
-import models from '../../models/index.js';
+import models from "../../models/index.js";
 
-const debug = debugname('hostr-api:auth');
+const debug = debugname("hostr-api:auth");
 
-const badLoginMsg = '{"error": {"message": "Incorrect login details.", "code": 607}}';
+const badLoginMsg =
+  '{"error": {"message": "Incorrect login details.", "code": 607}}';
 
 export default async (ctx, next) => {
   let user = false;
-  const remoteIp = ctx.req.headers['x-forwarded-for'] || ctx.req.connection.remoteAddress;
+  const remoteIp =
+    ctx.req.headers["x-forwarded-for"] || ctx.req.connection.remoteAddress;
   const login = await models.login.create({
-    ip: remoteIp.split(',')[0],
+    ip: remoteIp.split(",")[0],
     successful: false,
   });
-  if (ctx.req.headers.authorization && ctx.req.headers.authorization[0] === ':') {
-    debug('Logging in with token');
-    const userToken = await ctx.redis.get(ctx.req.headers.authorization.substr(1));
-    ctx.assert(userToken, 401, '{"error": {"message": "Invalid token.", "code": 606}}');
-    debug('Token found');
+  if (
+    ctx.req.headers.authorization &&
+    ctx.req.headers.authorization[0] === ":"
+  ) {
+    debug("Logging in with token");
+    const userToken = await ctx.redis.get(
+      ctx.req.headers.authorization.substr(1),
+    );
+    ctx.assert(
+      userToken,
+      401,
+      '{"error": {"message": "Invalid token.", "code": 606}}',
+    );
+    debug("Token found");
     user = await models.user.findByPk(userToken);
     if (!user) {
       login.save();
@@ -31,7 +42,7 @@ export default async (ctx, next) => {
     ctx.assert(authUser, 401, badLoginMsg);
     const count = await models.login.count({
       where: {
-        ip: remoteIp.split(',')[0],
+        ip: remoteIp.split(",")[0],
         successful: false,
         createdAt: {
           [Op.gt]: new Date(Date.now() - 600000),
@@ -40,7 +51,8 @@ export default async (ctx, next) => {
     });
 
     ctx.assert(
-      count < 25, 401,
+      count < 25,
+      401,
       '{"error": {"message": "Too many incorrect logins.", "code": 608}}',
     );
 
@@ -57,12 +69,13 @@ export default async (ctx, next) => {
       return;
     }
   }
-  debug('Checking user');
+  debug("Checking user");
   ctx.assert(user, 401, badLoginMsg);
-  debug('Checking user is activated');
+  debug("Checking user is activated");
   debug(user.activated);
   ctx.assert(
-    user.activated === true, 401,
+    user.activated === true,
+    401,
     '{"error": {"message": "Account has not been activated.", "code": 603}}',
   );
 
@@ -86,17 +99,13 @@ export default async (ctx, next) => {
   const normalisedUser = {
     id: user.id,
     email: user.email,
-    daily_upload_allowance: user.plan === 'Pro' ? 'unlimited' : 15,
+    daily_upload_allowance: 15,
     file_count: uploadedTotal,
-    max_filesize: user.plan === 'Pro' ? 524288000 : 20971520,
-    plan: user.plan,
+    max_filesize: 20971520,
     uploads_today: uploadedToday,
   };
-  ctx.response.set(
-    'Daily-Uploads-Remaining',
-    user.type === 'Pro' ? 'unlimited' : 15 - uploadedToday,
-  );
+  ctx.response.set("Daily-Uploads-Remaining", String(15 - uploadedToday));
   ctx.user = normalisedUser;
-  debug('Authenticated user: ', ctx.user.email);
+  debug("Authenticated user: ", ctx.user.email);
   await next();
 };

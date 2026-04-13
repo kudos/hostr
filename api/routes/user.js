@@ -19,22 +19,6 @@ export async function token(ctx) {
   ctx.body = { token };
 }
 
-export async function transaction(ctx) {
-  const transactions = await models.transaction.findAll({
-    where: {
-      userId: ctx.user.id,
-    },
-  });
-
-  ctx.body = transactions.map((item) => ({
-    id: item.id,
-    amount: item.amount / 100,
-    date: item.date,
-    description: item.description,
-    type: "direct",
-  }));
-}
-
 export async function settings(ctx) {
   ctx.assert(
     ctx.request.body,

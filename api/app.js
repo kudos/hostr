@@ -1,19 +1,18 @@
-import Router from '@koa/router';
-import cors from '@koa/cors';
-import StatsD from 'statsy';
-import debugname from 'debug';
+import Router from "@koa/router";
+import cors from "@koa/cors";
+import StatsD from "statsy";
+import debugname from "debug";
 
-import stats from '../lib/koa-statsd.js';
-import auth from './lib/auth.js';
-import * as user from './routes/user.js';
-import * as file from './routes/file.js';
-import * as pro from './routes/pro.js';
+import stats from "../lib/koa-statsd.js";
+import auth from "./lib/auth.js";
+import * as user from "./routes/user.js";
+import * as file from "./routes/file.js";
 
-const debug = debugname('hostr-api');
+const debug = debugname("hostr-api");
 
 const router = new Router();
 
-const statsdOpts = { prefix: 'hostr-api', host: process.env.STATSD_HOST };
+const statsdOpts = { prefix: "hostr-api", host: process.env.STATSD_HOST };
 router.use(stats(statsdOpts));
 const statsd = new StatsD(statsdOpts);
 router.use(async (ctx, next) => {
@@ -21,10 +20,12 @@ router.use(async (ctx, next) => {
   await next();
 });
 
-router.use(cors({
-  origin: '*',
-  credentials: true,
-}));
+router.use(
+  cors({
+    origin: "*",
+    credentials: true,
+  }),
+);
 
 router.use(async (ctx, next) => {
   try {
@@ -35,15 +36,15 @@ router.use(async (ctx, next) => {
     }
   } catch (err) {
     if (err.status === 401) {
-      ctx.statsd.incr('auth.failure', 1);
-      ctx.set('WWW-Authenticate', 'Basic');
+      ctx.statsd.incr("auth.failure", 1);
+      ctx.set("WWW-Authenticate", "Basic");
       ctx.status = 401;
       ctx.body = err.message;
     } else if (err.status === 404) {
       ctx.status = 404;
       ctx.body = {
         error: {
-          message: 'File not found',
+          message: "File not found",
           code: 604,
         },
       };
@@ -54,30 +55,28 @@ router.use(async (ctx, next) => {
       ctx.body = err.message;
     }
   }
-  ctx.type = 'application/json';
+  ctx.type = "application/json";
 });
 
-router.delete('/file/:id', auth, file.del);
-router.get('/user', auth, user.get);
-router.get('/user/token', auth, user.token);
-router.get('/token', auth, user.token);
-router.get('/user/transaction', auth, user.transaction);
-router.post('/user/settings', auth, user.settings);
-router.post('/user/delete', auth, user.deleteUser);
-router.post('/user/pro', auth, pro.create);
-router.delete('/user/pro', auth, pro.cancel);
-router.get('/file', auth, file.list);
-router.post('/file', auth, file.post);
-router.get('/file/:id', file.get);
+router.delete("/file/:id", auth, file.del);
+router.get("/user", auth, user.get);
+router.get("/user/token", auth, user.token);
+router.get("/token", auth, user.token);
 
+router.post("/user/settings", auth, user.settings);
+router.post("/user/delete", auth, user.deleteUser);
+
+router.get("/file", auth, file.list);
+router.post("/file", auth, file.post);
+router.get("/file/:id", file.get);
 
 // Hack, if no route matches here, router does not dispatch at all
-router.get('{/*path}', async (ctx) => {
+router.get("{/*path}", async (ctx) => {
   ctx.throw(404);
 });
 
 export const ws = new Router();
 
-ws.all('/user', user.events);
+ws.all("/user", user.events);
 
 export default router;
