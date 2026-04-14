@@ -31,7 +31,7 @@
     "@ladjs/koa-views": "^9.0.0",
     "@opentelemetry/api": "^1.9.0",
     "@opentelemetry/auto-instrumentations-node": "^0.72.0",
-    "nodemailer": "^6.9.0",
+    "nodemailer": "^8.0.5",
     "angular": "^1.7.9",
     "angular-resource": "^1.7.9",
     "angular-route": "^1.7.9",
