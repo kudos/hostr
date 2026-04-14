@@ -1,4 +1,6 @@
 import path from "path";
+import { createHash } from "crypto";
+import { readFileSync } from "fs";
 import Router from "@koa/router";
 import CSRF from "koa-csrf";
 import views from "@ladjs/koa-views";
@@ -9,6 +11,22 @@ import stats from "../lib/koa-statsd.js";
 import * as index from "./routes/index.js";
 import * as file from "./routes/file.js";
 import * as user from "./routes/user.js";
+
+function cssHash(filename) {
+  try {
+    const content = readFileSync(
+      path.join(import.meta.dirname, "public", "styles", filename),
+    );
+    return createHash("md5").update(content).digest("hex").slice(0, 8);
+  } catch {
+    return "0";
+  }
+}
+
+const cssVersions = {
+  app: cssHash("app.css"),
+  style: cssHash("style.css"),
+};
 
 const router = new Router();
 
@@ -32,6 +50,7 @@ router.use(async (ctx, next) => {
     session: ctx.session,
     baseURL: process.env.WEB_BASE_URL,
     apiURL: process.env.API_BASE_URL,
+    cssVersions,
   });
   await next();
 });
