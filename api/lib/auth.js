@@ -1,111 +1,88 @@
-import passwords from "passwords";
-import auth from "basic-auth";
-import debugname from "debug";
-import { Op } from "sequelize";
+import passwords from 'passwords';
+import debugname from 'debug';
+import { Op } from 'sequelize';
+import { HTTPException } from 'hono/http-exception';
+import models from '../../models/index.js';
 
-import models from "../../models/index.js";
+const debug = debugname('hostr-api:auth');
 
-const debug = debugname("hostr-api:auth");
+const badLoginMsg = '{"error": {"message": "Incorrect login details.", "code": 607}}';
 
-const badLoginMsg =
-  '{"error": {"message": "Incorrect login details.", "code": 607}}';
-
-export default async (ctx, next) => {
+export default async (c, next) => {
   let user = false;
-  const remoteIp =
-    ctx.req.headers["x-forwarded-for"] || ctx.req.connection.remoteAddress;
+  const remoteIp = c.req.header('x-forwarded-for')
+    || c.env?.incoming?.socket?.remoteAddress
+    || '0.0.0.0';
+
   const login = await models.login.create({
-    ip: remoteIp.split(",")[0],
+    ip: remoteIp.split(',')[0].trim(),
     successful: false,
   });
-  if (
-    ctx.req.headers.authorization &&
-    ctx.req.headers.authorization[0] === ":"
-  ) {
-    debug("Logging in with token");
-    const userToken = await ctx.redis.get(
-      ctx.req.headers.authorization.substr(1),
-    );
-    ctx.assert(
-      userToken,
-      401,
-      '{"error": {"message": "Invalid token.", "code": 606}}',
-    );
-    debug("Token found");
+
+  const authHeader = c.req.header('authorization') || '';
+
+  if (authHeader.startsWith(':')) {
+    debug('Logging in with token');
+    const userToken = await c.get('redis').get(authHeader.slice(1));
+    if (!userToken) {
+      login.save();
+      throw new HTTPException(401, { message: '{"error": {"message": "Invalid token.", "code": 606}}' });
+    }
+    debug('Token found');
     user = await models.user.findByPk(userToken);
     if (!user) {
       login.save();
       return;
     }
   } else {
-    const authUser = auth(ctx);
-    ctx.assert(authUser, 401, badLoginMsg);
+    let authUser = null;
+    if (authHeader.startsWith('Basic ')) {
+      const decoded = Buffer.from(authHeader.slice(6), 'base64').toString('utf-8');
+      const colon = decoded.indexOf(':');
+      if (colon > 0) authUser = { name: decoded.slice(0, colon), pass: decoded.slice(colon + 1) };
+    }
+    if (!authUser) throw new HTTPException(401, { message: badLoginMsg });
+
     const count = await models.login.count({
       where: {
-        ip: remoteIp.split(",")[0],
+        ip: remoteIp.split(',')[0].trim(),
         successful: false,
-        createdAt: {
-          [Op.gt]: new Date(Date.now() - 600000),
-        },
+        createdAt: { [Op.gt]: new Date(Date.now() - 600000) },
       },
     });
+    if (count >= 25) {
+      throw new HTTPException(401, { message: '{"error": {"message": "Too many incorrect logins.", "code": 608}}' });
+    }
 
-    ctx.assert(
-      count < 25,
-      401,
-      '{"error": {"message": "Too many incorrect logins.", "code": 608}}',
-    );
-
-    user = await models.user.findOne({
-      where: {
-        email: authUser.name,
-        activated: true,
-      },
-    });
-
+    user = await models.user.findOne({ where: { email: authUser.name, activated: true } });
     if (!user || !(await passwords.match(authUser.pass, user.password))) {
       login.save();
-      ctx.throw(401, badLoginMsg);
-      return;
+      throw new HTTPException(401, { message: badLoginMsg });
     }
   }
-  debug("Checking user");
-  ctx.assert(user, 401, badLoginMsg);
-  debug("Checking user is activated");
-  debug(user.activated);
-  ctx.assert(
-    user.activated === true,
-    401,
-    '{"error": {"message": "Account has not been activated.", "code": 603}}',
-  );
+
+  if (!user) throw new HTTPException(401, { message: badLoginMsg });
+  if (user.activated !== true) {
+    throw new HTTPException(401, { message: '{"error": {"message": "Account has not been activated.", "code": 603}}' });
+  }
 
   login.successful = true;
   await login.save();
 
-  const uploadedTotal = await models.file.count({
-    where: {
-      userId: user.id,
-    },
-  });
-  const uploadedToday = await models.file.count({
-    where: {
-      userId: user.id,
-      createdAt: {
-        [Op.gt]: Date.now() - 86400000,
-      },
-    },
-  });
+  const [uploadedTotal, uploadedToday] = await Promise.all([
+    models.file.count({ where: { userId: user.id } }),
+    models.file.count({ where: { userId: user.id, createdAt: { [Op.gt]: Date.now() - 86400000 } } }),
+  ]);
 
-  const normalisedUser = {
+  c.set('user', {
     id: user.id,
     email: user.email,
     daily_upload_allowance: 15,
     file_count: uploadedTotal,
     max_filesize: 20971520,
     uploads_today: uploadedToday,
-  };
-  ctx.response.set("Daily-Uploads-Remaining", String(15 - uploadedToday));
-  ctx.user = normalisedUser;
-  debug("Authenticated user: ", ctx.user.email);
+  });
+  c.header('Daily-Uploads-Remaining', String(15 - uploadedToday));
+  debug('Authenticated user:', user.email);
   await next();
 };

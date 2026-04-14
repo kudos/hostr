@@ -1,52 +1,49 @@
-import { v4 as uuid } from "uuid";
-import { fromToken, fromCookie, setupSession } from "../lib/auth.js";
+import { v4 as uuid } from 'uuid';
+import { getCookie } from 'hono/cookie';
+import { fromToken, fromCookie, setupSession } from '../lib/auth.js';
+import { render } from '../lib/render.js';
 
-export async function main(ctx) {
-  if (ctx.session.user) {
-    if (ctx.query["app-token"]) {
-      ctx.redirect("/");
-      return;
+export async function main(c) {
+  const session = c.get('session');
+  if (session.user) {
+    if (c.req.query('app-token')) {
+      return c.redirect('/');
     }
     const token = uuid();
-    await ctx.redis.set(token, ctx.session.user.id, { EX: 604800 });
-    ctx.session.user.token = token;
-    await ctx.render("index", { user: ctx.session.user });
-  } else if (ctx.query["app-token"]) {
-    const user = await fromToken(ctx, ctx.query["app-token"]);
-    await setupSession(ctx, user);
-    ctx.redirect("/");
-  } else if (ctx.cookies.r) {
-    const user = await fromCookie(ctx, ctx.cookies.r);
-    await setupSession(ctx, user);
-    ctx.redirect("/");
-  } else {
-    await ctx.render("marketing");
+    await c.get('redis').set(token, session.user.id, { EX: 604800 });
+    session.user.token = token;
+    c.set('session', session);
+    return render(c, 'index', { user: session.user });
   }
+  if (c.req.query('app-token')) {
+    const user = await fromToken(c, c.req.query('app-token'));
+    if (user) await setupSession(c, user);
+    return c.redirect('/');
+  }
+  const rememberId = getCookie(c, 'r');
+  if (rememberId) {
+    const user = await fromCookie(rememberId);
+    if (user) await setupSession(c, user);
+    return c.redirect('/');
+  }
+  return render(c, 'marketing');
 }
 
-export async function staticPage(ctx, next) {
-  if (ctx.session.user) {
+export async function staticPage(c) {
+  const session = c.get('session');
+  if (session.user) {
     const token = uuid();
-    await ctx.redis.set(token, ctx.session.user.id, { EX: 604800 });
-    ctx.session.user.token = token;
-    await ctx.render("index", { user: ctx.session.user });
-  } else {
-    switch (ctx.originalUrl) {
-      case "/terms":
-        await ctx.render("terms");
-        break;
-      case "/privacy":
-        await ctx.render("privacy");
-        break;
-
-      case "/apps":
-        await ctx.render("apps");
-        break;
-      case "/stats":
-        await ctx.render("index", { user: {} });
-        break;
-      default:
-        await next();
-    }
+    await c.get('redis').set(token, session.user.id, { EX: 604800 });
+    session.user.token = token;
+    c.set('session', session);
+    return render(c, 'index', { user: session.user });
+  }
+  const { pathname } = new URL(c.req.url);
+  switch (pathname) {
+    case '/terms': return render(c, 'terms');
+    case '/privacy': return render(c, 'privacy');
+    case '/apps': return render(c, 'apps');
+    case '/stats': return render(c, 'index', { user: {} });
+    default: return c.notFound();
   }
 }

@@ -1,8 +1,11 @@
-import { join } from "path";
-import fs from "fs";
-import mime from "mime-types";
-import models from "../../models/index.js";
-import { formatFile } from "../../lib/format.js";
+import { join } from 'path';
+import fs from 'fs';
+import { Readable } from 'stream';
+import mime from 'mime-types';
+import { HTTPException } from 'hono/http-exception';
+import models from '../../models/index.js';
+import { formatFile } from '../../lib/format.js';
+import { render } from '../lib/render.js';
 
 const storePath = process.env.UPLOAD_STORAGE_PATH;
 
@@ -13,9 +16,7 @@ const referrerRegexes = [
 ];
 
 function userAgentCheck(userAgent) {
-  if (!userAgent) {
-    return false;
-  }
+  if (!userAgent) return false;
   return userAgent.match(/^(wget|curl|vagrant)/i);
 }
 
@@ -27,88 +28,72 @@ function hotlinkCheck(file, userAgent, referrer) {
   return userAgentCheck(userAgent) || file.width || referrerCheck(referrer);
 }
 
-export async function get(ctx) {
-  if (ctx.params.size && ["150", "970"].indexOf(ctx.params.size) < 0) {
-    ctx.throw(404);
-    return;
-  }
-
-  const file = await models.file.findOne({
-    where: {
-      id: ctx.params.id,
-      name: ctx.params.name,
-    },
-  });
-  ctx.assert(file, 404);
-
-  if (!hotlinkCheck(file, ctx.headers["user-agent"], ctx.headers.referer)) {
-    ctx.redirect(`/${file.id}`);
-    return;
-  }
-
-  if (!file.width && ctx.request.query.warning !== "on") {
-    ctx.redirect(`/${file.id}`);
-    return;
-  }
-
-  if (file.malware) {
-    const { alert } = ctx.request.query;
-    if (!alert || !alert.match(/i want to download malware/i)) {
-      ctx.redirect(`/${file.id}`);
-      return;
-    }
-  }
-
+async function serveFile(c, file, size) {
   let localPath = join(storePath, file.id[0], `${file.id}_${file.name}`);
-  if (ctx.params.size > 0) {
-    localPath = join(
-      storePath,
-      file.id[0],
-      ctx.params.size,
-      `${file.id}_${file.name}`,
-    );
+  if (size > 0) {
+    localPath = join(storePath, file.id[0], String(size), `${file.id}_${file.name}`);
   }
 
-  let type = "application/octet-stream";
+  let type = 'application/octet-stream';
   if (file.width > 0) {
-    type = mime.lookup(file.name);
+    type = mime.lookup(file.name) || type;
   }
 
-  if (userAgentCheck(ctx.headers["user-agent"])) {
-    ctx.set("Content-Disposition", `attachment; filename=${file.name}`);
+  if (userAgentCheck(c.req.header('user-agent'))) {
+    c.header('Content-Disposition', `attachment; filename=${file.name}`);
   }
 
-  ctx.set("Content-type", type);
-  ctx.set("Expires", new Date(2020, 1).toISOString());
-  ctx.set("Cache-control", "max-age=2592000");
+  c.header('Content-Type', type);
+  c.header('Expires', new Date(2020, 1).toISOString());
+  c.header('Cache-Control', 'max-age=2592000');
 
-  if (!ctx.params.size || (ctx.params.size && ctx.params.size > 150)) {
+  if (!size || size > 150) {
     models.file.accessed(file.id);
   }
 
   if (!fs.existsSync(localPath)) {
-    ctx.throw(404);
+    throw new HTTPException(404);
   }
-  ctx.body = fs.createReadStream(localPath);
+  return c.body(Readable.toWeb(fs.createReadStream(localPath)));
 }
 
-export async function resized(ctx) {
-  await get.call(ctx);
-}
+export async function get(c) {
+  const size = c.req.param('size') ? parseInt(c.req.param('size'), 10) : null;
+  if (size !== null && ![150, 970].includes(size)) {
+    throw new HTTPException(404);
+  }
 
-export async function landing(ctx) {
   const file = await models.file.findOne({
-    where: {
-      id: ctx.params.id,
-    },
+    where: { id: c.req.param('id'), name: c.req.param('name') },
   });
-  ctx.assert(file, 404);
-  if (userAgentCheck(ctx.headers["user-agent"])) {
-    ctx.params.name = file.name;
-    await get.call(ctx);
-    return;
+  if (!file) throw new HTTPException(404);
+
+  const userAgent = c.req.header('user-agent');
+  const referer = c.req.header('referer');
+
+  if (!hotlinkCheck(file, userAgent, referer)) {
+    return c.redirect(`/${file.id}`);
+  }
+  if (!file.width && c.req.query('warning') !== 'on') {
+    return c.redirect(`/${file.id}`);
+  }
+  if (file.malware) {
+    const alert = c.req.query('alert');
+    if (!alert || !alert.match(/i want to download malware/i)) {
+      return c.redirect(`/${file.id}`);
+    }
   }
 
-  const formattedFile = formatFile(file);
-  await ctx.render("file", { file: formattedFile });
+  return serveFile(c, file, size);
+}
+
+export async function landing(c) {
+  const file = await models.file.findOne({ where: { id: c.req.param('id') } });
+  if (!file) throw new HTTPException(404);
+
+  if (userAgentCheck(c.req.header('user-agent'))) {
+    return serveFile(c, file, null);
+  }
+
+  return render(c, 'file', { file: formatFile(file) });
 }

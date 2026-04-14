@@ -1,108 +1,53 @@
-import { v4 as uuid } from "uuid";
-import { createClient } from "redis";
-import passwords from "passwords";
-import debugname from "debug";
+import { v4 as uuid } from 'uuid';
+import passwords from 'passwords';
+import debugname from 'debug';
+import { HTTPException } from 'hono/http-exception';
+import models from '../../models/index.js';
 
-import models from "../../models/index.js";
+const debug = debugname('hostr-api:user');
 
-const debug = debugname("hostr-api:user");
-
-const redisUrl = process.env.REDIS_URL;
-
-export async function get(ctx) {
-  ctx.body = ctx.user;
+export async function get(c) {
+  return c.json(c.get('user'));
 }
 
-export async function token(ctx) {
-  const token = uuid(); // eslint-disable-line no-shadow
-  await ctx.redis.set(token, ctx.user.id, { EX: 86400 });
-  ctx.body = { token };
+export async function token(c) {
+  const tok = uuid();
+  await c.get('redis').set(tok, c.get('user').id, { EX: 86400 });
+  return c.json({ token: tok });
 }
 
-export async function settings(ctx) {
-  ctx.assert(
-    ctx.request.body,
-    400,
-    '{"error": {"message": "Current Password required to update account.", "code": 612}}',
-  );
-  ctx.assert(
-    ctx.request.body.current_password,
-    400,
-    '{"error": {"message": "Current Password required to update account.", "code": 612}}',
-  );
-  const user = await models.user.findByPk(ctx.user.id);
-  ctx.assert(
-    await passwords.match(ctx.request.body.current_password, user.password),
-    400,
-    '{"error": {"message": "Incorrect password", "code": 606}}',
-  );
-  if (ctx.request.body.email && ctx.request.body.email !== user.email) {
-    user.email = ctx.request.body.email;
+export async function settings(c) {
+  const body = await c.req.parseBody().catch(() => ({}));
+  if (!body.current_password) {
+    throw new HTTPException(400, { message: '{"error": {"message": "Current Password required to update account.", "code": 612}}' });
   }
-  if (ctx.request.body.new_password) {
-    ctx.assert(
-      ctx.request.body.new_password.length >= 7,
-      400,
-      '{"error": {"message": "Password must be 7 or more characters long.", "code": 606}}',
-    );
-    user.password = await passwords.hash(ctx.request.body.new_password);
+  const user = await models.user.findByPk(c.get('user').id);
+  if (!(await passwords.match(body.current_password, user.password))) {
+    throw new HTTPException(400, { message: '{"error": {"message": "Incorrect password", "code": 606}}' });
+  }
+  if (body.email && body.email !== user.email) {
+    user.email = body.email;
+  }
+  if (body.new_password) {
+    if (body.new_password.length < 7) {
+      throw new HTTPException(400, { message: '{"error": {"message": "Password must be 7 or more characters long.", "code": 606}}' });
+    }
+    user.password = await passwords.hash(body.new_password);
   }
   await user.save();
-  ctx.body = {};
+  return c.json({});
 }
 
-export async function deleteUser(ctx) {
-  ctx.assert(
-    ctx.request.body,
-    400,
-    '{"error": {"message": "Current Password required to update account.", "code": 612}}',
-  );
-  ctx.assert(
-    ctx.request.body.current_password,
-    400,
-    '{"error": {"message": "Current Password required to update account.", "code": 612}}',
-  );
-  const user = await models.user.findByPk(ctx.user.id);
-  ctx.assert(
-    await passwords.match(ctx.request.body.current_password, user.password),
-    400,
-    '{"error": {"message": "Incorrect password", "code": 606}}',
-  );
+export async function deleteUser(c) {
+  const body = await c.req.parseBody().catch(() => ({}));
+  if (!body.current_password) {
+    throw new HTTPException(400, { message: '{"error": {"message": "Current Password required to update account.", "code": 612}}' });
+  }
+  const user = await models.user.findByPk(c.get('user').id);
+  if (!(await passwords.match(body.current_password, user.password))) {
+    throw new HTTPException(400, { message: '{"error": {"message": "Incorrect password", "code": 606}}' });
+  }
   await user.destroy();
-  ctx.body = '{"action":"logout", "message": "Account deleted"}';
+  return c.json({ action: 'logout', message: 'Account deleted' });
 }
 
-export async function events(ctx) {
-  const pubsub = createClient({ url: redisUrl });
-  pubsub.on("error", (err) => debug("Redis pubsub error:", err));
-  await pubsub.connect();
-
-  ctx.websocket.on("message", async (message) => {
-    let json;
-    try {
-      json = JSON.parse(message);
-    } catch (err) {
-      debug("Invalid JSON for socket auth");
-      ctx.websocket.send("Invalid authentication message. Bad JSON?");
-      return;
-    }
-    try {
-      const reply = await ctx.redis.get(json.authorization);
-      if (reply) {
-        await pubsub.subscribe(`/user/${reply}`, (msg) => {
-          ctx.websocket.send(msg);
-        });
-        ctx.websocket.send('{"status":"active"}');
-        debug("Subscribed to: /user/%s", reply);
-      } else {
-        ctx.websocket.send("Invalid authentication token.");
-      }
-    } catch (err) {
-      debug(err);
-    }
-  });
-  ctx.websocket.on("close", () => {
-    debug("Socket closed");
-    pubsub.close();
-  });
-}

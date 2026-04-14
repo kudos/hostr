@@ -1,77 +1,59 @@
-import path from "path";
-import Koa from "koa";
-import logger from "koa-logger";
-import serve from "koa-static";
-import favicon from "koa-favicon";
-import compress from "koa-compress";
-import { bodyParser } from "@koa/bodyparser";
-import websockify from "koa-websocket";
-import helmet from "koa-helmet";
-import session from "koa-session";
-import debugname from "debug";
-import * as redis from "./lib/redis.js";
-import api, { ws } from "./api/app.js";
-import web from "./web/app.js";
-import { constants } from "zlib";
+import { Hono } from 'hono';
+import { serve } from '@hono/node-server';
+import { serveStatic } from '@hono/node-server/serve-static';
+import { compress } from 'hono/compress';
+import { secureHeaders } from 'hono/secure-headers';
+import { logger } from 'hono/logger';
+import debugname from 'debug';
+import { sessionMiddleware } from './lib/session.js';
+import * as redis from './lib/redis.js';
+import { attachWebSocket } from './lib/websocket.js';
+import api from './api/app.js';
+import web from './web/app.js';
 
-const debug = debugname("hostr");
+const debug = debugname('hostr');
 
-const app = websockify(new Koa());
-app.keys = [process.env.COOKIE_KEY];
+const app = new Hono();
 
-app.use(bodyParser());
-
-app.use(helmet({ contentSecurityPolicy: false }));
-
-app.use(async (ctx, next) => {
-  ctx.set("Server", "Nintendo 64");
+app.use(secureHeaders({ contentSecurityPolicy: false }));
+app.use(async (c, next) => {
   await next();
+  c.header('Server', 'Nintendo 64');
 });
-
-app.use(session({ key: "koa.sess" }, app));
-
+app.use(sessionMiddleware(process.env.COOKIE_KEY));
 app.use(redis.middleware());
-if (app.env === "development") {
+
+if (process.env.NODE_ENV === 'development') {
   app.use(logger());
 }
-app.use(
-  compress({
-    filter(content_type) {
-      return /text/i.test(content_type);
-    },
-    threshold: 2048,
-    gzip: {
-      flush: constants.Z_SYNC_FLUSH,
-    },
-    deflate: {
-      flush: constants.Z_SYNC_FLUSH,
-    },
-    br: false,
-  }),
-);
 
-app.use(
-  favicon(path.join(import.meta.dirname, "web/public/images/favicon.png")),
-);
-app.use(
-  serve(path.join(import.meta.dirname, "web/public/"), { maxage: 31536000000 }),
-);
+app.use(compress());
 
-app.use(api.prefix("/api").routes());
-app.use(web.prefix("").routes());
+// Long-term cache for versioned static assets
+const longCache = async (c, next) => {
+  await next();
+  c.header('Cache-Control', 'public, max-age=31536000, immutable');
+};
+app.use('/images/*', longCache);
+app.use('/styles/*', longCache);
+app.use('/build/*', longCache);
 
-app.ws.use(redis.middleware());
-app.ws.use(ws.prefix("/api").routes());
+app.use('/favicon.ico', serveStatic({ path: './web/public/images/favicon.png' }));
+app.use('/*', serveStatic({ root: './web/public/' }));
 
-app.on("error", (err, ctx) => {
-  if (err.statusCode === 404) return;
-  debug(err);
+app.route('/api', api);
+app.route('/', web);
+
+app.onError((err, c) => {
+  if (err?.status !== 404) debug(err);
 });
 
 if (process.argv[1] === import.meta.filename) {
-  app.listen(process.env.PORT || 4040, () => {
-    debug("Koa HTTP server listening on port ", process.env.PORT || 4040);
-  });
+  const server = serve(
+    { fetch: app.fetch, port: parseInt(process.env.PORT || '4040', 10) },
+    () => debug('Hono server listening on port', process.env.PORT || 4040),
+  );
+  attachWebSocket(server);
 }
 
 export default app;

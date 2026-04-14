@@ -1,115 +1,68 @@
-import path from "path";
-import { createHash } from "crypto";
-import { readFileSync } from "fs";
-import Router from "@koa/router";
-import CSRF from "koa-csrf";
-import views from "@ladjs/koa-views";
-import ejs from "ejs";
-import * as index from "./routes/index.js";
-import * as file from "./routes/file.js";
-import * as user from "./routes/user.js";
-
-function fileHash(filepath) {
-  try {
-    const content = readFileSync(path.join(import.meta.dirname, filepath));
-    return createHash("md5").update(content).digest("hex").slice(0, 8);
-  } catch {
-    return "0";
-  }
-}
-
-const assetVersions = {
-  app: fileHash("public/styles/app.css"),
-  style: fileHash("public/styles/style.css"),
-  bundle: fileHash("public/build/bundle.js"),
-};
-
-const router = new Router();
+import { Hono } from 'hono';
+import { HTTPException } from 'hono/http-exception';
+import { readFileSync } from 'fs';
+import path from 'path';
+import ejs from 'ejs';
+import { csrfMiddleware } from '../lib/csrf.js';
+import * as index from './routes/index.js';
+import * as file from './routes/file.js';
+import * as user from './routes/user.js';
 
 const errorTemplate = readFileSync(
-  path.join(import.meta.dirname, "public", "error.html"),
-  "utf8",
+  path.join(import.meta.dirname, 'public', 'error.html'),
+  'utf8',
 );
 
-router.use(async (ctx, next) => {
-  try {
-    await next();
-    if (ctx.status === 404 && !ctx.body) {
-      ctx.status = 404;
-      ctx.type = "html";
-      ctx.body = ejs.render(errorTemplate, { status: 404, error: "Not Found" });
-    }
-  } catch (err) {
-    const status = err.status || err.statusCode || 500;
-    ctx.status = status;
-    ctx.type = "html";
-    ctx.body = ejs.render(errorTemplate, {
-      status,
-      error: err.expose ? err.message : "Internal Server Error",
-    });
-  }
+const web = new Hono();
+
+web.onError((err, c) => {
+  const status = err instanceof HTTPException ? err.status : (err.status || 500);
+  const error = (err instanceof HTTPException && status < 500)
+    ? err.message
+    : 'Internal Server Error';
+  return c.html(ejs.render(errorTemplate, { status, error }), status);
 });
 
-router.use(async (ctx, next) => {
-  Object.assign(ctx.state, {
-    session: ctx.session,
-    baseURL: process.env.WEB_BASE_URL,
-    apiURL: process.env.API_BASE_URL,
-    assetVersions,
-  });
-  await next();
+web.notFound((c) => c.html(
+  ejs.render(errorTemplate, { status: 404, error: 'Not Found' }),
+  404,
+));
+
+web.use(csrfMiddleware());
+
+web.get('/', index.main);
+web.get('/account', index.main);
+
+web.get('/signin', user.signin);
+web.post('/signin', user.signin);
+web.get('/signup', user.signup);
+web.post('/signup', user.signup);
+web.get('/logout', user.logout);
+web.post('/logout', user.logout);
+web.get('/forgot', user.forgot);
+web.get('/forgot/:token', user.forgot);
+web.post('/forgot', user.forgot);
+web.post('/forgot/:token', user.forgot);
+web.get('/activate/:code', user.activate);
+
+web.get('/terms', index.staticPage);
+web.get('/privacy', index.staticPage);
+web.get('/apps', index.staticPage);
+web.get('/stats', index.staticPage);
+
+web.get('/:id', file.landing);
+web.get('/file/:id/:name', file.get);
+web.get('/file/:size/:id/:name', file.get);
+web.get('/files/:id/:name', file.get);
+web.get('/download/:id/:name', (c) => c.redirect(`/${c.req.param('id')}`));
+
+web.get('/updaters/mac', (c) => c.redirect('/updaters/mac.xml'));
+web.get('/updaters/mac/changelog', (c) => {
+  const html = ejs.renderFile(
+    path.join(import.meta.dirname, 'views', 'mac-update-changelog.ejs'),
+    {},
+  );
+  return html.then((h) => c.html(h));
 });
 
-router.use(
-  new CSRF({
-    excludedMethods: ["GET", "HEAD", "OPTIONS"],
-    disableQuery: false,
-    errorHandler(ctx) {
-      ctx.throw(403, "Invalid CSRF token");
-    },
-  }),
-);
-
-router.use(
-  views(path.join(import.meta.dirname, "views"), {
-    extension: "ejs",
-  }),
-);
-
-router.get("/", index.main);
-router.get("/account", index.main);
-
-router.get("/signin", user.signin);
-router.post("/signin", user.signin);
-router.get("/signup", user.signup);
-router.post("/signup", user.signup);
-router.get("/logout", user.logout);
-router.post("/logout", user.logout);
-router.get("/forgot", user.forgot);
-router.get("/forgot/:token", user.forgot);
-router.post("/forgot/:token", user.forgot);
-router.post("/forgot", user.forgot);
-router.get("/activate/:code", user.activate);
-
-router.get("/terms", index.staticPage);
-router.get("/privacy", index.staticPage);
-
-router.get("/apps", index.staticPage);
-router.get("/stats", index.staticPage);
-
-router.get("/:id", file.landing);
-router.get("/file/:id/:name", file.get);
-router.get("/file/:size/:id/:name", file.get);
-router.get("/files/:id/:name", file.get);
-router.get("/download/:id/:name", async (ctx, id) => {
-  ctx.redirect(`/${id}`);
-});
-
-router.get("/updaters/mac", async (ctx) => {
-  ctx.redirect("/updaters/mac.xml");
-});
-router.get("/updaters/mac/changelog", async (ctx) => {
-  await ctx.render("mac-update-changelog");
-});
-
-export default router;
+export default web;

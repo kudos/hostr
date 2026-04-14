@@ -1,71 +1,47 @@
-import Router from "@koa/router";
-import cors from "@koa/cors";
-import debugname from "debug";
+import { Hono } from 'hono';
+import { cors } from 'hono/cors';
+import { HTTPException } from 'hono/http-exception';
+import debugname from 'debug';
+import auth from './lib/auth.js';
+import * as user from './routes/user.js';
+import * as file from './routes/file.js';
 
-import auth from "./lib/auth.js";
-import * as user from "./routes/user.js";
-import * as file from "./routes/file.js";
+const debug = debugname('hostr-api');
 
-const debug = debugname("hostr-api");
+const api = new Hono();
 
-const router = new Router();
+api.use(cors({ origin: '*', credentials: true }));
 
-router.use(
-  cors({
-    origin: "*",
-    credentials: true,
-  }),
-);
-
-router.use(async (ctx, next) => {
-  try {
-    await next();
-
-    if (ctx.response.status === 404 && !ctx.response.body) {
-      ctx.throw(404);
+api.onError((err, c) => {
+  if (err instanceof HTTPException) {
+    const { status } = err;
+    if (status === 401) {
+      c.header('WWW-Authenticate', 'Basic');
     }
-  } catch (err) {
-    if (err.status === 401) {
-      ctx.set("WWW-Authenticate", "Basic");
-      ctx.status = 401;
-      ctx.body = err.message;
-    } else if (err.status === 404) {
-      ctx.status = 404;
-      ctx.body = {
-        error: {
-          message: "File not found",
-          code: 604,
-        },
-      };
-    } else if (!err.status) {
-      throw err;
-    } else {
-      ctx.status = err.status;
-      ctx.body = err.message;
+    if (status === 404) {
+      return c.json({ error: { message: 'File not found', code: 604 } }, 404);
     }
+    return new Response(err.message, {
+      status,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
-  ctx.type = "application/json";
+  debug(err);
+  return c.json({ error: { message: 'Internal Server Error' } }, 500);
 });
 
-router.delete("/file/:id", auth, file.del);
-router.get("/user", auth, user.get);
-router.get("/user/token", auth, user.token);
-router.get("/token", auth, user.token);
+api.delete('/file/:id', auth, file.del);
+api.get('/user', auth, user.get);
+api.get('/user/token', auth, user.token);
+api.get('/token', auth, user.token);
+api.post('/user/settings', auth, user.settings);
+api.post('/user/delete', auth, user.deleteUser);
+api.get('/file', auth, file.list);
+api.post('/file', auth, file.post);
+api.get('/file/:id', file.get);
 
-router.post("/user/settings", auth, user.settings);
-router.post("/user/delete", auth, user.deleteUser);
-
-router.get("/file", auth, file.list);
-router.post("/file", auth, file.post);
-router.get("/file/:id", file.get);
-
-// Hack, if no route matches here, router does not dispatch at all
-router.get("{/*path}", async (ctx) => {
-  ctx.throw(404);
+api.all('*', () => {
+  throw new HTTPException(404, { message: '{"error":{"message":"Not found","code":604}}' });
 });
 
-export const ws = new Router();
-
-ws.all("/user", user.events);
-
-export default router;
+export default api;
