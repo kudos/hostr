@@ -69,18 +69,9 @@ export async function get(ctx) {
     );
   }
 
-  if (file.malware) {
-    ctx.statsd.incr("file.malware.download", 1);
-  }
-
   let type = "application/octet-stream";
   if (file.width > 0) {
-    if (ctx.params.size) {
-      ctx.statsd.incr("file.view", 1);
-    }
     type = mime.lookup(file.name);
-  } else {
-    ctx.statsd.incr("file.download", 1);
   }
 
   if (userAgentCheck(ctx.headers["user-agent"])) {
@@ -118,7 +109,6 @@ export async function landing(ctx) {
     return;
   }
 
-  ctx.statsd.incr("file.landing", 1);
   const formattedFile = formatFile(file);
   await ctx.render("file", { file: formattedFile });
 }

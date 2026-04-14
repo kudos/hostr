@@ -4,10 +4,7 @@ import { readFileSync } from "fs";
 import Router from "@koa/router";
 import CSRF from "koa-csrf";
 import views from "@ladjs/koa-views";
-import StatsD from "statsy";
 import ejs from "ejs";
-
-import stats from "../lib/koa-statsd.js";
 import * as index from "./routes/index.js";
 import * as file from "./routes/file.js";
 import * as user from "./routes/user.js";
@@ -51,14 +48,6 @@ router.use(async (ctx, next) => {
       error: err.expose ? err.message : "Internal Server Error",
     });
   }
-});
-
-const statsdOpts = { prefix: "hostr-web", host: process.env.STATSD_HOST };
-router.use(stats(statsdOpts));
-const statsd = new StatsD(statsdOpts);
-router.use(async (ctx, next) => {
-  ctx.statsd = statsd;
-  await next();
 });
 
 router.use(async (ctx, next) => {

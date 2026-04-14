@@ -53,7 +53,6 @@ export async function list(ctx) {
     limit,
   });
 
-  ctx.statsd.incr('file.list', 1);
   ctx.body = files.map(formatFile);
 }
 
@@ -67,7 +66,6 @@ export async function get(ctx) {
   ctx.assert(file, 404, '{"error": {"message": "File not found", "code": 604}}');
   const user = await file.getUser();
   ctx.assert(user && !user.banned, 404, '{"error": {"message": "File not found", "code": 604}}');
-  ctx.statsd.incr('file.get', 1);
   ctx.body = formatFile(file);
 }
 
@@ -84,7 +82,6 @@ export async function del(ctx) {
   const event = { type: 'file-deleted', data: { id: ctx.params.id } };
   await ctx.redis.publish(`/file/${ctx.params.id}`, JSON.stringify(event));
   await ctx.redis.publish(`/user/${ctx.user.id}`, JSON.stringify(event));
-  ctx.statsd.incr('file.delete', 1);
   ctx.status = 204;
   ctx.body = '';
 }

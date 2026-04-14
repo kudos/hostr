@@ -1,9 +1,7 @@
 import Router from "@koa/router";
 import cors from "@koa/cors";
-import StatsD from "statsy";
 import debugname from "debug";
 
-import stats from "../lib/koa-statsd.js";
 import auth from "./lib/auth.js";
 import * as user from "./routes/user.js";
 import * as file from "./routes/file.js";
@@ -11,14 +9,6 @@ import * as file from "./routes/file.js";
 const debug = debugname("hostr-api");
 
 const router = new Router();
-
-const statsdOpts = { prefix: "hostr-api", host: process.env.STATSD_HOST };
-router.use(stats(statsdOpts));
-const statsd = new StatsD(statsdOpts);
-router.use(async (ctx, next) => {
-  ctx.statsd = statsd;
-  await next();
-});
 
 router.use(
   cors({
@@ -36,7 +26,6 @@ router.use(async (ctx, next) => {
     }
   } catch (err) {
     if (err.status === 401) {
-      ctx.statsd.incr("auth.failure", 1);
       ctx.set("WWW-Authenticate", "Basic");
       ctx.status = 401;
       ctx.body = err.message;

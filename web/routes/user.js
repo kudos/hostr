@@ -14,12 +14,9 @@ export async function signin(ctx) {
     return;
   }
 
-  ctx.statsd.incr('auth.attempt', 1);
-
   const user = await authenticate.call(ctx, ctx.request.body.email, ctx.request.body.password);
 
   if (!user || !user.id) {
-    ctx.statsd.incr('auth.failure', 1);
     await ctx.render('signin', { error: 'Invalid login details', csrf: ctx.state._csrf, async: true });
     return;
   } else if (user.activationCode) {
@@ -30,7 +27,6 @@ export async function signin(ctx) {
     });
     return;
   }
-  ctx.statsd.incr('auth.success', 1);
   await setupSession.call(ctx, user);
   ctx.redirect('/');
 }
@@ -72,7 +68,6 @@ export async function signup(ctx) {
     await ctx.render('signup', { error: e.message, csrf: ctx.state._csrf, async: true  });
     return;
   }
-  ctx.statsd.incr('auth.signup', 1);
   await ctx.render('signup', {
     message: 'Thanks for signing up, we\'ve sent you an email to activate your account.',
     csrf: ctx.state._csrf,
@@ -101,13 +96,11 @@ export async function forgot(ctx) {
       const reset = await models.reset.findByPk(token);
       reset.destroy();
       await setupSession.call(ctx, user);
-      ctx.statsd.incr('auth.reset.success', 1);
       ctx.redirect('/');
     }
   } else if (token) {
     const tokenUser = await validateResetToken(token);
     if (!tokenUser) {
-      ctx.statsd.incr('auth.reset.fail', 1);
       await ctx.render('forgot', {
         error: 'Invalid password reset token. It might be expired, or has already been used.',
         csrf: ctx.state._csrf,
@@ -122,7 +115,6 @@ export async function forgot(ctx) {
     try {
       const { email } = ctx.request.body;
       await sendResetToken.call(ctx, email);
-      ctx.statsd.incr('auth.reset.request', 1);
       await ctx.render('forgot', {
         message: `We've sent an email with a link to reset your password.
         Be sure to check your spam folder if you it doesn't appear within a few minutes`,
@@ -141,7 +133,6 @@ export async function forgot(ctx) {
 
 
 export async function logout(ctx) {
-  ctx.statsd.incr('auth.logout', 1);
   ctx.cookies.set('r', { expires: new Date(1), path: '/' });
   ctx.session = null;
   ctx.redirect('/');
@@ -151,7 +142,6 @@ export async function logout(ctx) {
 export async function activate(ctx) {
   const { code } = ctx.params;
   if (await activateUser.call(ctx, code)) {
-    ctx.statsd.incr('auth.activation', 1);
     ctx.redirect('/');
   } else {
     ctx.throw(400);
