@@ -1,11 +1,12 @@
-const path = require('path');
-const CopyWebpackPlugin = require('copy-webpack-plugin')
+const path = require("path");
+const CopyWebpackPlugin = require("copy-webpack-plugin");
 
 module.exports = {
-  entry: './web/public/src/app.js',
+  devtool: "source-map",
+  entry: "./web/public/src/app.js",
   output: {
-    filename: 'bundle.js',
-    path: path.resolve(__dirname, 'web', 'public', 'build')
+    filename: "bundle.js",
+    path: path.resolve(__dirname, "web", "public", "build"),
   },
   module: {
     rules: [
@@ -16,6 +17,8 @@ module.exports = {
     ],
   },
   plugins: [
-    new CopyWebpackPlugin({patterns: [{ from: './web/public/src/partials', to: 'partials' }]})
-  ]
+    new CopyWebpackPlugin({
+      patterns: [{ from: "./web/public/src/partials", to: "partials" }],
+    }),
+  ],
 };
