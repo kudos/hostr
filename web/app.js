@@ -5,7 +5,7 @@ import Router from "@koa/router";
 import CSRF from "koa-csrf";
 import views from "@ladjs/koa-views";
 import StatsD from "statsy";
-import errors from "koa-error";
+import ejs from "ejs";
 
 import stats from "../lib/koa-statsd.js";
 import * as index from "./routes/index.js";
@@ -29,12 +29,29 @@ const assetVersions = {
 
 const router = new Router();
 
-router.use(
-  errors({
-    engine: "ejs",
-    template: path.join(import.meta.dirname, "public", "error.html"),
-  }),
+const errorTemplate = readFileSync(
+  path.join(import.meta.dirname, "public", "error.html"),
+  "utf8",
 );
+
+router.use(async (ctx, next) => {
+  try {
+    await next();
+    if (ctx.status === 404 && !ctx.body) {
+      ctx.status = 404;
+      ctx.type = "html";
+      ctx.body = ejs.render(errorTemplate, { status: 404, error: "Not Found" });
+    }
+  } catch (err) {
+    const status = err.status || err.statusCode || 500;
+    ctx.status = status;
+    ctx.type = "html";
+    ctx.body = ejs.render(errorTemplate, {
+      status,
+      error: err.expose ? err.message : "Internal Server Error",
+    });
+  }
+});
 
 const statsdOpts = { prefix: "hostr-web", host: process.env.STATSD_HOST };
 router.use(stats(statsdOpts));
