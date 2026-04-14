@@ -12,7 +12,10 @@ export EMAIL_NAME=
 export STATSD_HOST=localhost
 export DATABASE_URL=postgresql://hostr:hostr@database:5432/hostr
 export REDIS_URL=redis://localhost:6379
-export SENDGRID_KEY=
+export SMTP_HOST=smtp.fastmail.com
+export SMTP_PORT=465
+export SMTP_USER=
+export SMTP_PASS=
 export STRIPE_SECRET_KEY=
 export STRIPE_PUBLIC_KEY=
 

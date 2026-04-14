@@ -99,7 +99,7 @@ Redis pub/sub on channels `/user/{userId}` and `/file/{fileId}`, relayed to clie
 
 ## Environment Configuration
 
-See `.envrc.example`. Key variables: `DATABASE_URL`, `REDIS_URL`, `WEB_BASE_URL`, `API_BASE_URL`, `UPLOAD_STORAGE_PATH`, `COOKIE_KEY`, `AWS_*` (S3/MinIO), `SENDGRID_KEY`, `STRIPE_*`, `VIRUSTOTAL_KEY`.
+See `.envrc.example`. Key variables: `DATABASE_URL`, `REDIS_URL`, `WEB_BASE_URL`, `API_BASE_URL`, `UPLOAD_STORAGE_PATH`, `COOKIE_KEY`, `AWS_*` (S3/MinIO), `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `STRIPE_*`, `VIRUSTOTAL_KEY`.
 
 ## Custom Error Codes
 

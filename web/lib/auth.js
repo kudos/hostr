@@ -4,7 +4,7 @@ import passwords from "passwords";
 import { v4 as uuid } from "uuid";
 import views from "co-views";
 import debugname from "debug";
-import sendgrid from "@sendgrid/mail";
+import nodemailer from "nodemailer";
 import { Op } from "sequelize";
 import models from "../../models/index.js";
 
@@ -12,7 +12,16 @@ const render = views(join(import.meta.dirname, "..", "views"), {
   default: "ejs",
 });
 const debug = debugname("hostr-web:auth");
-sendgrid.setApiKey(process.env.SENDGRID_KEY);
+
+const transport = nodemailer.createTransport({
+  host: process.env.SMTP_HOST || "smtp.fastmail.com",
+  port: parseInt(process.env.SMTP_PORT || "465", 10),
+  secure: parseInt(process.env.SMTP_PORT || "465", 10) === 465,
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+});
 
 const from = process.env.EMAIL_FROM;
 const fromname = process.env.EMAIL_NAME;
@@ -131,14 +140,12 @@ ${process.env.WEB_BASE_URL}/activate/${user.activation.id}
 
 — Jonathan Cremin, Hostr Founder
 `;
-  sendgrid.send({
+  transport.sendMail({
     to: user.email,
     subject: "Welcome to Hostr",
-    from,
-    fromname,
+    from: `${fromname} <${from}>`,
     html,
     text,
-    categories: ["activate"],
   });
 }
 
@@ -159,14 +166,12 @@ export async function sendResetToken(email) {
     const text = `It seems you've forgotten your password :(
 Visit  ${process.env.WEB_BASE_URL}/forgot/${reset.id} to set a new one.
 `;
-    sendgrid.send({
+    transport.sendMail({
       to: user.email,
-      from: "jonathan@hostr.co",
-      fromname: "Jonathan from Hostr",
+      from: `${fromname} <${from}>`,
       subject: "Hostr Password Reset",
       html,
       text,
-      categories: ["password-reset"],
     });
   } else {
     throw new Error("There was an error looking up your email address.");
