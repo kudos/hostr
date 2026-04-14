@@ -17,7 +17,7 @@ export async function token(c) {
 }
 
 export async function settings(c) {
-  const body = await c.req.parseBody().catch(() => ({}));
+  const body = await c.req.json().catch(() => c.req.parseBody().catch(() => ({})));
   if (!body.current_password) {
     throw new HTTPException(400, { message: '{"error": {"message": "Current Password required to update account.", "code": 612}}' });
   }

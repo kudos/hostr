@@ -1,7 +1,8 @@
 import { agent } from 'supertest';
+import { getRequestListener } from '@hono/node-server';
 import app from '../../app.js';
 
-const request = agent(app.listen());
+const request = agent(getRequestListener(app.fetch));
 
 describe('hostr-web user', function() {
   describe('when POST /signin with invalid credentials', function() {

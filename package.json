@@ -24,6 +24,12 @@
     "watch-server": "nodemon -i web/public",
     "watch-sass": "sass --load-path=./node_modules/ -w web/public/styles/"
   },
+  "resolutions": {
+    "yaml": "^2.8.3",
+    "ansi-regex": "^5.0.1",
+    "minimatch": "^9.0.7",
+    "serialize-javascript": "^7.0.5"
+  },
   "dependencies": {
     "@hono/node-server": "^1.0.0",
     "@opentelemetry/api": "^1.9.0",

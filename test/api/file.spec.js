@@ -1,9 +1,10 @@
 import path from 'path';
 import assert from 'assert';
 import { agent } from 'supertest';
+import { getRequestListener } from '@hono/node-server';
 import app from '../../app.js';
 
-const request = agent(app.listen());
+const request = agent(getRequestListener(app.fetch));
 
 describe('hostr-api file', function file() {
   let id;
