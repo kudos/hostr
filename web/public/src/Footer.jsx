@@ -1,0 +1,14 @@
+export default function Footer() {
+  return (
+    <section className="container footer">
+      <img src="/images/bullet-r.png" height="8" width="8" alt="" />
+      <ul className="nav nav-pills">
+        <li><a href="/apps">Apps</a></li>
+        <li><a href="mailto:support@hostr.co">Support</a></li>
+        <li><a href="/terms">Terms</a></li>
+        <li><a href="/privacy">Privacy</a></li>
+        <li><a href="https://twitter.com/gethostr" target="_blank" rel="noreferrer">Twitter</a></li>
+      </ul>
+    </section>
+  );
+}
