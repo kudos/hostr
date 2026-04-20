@@ -1,4 +1,4 @@
-image: node:6
+image: node:25
 services:
   - postgres
   - redis
