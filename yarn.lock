@@ -949,10 +949,10 @@
     protobufjs "^7.5.3"
     yargs "^17.7.2"
 
-"@hono/node-server@^1.0.0":
-  version "1.19.14"
-  resolved "https://registry.yarnpkg.com/@hono/node-server/-/node-server-1.19.14.tgz#e30f844bc77e3ce7be442aac3b1f73ad8b58d181"
-  integrity sha512-GwtvgtXxnWsucXvbQXkRgqksiH2Qed37H9xHZocE5sA3N8O8O8/8FA3uclQXxXVzc9XBZuEOMK7+r02FmSpHtw==
+"@hono/node-server@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@hono/node-server/-/node-server-2.0.0.tgz#983c67db8eb516abc8031d4463ae13a483d708ed"
+  integrity sha512-n3GfHwwCvHCkGmOwKfxUPOlbfzuO64Sbc5XC4NGPIXxkuOnJrdgExdRKmHfF924r914WRJPT397GdqLvdYTeyQ==
 
 "@humanfs/core@^0.19.2":
   version "0.19.2"
