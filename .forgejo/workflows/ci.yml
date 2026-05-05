@@ -77,7 +77,7 @@ jobs:
             sh -c "mkdir -p /tmp/uploads && yarn run init && yarn test"
 
       - name: Cleanup
-        if: always()
+        if: ${{ always() }}
         run: |
           docker rm -f database redis || true
           docker network rm hostr-test || true
