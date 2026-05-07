@@ -950,9 +950,9 @@
     yargs "^17.7.2"
 
 "@hono/node-server@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@hono/node-server/-/node-server-2.0.0.tgz#983c67db8eb516abc8031d4463ae13a483d708ed"
-  integrity sha512-n3GfHwwCvHCkGmOwKfxUPOlbfzuO64Sbc5XC4NGPIXxkuOnJrdgExdRKmHfF924r914WRJPT397GdqLvdYTeyQ==
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/@hono/node-server/-/node-server-2.0.1.tgz#0b7880b356f5cf798abcebc4ce6855c32278ac8e"
+  integrity sha512-jI9yMDyFpqBeSighf/zlXnQG/nl9AyBc6aAgy4XtxJMyt/CNyJpvPfzDD+bCc2zAOmhhqtF6TnmIaY+xV4mIrw==
 
 "@humanfs/core@^0.19.2":
   version "0.19.2"
