@@ -41,8 +41,10 @@ jobs:
 
       - name: Clean up any leftover containers and network from previous runs
         run: |
-          docker rm -f database redis || true
-          docker network rm hostr-test || true
+          docker rm -f hostr-test-app database redis || true
+          docker network inspect hostr-test -f '{{range .Containers}}{{.Name}} {{end}}' 2>/dev/null \
+            | xargs -r docker disconnect hostr-test 2>/dev/null || true
+          docker network rm hostr-test 2>/dev/null || true
 
       - name: Create test network
         run: docker network create hostr-test
@@ -70,14 +72,14 @@ jobs:
       - name: Test image
         run: |
           docker run \
+            --name hostr-test-app \
             --network hostr-test \
             --env-file ./.forgejo/workflows/.env \
-            --rm \
             cremin.dev/jonathan/hostr:${{ github.sha }} \
-            sh -c "mkdir -p /tmp/uploads && yarn run init && yarn test"
+            sh -c "mkdir -p /tmp/uploads && pnpm run init && pnpm test"
 
       - name: Cleanup
         if: ${{ always() }}
         run: |
-          docker rm -f database redis || true
-          docker network rm hostr-test || true
+          docker rm -f hostr-test-app database redis || true
+          docker network rm hostr-test 2>/dev/null || true

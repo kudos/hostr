@@ -1,17 +1,18 @@
-FROM node:25.9.0
+FROM node:26.1.0
 
 WORKDIR /app
 
-COPY package.json package.json
-COPY yarn.lock yarn.lock
+RUN npm install -g pnpm@11.1.2
 
-RUN yarn
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+
+RUN pnpm install --frozen-lockfile
 
 COPY . .
 
-RUN yarn run build
+RUN pnpm run build
 
 ENV PORT 3000
 EXPOSE 3000
 
-CMD ["yarn", "start"]
+CMD ["pnpm", "start"]

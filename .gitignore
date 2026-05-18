@@ -3,6 +3,7 @@
 .sass-cache/
 node_modules
 jspm_packages
+.pnpm-store
 /coverage/
 npm-debug.log
 web/public/build

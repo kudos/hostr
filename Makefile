@@ -9,12 +9,12 @@ help:
 	@echo
 
 .PHONY: build
-build: ## Run `yarn run build`
-	podman compose run --rm app yarn run build
+build: ## Run `pnpm run build`
+	podman compose run --rm app pnpm run build
 
 .PHONY: test
 test: ## Run tests
-	podman compose run --rm app yarn test
+	podman compose run --rm app pnpm test
 
 .PHONY: logs
 logs: ## Tail the app and worker logs
@@ -22,23 +22,23 @@ logs: ## Tail the app and worker logs
 
 .PHONY: migrate
 migrate: ## Migrate database schema
-	podman compose run --rm app yarn run initdb
+	podman compose run --rm app pnpm run initdb
 
 .PHONY: init
 init: ## Migrate database schema
-	podman compose run --rm app yarn run init
+	podman compose run --rm app pnpm run init
 
 .PHONY: watch-frontend
 watch-frontend: ## Build and watch for changes
-	podman compose run --rm app yarn run watch
+	podman compose run --rm app pnpm run watch
 
 .PHONY: podman compose-up
 podman compose-up: ## Start (and create) docker containers
 	podman compose up -d
 
-.PHONY: yarn
-yarn: ## Update yarn dependencies
-	podman compose run --rm app yarn
+.PHONY: install
+install: ## Install dependencies
+	podman compose run --rm app pnpm install
 
 .PHONY: shell
 shell: ## Run shell

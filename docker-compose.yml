@@ -22,7 +22,7 @@ services:
       - uploads:/hostr/uploads
     ports:
       - "3000:3000"
-    command: yarn run watch-server
+    command: pnpm run watch-server
   database:
     image: "postgres:18-alpine"
     ports:

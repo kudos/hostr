@@ -36,11 +36,11 @@ make shell
 ### Running commands directly (inside container or locally)
 
 ```bash
-yarn run lint              # ESLint (airbnb/base config)
-yarn test                  # Seeds test DB + runs mocha
-yarn run build             # Webpack + SASS
-yarn run watch             # Watch JS + SASS
-yarn run watch-server      # Nodemon
+pnpm run lint              # ESLint (airbnb/base config)
+pnpm test                  # Seeds test DB + runs mocha
+pnpm run build             # Webpack + SASS
+pnpm run watch             # Watch JS + SASS
+pnpm run watch-server      # Nodemon
 ```
 
 ### Running a single test file
