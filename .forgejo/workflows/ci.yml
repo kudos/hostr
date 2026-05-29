@@ -35,51 +35,57 @@ jobs:
   test-image:
     runs-on: self-hosted
     needs: build-image
+    timeout-minutes: 15
+    env:
+      RUN_ID: ${{ github.run_id }}
     steps:
       - name: Check out repository
         uses: https://cremin.dev/actions/checkout@v4
 
       - name: Clean up any leftover containers and network from previous runs
         run: |
-          docker rm -f hostr-test-app database redis || true
-          docker network inspect hostr-test -f '{{range .Containers}}{{.Name}} {{end}}' 2>/dev/null \
-            | xargs -r docker disconnect hostr-test 2>/dev/null || true
-          docker network rm hostr-test 2>/dev/null || true
+          docker rm -f hostr-test-app-$RUN_ID database-$RUN_ID redis-$RUN_ID || true
+          docker network inspect hostr-test-$RUN_ID -f '{{range .Containers}}{{.Name}} {{end}}' 2>/dev/null \
+            | xargs -r docker disconnect hostr-test-$RUN_ID 2>/dev/null || true
+          docker network rm hostr-test-$RUN_ID 2>/dev/null || true
 
       - name: Create test network
-        run: docker network create hostr-test
+        run: docker network create hostr-test-$RUN_ID
 
       - name: Start services
         run: |
-          docker run -d --name database --network hostr-test \
+          docker run -d --name database-$RUN_ID --network hostr-test-$RUN_ID \
+            --network-alias database \
             -e POSTGRES_PASSWORD=hostr \
             -e POSTGRES_USER=hostr \
             -e POSTGRES_DB=hostr \
             postgres:18-alpine
 
-          docker run -d --name redis --network hostr-test \
+          docker run -d --name redis-$RUN_ID --network hostr-test-$RUN_ID \
+            --network-alias redis \
             redis:8-alpine
 
       - name: Wait for postgres to be ready
         run: |
           for i in $(seq 1 30); do
-            docker exec database pg_isready -U hostr && break
+            docker exec database-$RUN_ID pg_isready -U hostr && break
             echo "Waiting for postgres... ($i/30)"
             sleep 2
           done
-          docker exec database pg_isready -U hostr
+          docker exec database-$RUN_ID pg_isready -U hostr
 
       - name: Test image
         run: |
           docker run \
-            --name hostr-test-app \
-            --network hostr-test \
+            --name hostr-test-app-$RUN_ID \
+            --network hostr-test-$RUN_ID \
             --env-file ./.forgejo/workflows/.env \
+            --stop-timeout 10 \
             cremin.dev/jonathan/hostr:${{ github.sha }} \
-            sh -c "mkdir -p /tmp/uploads && pnpm run init && pnpm test"
+            sh -c "mkdir -p /tmp/uploads && pnpm run init && pnpm test -- --timeout 30000"
 
       - name: Cleanup
         if: ${{ always() }}
         run: |
-          docker rm -f hostr-test-app database redis || true
-          docker network rm hostr-test 2>/dev/null || true
+          docker rm -f hostr-test-app-$RUN_ID database-$RUN_ID redis-$RUN_ID || true
+          docker network rm hostr-test-$RUN_ID 2>/dev/null || true
