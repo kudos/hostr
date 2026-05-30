@@ -31,6 +31,9 @@ jobs:
           context: ./
           tags: ${{ github.ref == 'refs/heads/main' && 'cremin.dev/jonathan/hostr:latest,' || '' }}cremin.dev/jonathan/hostr:${{ github.sha }}
           push: true
+          # Also load into the local daemon so the test-image job (same runner)
+          # can use it without pulling back from the registry.
+          load: true
 
   test-image:
     runs-on: self-hosted
@@ -81,6 +84,7 @@ jobs:
             --network hostr-test-$RUN_ID \
             --env-file ./.forgejo/workflows/.env \
             --stop-timeout 10 \
+            --pull never \
             cremin.dev/jonathan/hostr:${{ github.sha }} \
             sh -c "mkdir -p /tmp/uploads && pnpm run init && pnpm test"
 
