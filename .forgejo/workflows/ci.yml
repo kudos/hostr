@@ -82,7 +82,7 @@ jobs:
             --env-file ./.forgejo/workflows/.env \
             --stop-timeout 10 \
             cremin.dev/jonathan/hostr:${{ github.sha }} \
-            sh -c "mkdir -p /tmp/uploads && pnpm run init && pnpm run test-seed && mocha --timeout=30000 test/**/*.spec.js"
+            sh -c "mkdir -p /tmp/uploads && pnpm run init && pnpm test"
 
       - name: Cleanup
         if: ${{ always() }}

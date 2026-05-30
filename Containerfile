@@ -2,7 +2,7 @@ FROM node:26.2.0
 
 WORKDIR /app
 
-RUN npm install -g pnpm@11.1.2
+RUN npm install -g pnpm@11.5.0
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
