@@ -24,16 +24,30 @@ jobs:
         uses: https://cremin.dev/actions/checkout@v4
       - name: Set up Docker Buildx
         uses: https://cremin.dev/actions/docker-setup-buildx@v3
-      - name: Build and push
+      # Push the slim runtime image (this is what gets deployed). Layer cache
+      # is shared via the registry so unchanged steps (e.g. pnpm install) are
+      # reused across runs. mode=max also caches the builder stage below.
+      - name: Build and push runtime image
         uses: https://cremin.dev/actions/docker-build-push@v6
         with:
           file: ./Containerfile
           context: ./
+          target: runtime
           tags: ${{ github.ref == 'refs/heads/main' && 'cremin.dev/jonathan/hostr:latest,' || '' }}cremin.dev/jonathan/hostr:${{ github.sha }}
           push: true
-          # Also load into the local daemon so the test-image job (same runner)
-          # can use it without pulling back from the registry.
+          cache-from: type=registry,ref=cremin.dev/jonathan/hostr:buildcache
+          cache-to: type=registry,ref=cremin.dev/jonathan/hostr:buildcache,mode=max
+      # Load the builder stage locally for the test-image job (same runner).
+      # The runtime build above already built this stage, so it's a cache hit.
+      - name: Build and load test image
+        uses: https://cremin.dev/actions/docker-build-push@v6
+        with:
+          file: ./Containerfile
+          context: ./
+          target: builder
+          tags: cremin.dev/jonathan/hostr:${{ github.sha }}-builder
           load: true
+          cache-from: type=registry,ref=cremin.dev/jonathan/hostr:buildcache
 
   test-image:
     runs-on: self-hosted
@@ -85,7 +99,7 @@ jobs:
             --env-file ./.forgejo/workflows/.env \
             --stop-timeout 10 \
             --pull never \
-            cremin.dev/jonathan/hostr:${{ github.sha }} \
+            cremin.dev/jonathan/hostr:${{ github.sha }}-builder \
             sh -c "mkdir -p /tmp/uploads && pnpm run init && pnpm test"
 
       - name: Cleanup
@@ -93,3 +107,4 @@ jobs:
         run: |
           docker rm -f hostr-test-app-$RUN_ID database-$RUN_ID redis-$RUN_ID || true
           docker network rm hostr-test-$RUN_ID 2>/dev/null || true
+          docker rmi cremin.dev/jonathan/hostr:${{ github.sha }}-builder 2>/dev/null || true
