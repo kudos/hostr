@@ -25,16 +25,6 @@
     "watch-server": "nodemon -i web/public",
     "watch-sass": "sass --load-path=./node_modules/ -w web/public/styles/"
   },
-  "pnpm": {
-    "overrides": {
-      "yaml": "^2.8.3",
-      "ansi-regex": "^6.0.0",
-      "minimatch": "^10.0.0",
-      "serialize-javascript": "^7.0.5",
-      "debug": "^4.4.3",
-      "qs": "^6.14.2"
-    }
-  },
   "dependencies": {
     "@hono/node-server": "^2.0.2",
     "@opentelemetry/api": "^1.9.1",
