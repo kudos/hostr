@@ -1,1 +1,8 @@
 node_modules
+.pnpm-store
+.git
+.envrc
+*.log
+web/public/build
+web/public/styles/*.css
+web/public/styles/*.css.map

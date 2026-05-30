@@ -25,18 +25,12 @@ importers:
       '@opentelemetry/auto-instrumentations-node':
         specifier: ^0.76.0
         version: 0.76.0(@opentelemetry/api@1.9.1)(@opentelemetry/core@2.7.1(@opentelemetry/api@1.9.1))
-      bootstrap-sass:
-        specifier: ^3.4.3
-        version: 3.4.3
       busboy:
         specifier: ^1.6.0
         version: 1.6.0
       debug:
         specifier: ^4.4.3
         version: 4.4.3(supports-color@5.5.0)
-      dropzone:
-        specifier: 6.0.0-beta.2
-        version: 6.0.0-beta.2
       ejs:
         specifier: ^5.0.2
         version: 5.0.2
@@ -58,42 +52,21 @@ importers:
       nodemailer:
         specifier: ^8.0.7
         version: 8.0.7
-      nodemon:
-        specifier: ^3.1.14
-        version: 3.1.14
       passwords:
         specifier: ^1.3.1
         version: 1.3.1
       pg:
         specifier: ^8.20.0
         version: 8.21.0
-      react:
-        specifier: ^19.2.6
-        version: 19.2.6
-      react-dom:
-        specifier: ^19.2.6
-        version: 19.2.6(react@19.2.6)
-      react-router-dom:
-        specifier: ^7.15.1
-        version: 7.15.1(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       redis:
         specifier: ^5.12.1
         version: 5.12.1(@opentelemetry/api@1.9.1)
-      sass:
-        specifier: ^1.99.0
-        version: 1.100.0
       sequelize:
         specifier: ^6.37.8
         version: 6.37.8(pg@8.21.0)
       uuid:
         specifier: ^14.0.0
         version: 14.0.0
-      webpack:
-        specifier: ^5.106.2
-        version: 5.107.1(webpack-cli@7.0.2)
-      webpack-cli:
-        specifier: ^7.0.2
-        version: 7.0.2(webpack@5.107.1)
       ws:
         specifier: ^8.20.1
         version: 8.21.0
@@ -101,9 +74,15 @@ importers:
       '@eslint/eslintrc':
         specifier: ^3.3.5
         version: 3.3.5
+      bootstrap-sass:
+        specifier: ^3.4.3
+        version: 3.4.3
       concurrently:
         specifier: ^9.2.1
         version: 9.2.1
+      dropzone:
+        specifier: 6.0.0-beta.2
+        version: 6.0.0-beta.2
       esbuild-loader:
         specifier: ^4.4.3
         version: 4.4.3(webpack@5.107.1)
@@ -119,12 +98,33 @@ importers:
       mocha:
         specifier: ^11.7.5
         version: 11.7.6
+      nodemon:
+        specifier: ^3.1.14
+        version: 3.1.14
+      react:
+        specifier: ^19.2.6
+        version: 19.2.6
+      react-dom:
+        specifier: ^19.2.6
+        version: 19.2.6(react@19.2.6)
+      react-router-dom:
+        specifier: ^7.15.1
+        version: 7.15.1(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+      sass:
+        specifier: ^1.99.0
+        version: 1.100.0
       supertest:
         specifier: ^7.2.2
         version: 7.2.2
       tmp:
         specifier: ^0.2.5
         version: 0.2.6
+      webpack:
+        specifier: ^5.106.2
+        version: 5.107.1(webpack-cli@7.0.2)
+      webpack-cli:
+        specifier: ^7.0.2
+        version: 7.0.2(webpack@5.107.1)
 
 packages:
 

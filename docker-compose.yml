@@ -2,7 +2,9 @@ version: "2"
 
 services:
   app:
-    build: ./
+    build:
+      context: ./
+      target: builder
     environment:
       DEBUG:
       NODE_ENV:
