@@ -3,7 +3,7 @@
 ## About
 Hostr is a project I started over ten years ago when I set out to learn web development. Since then it's seen over 100,000 signups and served up over 2 billion file downloads.
 
-It has been through many iterations, but in its current incarnation Hostr uses [Hono](https://hono.dev/) for the backend, and [React](https://react.dev/), [Webpack](https://webpack.js.org/), and [Babel](https://babeljs.io/) for the frontend.
+It has been through many iterations, but in its current incarnation Hostr uses [Hono](https://hono.dev/) for the backend, and [React](https://react.dev/) and [Webpack](https://webpack.js.org/) for the frontend.
 
 ## Getting Started
 
