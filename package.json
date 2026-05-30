@@ -18,7 +18,7 @@
     "initdb": "node test/initdb.js",
     "lint": "eslint .",
     "start": "node app.js",
-    "test": "pnpm run test-seed && mocha --timeout=15000 test/**/*.spec.js",
+    "test": "pnpm run test-seed && mocha --exit --timeout=15000 test/**/*.spec.js",
     "test-seed": "node test/fixtures/user.js",
     "watch": "concurrently -k -n watch-js,watch-sass \"pnpm run watch-js\" \"pnpm run watch-sass\"",
     "watch-js": "webpack -w --mode=development --progress --config webpack.config.cjs",
