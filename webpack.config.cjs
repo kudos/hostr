@@ -15,7 +15,14 @@ module.exports = {
       {
         test: /\.jsx?$/,
         exclude: /node_modules/,
-        use: 'babel-loader',
+        use: {
+          loader: 'esbuild-loader',
+          options: {
+            loader: 'jsx',
+            jsx: 'automatic',
+            target: 'es2020',
+          },
+        },
       },
       {
         test: /\.m?js$/,
