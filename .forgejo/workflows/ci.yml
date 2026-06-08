@@ -14,40 +14,50 @@ jobs:
         run: echo "NOW=$(date +'%Y%m%d-%H%M%S')" >> $GITHUB_ENV
       - name: Fix for bad os check
         run: echo "RUNNER_OS=Linux" >> $GITHUB_ENV
-      - name: Login to Docker Hub
-        uses: https://cremin.dev/actions/docker-login@v3
+      - name: Login to Forgejo Registry
+        uses: https://cremin.dev/actions/podman-login@v1
         with:
           registry: cremin.dev
           username: ${{ github.actor }}
           password: ${{ secrets.FORGEJO_REGISTRY_TOKEN }}
       - name: Check out repository
         uses: https://cremin.dev/actions/checkout@v4
-      - name: Set up Docker Buildx
-        uses: https://cremin.dev/actions/docker-setup-buildx@v3
-      # Push the slim runtime image (this is what gets deployed). Layer cache
-      # is shared via the registry so unchanged steps (e.g. pnpm install) are
-      # reused across runs. mode=max also caches the builder stage below.
-      - name: Build and push runtime image
-        uses: https://cremin.dev/actions/docker-build-push@v6
+      # Build the slim runtime image (this is what gets deployed). `layers: true`
+      # keeps the local layer cache between runs on the self-hosted runner, so
+      # unchanged steps (e.g. pnpm install) are reused. Building runtime also
+      # builds the builder stage it copies from, priming the cache for the
+      # builder image below.
+      - name: Build runtime image
+        uses: https://cremin.dev/actions/buildah-build@v2
         with:
-          file: ./Containerfile
+          containerfiles: ./Containerfile
           context: ./
-          target: runtime
-          tags: ${{ github.ref == 'refs/heads/main' && 'cremin.dev/jonathan/hostr:latest,' || '' }}cremin.dev/jonathan/hostr:${{ github.sha }}
-          push: true
-          cache-from: type=registry,ref=cremin.dev/jonathan/hostr:buildcache
-          cache-to: type=registry,ref=cremin.dev/jonathan/hostr:buildcache,mode=max
-      # Load the builder stage locally for the test-image job (same runner).
-      # The runtime build above already built this stage, so it's a cache hit.
-      - name: Build and load test image
-        uses: https://cremin.dev/actions/docker-build-push@v6
+          oci: true
+          layers: true
+          extra-args: --target=runtime
+          image: hostr
+          tags: ${{ github.ref == 'refs/heads/main' && 'latest ' || '' }}${{ github.sha }}
+      - name: Push runtime image
+        uses: https://cremin.dev/actions/push-to-registry@v2
         with:
-          file: ./Containerfile
+          registry: cremin.dev/jonathan
+          username: ${{ github.actor }}
+          password: ${{ secrets.FORGEJO_REGISTRY_TOKEN }}
+          image: hostr
+          tags: ${{ github.ref == 'refs/heads/main' && 'latest ' || '' }}${{ github.sha }}
+      # Build the builder stage for the test-image job (same runner). The runtime
+      # build above already built this stage, so it's a cache hit. Kept in local
+      # container storage only — never pushed.
+      - name: Build test image
+        uses: https://cremin.dev/actions/buildah-build@v2
+        with:
+          containerfiles: ./Containerfile
           context: ./
-          target: builder
-          tags: cremin.dev/jonathan/hostr:${{ github.sha }}-builder
-          load: true
-          cache-from: type=registry,ref=cremin.dev/jonathan/hostr:buildcache
+          oci: true
+          layers: true
+          extra-args: --target=builder
+          image: hostr
+          tags: ${{ github.sha }}-builder
 
   test-image:
     runs-on: self-hosted
@@ -61,50 +71,50 @@ jobs:
 
       - name: Clean up any leftover containers and network from previous runs
         run: |
-          docker rm -f hostr-test-app-$RUN_ID database-$RUN_ID redis-$RUN_ID || true
-          docker network inspect hostr-test-$RUN_ID -f '{{range .Containers}}{{.Name}} {{end}}' 2>/dev/null \
-            | xargs -r docker disconnect hostr-test-$RUN_ID 2>/dev/null || true
-          docker network rm hostr-test-$RUN_ID 2>/dev/null || true
+          podman rm -f hostr-test-app-$RUN_ID database-$RUN_ID redis-$RUN_ID || true
+          podman network inspect hostr-test-$RUN_ID -f '{{range .Containers}}{{.Name}} {{end}}' 2>/dev/null \
+            | xargs -r podman network disconnect hostr-test-$RUN_ID 2>/dev/null || true
+          podman network rm hostr-test-$RUN_ID 2>/dev/null || true
 
       - name: Create test network
-        run: docker network create hostr-test-$RUN_ID
+        run: podman network create hostr-test-$RUN_ID
 
       - name: Start services
         run: |
-          docker run -d --name database-$RUN_ID --network hostr-test-$RUN_ID \
+          podman run -d --name database-$RUN_ID --network hostr-test-$RUN_ID \
             --network-alias database \
             -e POSTGRES_PASSWORD=hostr \
             -e POSTGRES_USER=hostr \
             -e POSTGRES_DB=hostr \
-            postgres:18-alpine
+            docker.io/library/postgres:18-alpine
 
-          docker run -d --name redis-$RUN_ID --network hostr-test-$RUN_ID \
+          podman run -d --name redis-$RUN_ID --network hostr-test-$RUN_ID \
             --network-alias redis \
-            redis:8-alpine
+            docker.io/library/redis:8-alpine
 
       - name: Wait for postgres to be ready
         run: |
           for i in $(seq 1 30); do
-            docker exec database-$RUN_ID pg_isready -U hostr && break
+            podman exec database-$RUN_ID pg_isready -U hostr && break
             echo "Waiting for postgres... ($i/30)"
             sleep 2
           done
-          docker exec database-$RUN_ID pg_isready -U hostr
+          podman exec database-$RUN_ID pg_isready -U hostr
 
       - name: Test image
         run: |
-          docker run \
+          podman run \
             --name hostr-test-app-$RUN_ID \
             --network hostr-test-$RUN_ID \
             --env-file ./.forgejo/workflows/.env \
             --stop-timeout 10 \
             --pull never \
-            cremin.dev/jonathan/hostr:${{ github.sha }}-builder \
+            localhost/hostr:${{ github.sha }}-builder \
             sh -c "mkdir -p /tmp/uploads && pnpm run init && pnpm test"
 
       - name: Cleanup
         if: ${{ always() }}
         run: |
-          docker rm -f hostr-test-app-$RUN_ID database-$RUN_ID redis-$RUN_ID || true
-          docker network rm hostr-test-$RUN_ID 2>/dev/null || true
-          docker rmi cremin.dev/jonathan/hostr:${{ github.sha }}-builder 2>/dev/null || true
+          podman rm -f hostr-test-app-$RUN_ID database-$RUN_ID redis-$RUN_ID || true
+          podman network rm hostr-test-$RUN_ID 2>/dev/null || true
+          podman rmi localhost/hostr:${{ github.sha }}-builder 2>/dev/null || true
