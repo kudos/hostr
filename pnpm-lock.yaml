@@ -103,13 +103,13 @@ importers:
         version: 3.1.14
       react:
         specifier: ^19.2.6
-        version: 19.2.6
+        version: 19.2.7
       react-dom:
         specifier: ^19.2.6
-        version: 19.2.7(react@19.2.6)
+        version: 19.2.7(react@19.2.7)
       react-router-dom:
         specifier: ^7.15.1
-        version: 7.16.0(react-dom@19.2.7(react@19.2.6))(react@19.2.6)
+        version: 7.16.0(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       sass:
         specifier: ^1.99.0
         version: 1.100.0
@@ -2732,8 +2732,8 @@ packages:
       react-dom:
         optional: true
 
-  react@19.2.6:
-    resolution: {integrity: sha512-sfWGGfavi0xr8Pg0sVsyHMAOziVYKgPLNrS7ig+ivMNb3wbCBw3KxtflsGBAwD3gYQlE/AEZsTLgToRrSCjb0Q==}
+  react@19.2.7:
+    resolution: {integrity: sha512-HNe9WslTbXmFK8o8cmwgAeJFSBvt1bPdHCVKtaaV+WlAN36mpT4hcRpwbf3fY56ar2oIXzsBpOAiIRHAdY0OlQ==}
     engines: {node: '>=0.10.0'}
 
   readdirp@3.6.0:
@@ -6273,26 +6273,26 @@ snapshots:
     dependencies:
       side-channel: 1.1.0
 
-  react-dom@19.2.7(react@19.2.6):
+  react-dom@19.2.7(react@19.2.7):
     dependencies:
-      react: 19.2.6
+      react: 19.2.7
       scheduler: 0.27.0
 
-  react-router-dom@7.16.0(react-dom@19.2.7(react@19.2.6))(react@19.2.6):
+  react-router-dom@7.16.0(react-dom@19.2.7(react@19.2.7))(react@19.2.7):
     dependencies:
-      react: 19.2.6
-      react-dom: 19.2.7(react@19.2.6)
-      react-router: 7.16.0(react-dom@19.2.7(react@19.2.6))(react@19.2.6)
+      react: 19.2.7
+      react-dom: 19.2.7(react@19.2.7)
+      react-router: 7.16.0(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
 
-  react-router@7.16.0(react-dom@19.2.7(react@19.2.6))(react@19.2.6):
+  react-router@7.16.0(react-dom@19.2.7(react@19.2.7))(react@19.2.7):
     dependencies:
       cookie: 1.1.1
-      react: 19.2.6
+      react: 19.2.7
       set-cookie-parser: 2.7.2
     optionalDependencies:
-      react-dom: 19.2.7(react@19.2.6)
+      react-dom: 19.2.7(react@19.2.7)
 
-  react@19.2.6: {}
+  react@19.2.7: {}
 
   readdirp@3.6.0:
     dependencies:
