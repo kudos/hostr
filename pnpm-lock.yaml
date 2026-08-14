@@ -18,7 +18,7 @@ importers:
     dependencies:
       '@hono/node-server':
         specifier: ^2.0.2
-        version: 2.1.0(hono@4.13.0)
+        version: 2.1.0(hono@4.13.1)
       '@opentelemetry/api':
         specifier: ^1.9.1
         version: 1.9.1
@@ -39,7 +39,7 @@ importers:
         version: 4.0.6
       hono:
         specifier: ^4.12.19
-        version: 4.13.0
+        version: 4.13.1
       image-size:
         specifier: ^2.0.2
         version: 2.0.2
@@ -2162,8 +2162,8 @@ packages:
     resolution: {integrity: sha512-F/1DnUGPopORZi0ni+CvrCgHQ5FyEAHRLSApuYWMmrbSwoN2Mn/7k+Gl38gJnR7yyDZk6WLXwiGod1JOWNDKGw==}
     hasBin: true
 
-  hono@4.13.0:
-    resolution: {integrity: sha512-jhunvfHWxd7J5EFfSgH4xsYJzSe/lfqbUCxiyyeaQasUsXeEHXtzVid+7EOGByc5JnFa23SSFL3Y2RV/z1T+eQ==}
+  hono@4.13.1:
+    resolution: {integrity: sha512-kdJoFVv2xmayw6cY09H7AbMJMt8Jn5jdlEdXsP7AGBdF2DIptVlKlOLKXP41yPip4/a3yQPv9gVcJYI8YY04dw==}
     engines: {node: '>=16.9.0'}
 
   https-proxy-agent@7.0.6:
@@ -3584,9 +3584,9 @@ snapshots:
       protobufjs: 7.5.9
       yargs: 17.7.2
 
-  '@hono/node-server@2.1.0(hono@4.13.0)':
+  '@hono/node-server@2.1.0(hono@4.13.1)':
     dependencies:
-      hono: 4.13.0
+      hono: 4.13.1
 
   '@humanfs/core@0.19.2':
     dependencies:
@@ -5786,7 +5786,7 @@ snapshots:
 
   he@1.2.0: {}
 
-  hono@4.13.0: {}
+  hono@4.13.1: {}
 
   https-proxy-agent@7.0.6(supports-color@5.5.0):
     dependencies:
