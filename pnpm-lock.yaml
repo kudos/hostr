@@ -182,8 +182,8 @@ importers:
         specifier: ^10.0.0
         version: 10.0.5
       dropzone:
-        specifier: 6.0.0-beta.2
-        version: 6.0.0-beta.2
+        specifier: 6.1.0
+        version: 6.1.0
       esbuild-loader:
         specifier: ^4.4.3
         version: 4.5.0(webpack@5.110.3)
@@ -1265,9 +1265,6 @@ packages:
   '@rtsao/scc@1.1.0':
     resolution: {integrity: sha512-zt6OdqaDoOnJ1ZYsCYGt9YmWzDXl4vQdKTyJev62gFhRGKdx7mcT54V9KIjg+d2wi9EXsPvAPKe7i7WjfVWB8g==}
 
-  '@swc/helpers@0.2.14':
-    resolution: {integrity: sha512-wpCQMhf5p5GhNg2MmGKXzUNwxe7zRiCsmqYsamez2beP7mKPCSiu+BjZcdN95yYSzO857kr0VfQewmGpS77nqA==}
-
   '@tokenizer/inflate@0.4.1':
     resolution: {integrity: sha512-2mAv+8pkG6GIZiF1kNg1jAjh27IDxEPKwdGul3snfztFerfPGI1LjDezZp3i7BElXompqEtPmoPx6c2wgtWsOA==}
     engines: {node: '>=18'}
@@ -1816,8 +1813,9 @@ packages:
     resolution: {integrity: sha512-7lAK2A0b3zZr3UC5aE69CPdCFR4RHW1o2Dr74TqFykxkUCBXSRJum/yPc7g8zRHJqWKomPLHwFLLoUnn8PXXRg==}
     deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
 
-  dropzone@6.0.0-beta.2:
-    resolution: {integrity: sha512-k44yLuFFhRk53M8zP71FaaNzJYIzr99SKmpbO/oZKNslDjNXQsBTdfLs+iONd0U0L94zzlFzRnFdqbLcs7h9fQ==}
+  dropzone@6.1.0:
+    resolution: {integrity: sha512-IJ8AdVeogaN9q3SOoAmaJ3md76UkU3pI/pcnC0FkBaM78XGUI8Rf/Xqysm96yFr0b9NuFzItqJRJgO4Rl4Q8BA==}
+    engines: {node: '>=20.19.0'}
 
   dunder-proto@1.0.1:
     resolution: {integrity: sha512-KIN/nDJBQRcXw0MLVhZE9iQHmG68qAVIBg9CqmUYjmQIhgij9U5MFvrqkUL5FbtyyzZuOeOt0zdeRe4UY7ct+A==}
@@ -4695,8 +4693,6 @@ snapshots:
 
   '@rtsao/scc@1.1.0': {}
 
-  '@swc/helpers@0.2.14': {}
-
   '@tokenizer/inflate@0.4.1(supports-color@5.5.0)':
     dependencies:
       debug: 4.4.3(supports-color@5.5.0)
@@ -5241,9 +5237,8 @@ snapshots:
 
   dottie@2.0.7: {}
 
-  dropzone@6.0.0-beta.2:
+  dropzone@6.1.0:
     dependencies:
-      '@swc/helpers': 0.2.14
       just-extend: 5.1.1
 
   dunder-proto@1.0.1:
