@@ -182,8 +182,8 @@ importers:
         specifier: ^10.0.0
         version: 10.0.5
       dropzone:
-        specifier: 6.1.0
-        version: 6.1.0
+        specifier: 6.2.0
+        version: 6.2.0
       esbuild-loader:
         specifier: ^4.4.3
         version: 4.5.0(webpack@5.110.3)
@@ -1813,8 +1813,8 @@ packages:
     resolution: {integrity: sha512-7lAK2A0b3zZr3UC5aE69CPdCFR4RHW1o2Dr74TqFykxkUCBXSRJum/yPc7g8zRHJqWKomPLHwFLLoUnn8PXXRg==}
     deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
 
-  dropzone@6.1.0:
-    resolution: {integrity: sha512-IJ8AdVeogaN9q3SOoAmaJ3md76UkU3pI/pcnC0FkBaM78XGUI8Rf/Xqysm96yFr0b9NuFzItqJRJgO4Rl4Q8BA==}
+  dropzone@6.2.0:
+    resolution: {integrity: sha512-oL6hkyz707aiPTcaFW6iGVbYAzJsMG819lvTQ2MYw/dzF6KnYUKj+cOt0QLkRl5NmEIZwExUwN+H3KzogctpTA==}
     engines: {node: '>=20.19.0'}
 
   dunder-proto@1.0.1:
@@ -2451,9 +2451,6 @@ packages:
     resolution: {integrity: sha512-XmOWe7eyHYH14cLdVPoyg+GOH3rYX++KpzrylJwSW98t3Nk+U8XOl8FWKOgwtzdb8lXGf6zYwDUzeHMWfxasyg==}
     engines: {node: '>=6'}
     hasBin: true
-
-  just-extend@5.1.1:
-    resolution: {integrity: sha512-b+z6yF1d4EOyDgylzQo5IminlUmzSeqR1hs/bzjBNjuGras4FXq/6TrzjxfN0j+TmI0ltJzTNlqXUMCniciwKQ==}
 
   keyv@5.6.0:
     resolution: {integrity: sha512-CYDD3SOtsHtyXeEORYRx2qBtpDJFjRTGXUtmNEMGyzYOKj1TE3tycdlho7kA1Ufx9OYWZzg52QFBGALTirzDSw==}
@@ -5237,9 +5234,7 @@ snapshots:
 
   dottie@2.0.7: {}
 
-  dropzone@6.1.0:
-    dependencies:
-      just-extend: 5.1.1
+  dropzone@6.2.0: {}
 
   dunder-proto@1.0.1:
     dependencies:
@@ -6014,8 +6009,6 @@ snapshots:
       minimist: 1.2.8
 
   json5@2.2.3: {}
-
-  just-extend@5.1.1: {}
 
   keyv@5.6.0:
     dependencies:
