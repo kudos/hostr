@@ -2,7 +2,7 @@
 # (the test suite runs inside this stage, where devDependencies exist).
 FROM node:26.8.2 AS builder
 WORKDIR /app
-RUN npm install -g pnpm@11.5.0
+RUN npm install -g pnpm@12.4.1
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile
 COPY . .
@@ -13,7 +13,7 @@ RUN pnpm run build
 FROM node:26.8.2-slim AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
-RUN npm install -g pnpm@11.5.0
+RUN npm install -g pnpm@12.4.1
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile --prod
 COPY . .
@@ -23,4 +23,7 @@ COPY --from=builder /app/web/public/styles ./web/public/styles
 ENV PORT=3000
 EXPOSE 3000
 
-CMD ["pnpm", "start"]
+# Run node directly rather than `pnpm start`: pnpm 12 verifies node_modules
+# against the lockfile before running scripts and, seeing only prod deps
+# installed, tries a full install at container start (which then fails).
+CMD ["node", "app.js"]
