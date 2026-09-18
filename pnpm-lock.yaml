@@ -239,8 +239,8 @@ importers:
         specifier: ^10.0.0
         version: 10.0.5
       dropzone:
-        specifier: 6.2.0
-        version: 6.2.0
+        specifier: 6.3.4
+        version: 6.3.4
       esbuild-loader:
         specifier: ^4.4.3
         version: 4.5.0(webpack@5.110.3)
@@ -1870,8 +1870,8 @@ packages:
     resolution: {integrity: sha512-7lAK2A0b3zZr3UC5aE69CPdCFR4RHW1o2Dr74TqFykxkUCBXSRJum/yPc7g8zRHJqWKomPLHwFLLoUnn8PXXRg==}
     deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
 
-  dropzone@6.2.0:
-    resolution: {integrity: sha512-oL6hkyz707aiPTcaFW6iGVbYAzJsMG819lvTQ2MYw/dzF6KnYUKj+cOt0QLkRl5NmEIZwExUwN+H3KzogctpTA==}
+  dropzone@6.3.4:
+    resolution: {integrity: sha512-Qlc8TE7MaP2FzKWFXCD81kf/BMaw2hVSUO7i/4ItCLQM0UHEPuZJSP78Guj2U+G+ld3C7OvV+33VJYJLhY4KLw==}
     engines: {node: '>=20.19.0'}
 
   dunder-proto@1.0.1:
@@ -5295,7 +5295,7 @@ snapshots:
 
   dottie@2.0.7: {}
 
-  dropzone@6.2.0: {}
+  dropzone@6.3.4: {}
 
   dunder-proto@1.0.1:
     dependencies:
