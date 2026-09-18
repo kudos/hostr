@@ -92,14 +92,18 @@ jobs:
             --network-alias redis \
             docker.io/library/redis:8-alpine
 
+      # Check over TCP, not the unix socket: the postgres image's entrypoint
+      # first runs a temporary socket-only server for initdb, and a socket
+      # pg_isready passes during that phase and then fails once it stops.
       - name: Wait for postgres to be ready
         run: |
           for i in $(seq 1 30); do
-            podman exec database-$RUN_ID pg_isready -U hostr && break
+            podman exec database-$RUN_ID pg_isready -h 127.0.0.1 -U hostr -d hostr && exit 0
             echo "Waiting for postgres... ($i/30)"
             sleep 2
           done
-          podman exec database-$RUN_ID pg_isready -U hostr
+          echo "postgres did not become ready" >&2
+          exit 1
 
       - name: Test image
         run: |
