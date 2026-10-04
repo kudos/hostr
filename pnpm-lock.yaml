@@ -209,7 +209,7 @@ importers:
         version: 3.0.2
       nodemailer:
         specifier: ^10.0.0
-        version: 10.0.13
+        version: 10.0.14
       passwords:
         specifier: ^1.3.1
         version: 1.3.1
@@ -2685,8 +2685,8 @@ packages:
     resolution: {integrity: sha512-wRNIrw4DmVLKQlbgOMdkMx27Wrpzes2hh5Jtbi2bjPd+4wJstWIqP5A+lscnqbm0xxmT5Bpg8Lec5ItEBwx6BQ==}
     engines: {node: '>=18'}
 
-  nodemailer@10.0.13:
-    resolution: {integrity: sha512-SzG86OlvcW/NNhUFC6uROMwRTL4n7MswfQqC/T8mhkmnY1YVa23zUEMYi4ijSeXSl9GLz9ZeTJDUatEDuY5FeQ==}
+  nodemailer@10.0.14:
+    resolution: {integrity: sha512-eJoLFKg55fesSlzUekmfOv/SBXh4KUYT8oiQc2RLP0tfG0rbNMJBK7wgHJwXTJwqyKlSJMz9UzDZ4v+aHEvo8g==}
     engines: {node: '>=20.0.0'}
 
   nodemon@3.1.14:
@@ -6191,7 +6191,7 @@ snapshots:
 
   node-releases@2.0.51: {}
 
-  nodemailer@10.0.13: {}
+  nodemailer@10.0.14: {}
 
   nodemon@3.1.14:
     dependencies:
