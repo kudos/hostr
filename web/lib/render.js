@@ -28,6 +28,6 @@ export async function render(c, view, locals = {}) {
     apiURL: process.env.API_BASE_URL,
     assetVersions,
     ...locals,
-  });
+  }, { async: true });
   return c.html(html);
 }

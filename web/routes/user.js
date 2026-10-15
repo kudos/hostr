@@ -13,16 +13,15 @@ const debug = debugname('hostr-web:user');
 export async function signin(c) {
   const body = await c.req.parseBody().catch(() => ({}));
   if (!body.email) {
-    return render(c, 'signin', { csrf: c.get('csrf'), async: true });
+    return render(c, 'signin', { csrf: c.get('csrf') });
   }
   const user = await authenticate(c, body.email, body.password);
   if (!user || !user.id) {
-    return render(c, 'signin', { error: 'Invalid login details', csrf: c.get('csrf'), async: true });
+    return render(c, 'signin', { error: 'Invalid login details', csrf: c.get('csrf') });
   } else if (user.activationCode) {
     return render(c, 'signin', {
       error: "Your account hasn't been activated yet. Check for an activation email.",
       csrf: c.get('csrf'),
-      async: true,
     });
   }
   await setupSession(c, user);
@@ -30,7 +29,7 @@ export async function signin(c) {
 }
 
 export async function signup(c) {
-  return render(c, 'signup', { error: 'Signups are disabled.', csrf: c.get('csrf'), async: true });
+  return render(c, 'signup', { error: 'Signups are disabled.', csrf: c.get('csrf') });
 }
 
 export async function forgot(c) {
@@ -43,7 +42,6 @@ export async function forgot(c) {
         error: 'Password needs to be at least 7 characters long.',
         csrf: c.get('csrf'),
         token,
-        async: true,
       });
     }
     const resetUser = await validateResetToken(token);
@@ -61,10 +59,9 @@ export async function forgot(c) {
         error: 'Invalid password reset token. It might be expired, or has already been used.',
         csrf: c.get('csrf'),
         token: null,
-        async: true,
       });
     }
-    return render(c, 'forgot', { csrf: c.get('csrf'), token, async: true });
+    return render(c, 'forgot', { csrf: c.get('csrf'), token });
   } else if (body.email) {
     try {
       await sendResetToken(body.email);
@@ -72,13 +69,12 @@ export async function forgot(c) {
         message: "We've sent an email with a link to reset your password. Be sure to check your spam folder if it doesn't appear within a few minutes.",
         csrf: c.get('csrf'),
         token: null,
-        async: true,
       });
     } catch (error) {
       debug(error);
     }
   }
-  return render(c, 'forgot', { csrf: c.get('csrf'), token: null, async: true });
+  return render(c, 'forgot', { csrf: c.get('csrf'), token: null });
 }
 
 export async function logout(c) {
