@@ -191,7 +191,7 @@ importers:
         version: 4.4.3(supports-color@5.5.0)
       ejs:
         specifier: ^7.0.0
-        version: 7.0.1
+        version: 7.0.2
       form-data:
         specifier: ^4.0.5
         version: 4.0.6
@@ -1857,8 +1857,8 @@ packages:
     resolution: {integrity: sha512-KIN/nDJBQRcXw0MLVhZE9iQHmG68qAVIBg9CqmUYjmQIhgij9U5MFvrqkUL5FbtyyzZuOeOt0zdeRe4UY7ct+A==}
     engines: {node: '>= 0.4'}
 
-  ejs@7.0.1:
-    resolution: {integrity: sha512-TrAb1fY4jNY6aQrNjMJsoWQxGUK47A38JxuUvnt75vDcAA9Ln7ur6FHo+irVa5Bwd3w9rdUT3xLSl5MRgHIugg==}
+  ejs@7.0.2:
+    resolution: {integrity: sha512-LcDSEP6Oclb9sTiSyG0MpG0RuKvLDRxCOOt+2sIk+kdk1rMkFU8SRnT0qaNt5zvU0LOV1YXXOvIoZL/sKwabvw==}
     engines: {node: '>=0.12.18'}
     hasBin: true
 
@@ -5272,7 +5272,7 @@ snapshots:
       es-errors: 1.3.0
       gopd: 1.2.0
 
-  ejs@7.0.1: {}
+  ejs@7.0.2: {}
 
   electron-to-chromium@1.5.400: {}
 
