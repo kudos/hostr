@@ -69,26 +69,33 @@ jobs:
       - name: Check out repository
         uses: https://cremin.dev/actions/checkout@v4
 
-      - name: Clean up any leftover containers and network from previous runs
+      # Re-running a job keeps the same run_id. If an earlier attempt died
+      # mid-run (e.g. podman crashed), recreating a network with the same name
+      # comes back with broken aardvark-dns resolution (EAI_AGAIN on `database`),
+      # so give every attempt its own names and label them by run for cleanup.
+      - name: Set per-attempt test id
+        run: echo "TEST_ID=$RUN_ID-$(date +%s)" >> $GITHUB_ENV
+
+      - name: Clean up any leftover containers and network from previous attempts
         run: |
-          podman rm -f hostr-test-app-$RUN_ID database-$RUN_ID redis-$RUN_ID || true
-          podman network inspect hostr-test-$RUN_ID -f '{{range .Containers}}{{.Name}} {{end}}' 2>/dev/null \
-            | xargs -r podman network disconnect hostr-test-$RUN_ID 2>/dev/null || true
-          podman network rm hostr-test-$RUN_ID 2>/dev/null || true
+          podman ps -aq --filter label=hostr-ci-run=$RUN_ID | xargs -r podman rm -f || true
+          podman network ls -q --filter label=hostr-ci-run=$RUN_ID | xargs -r podman network rm -f || true
 
       - name: Create test network
-        run: podman network create hostr-test-$RUN_ID
+        run: podman network create --label hostr-ci-run=$RUN_ID hostr-test-$TEST_ID
 
       - name: Start services
         run: |
-          podman run -d --name database-$RUN_ID --network hostr-test-$RUN_ID \
+          podman run -d --name database-$TEST_ID --network hostr-test-$TEST_ID \
+            --label hostr-ci-run=$RUN_ID \
             --network-alias database \
             -e POSTGRES_PASSWORD=hostr \
             -e POSTGRES_USER=hostr \
             -e POSTGRES_DB=hostr \
             docker.io/library/postgres:18-alpine
 
-          podman run -d --name redis-$RUN_ID --network hostr-test-$RUN_ID \
+          podman run -d --name redis-$TEST_ID --network hostr-test-$TEST_ID \
+            --label hostr-ci-run=$RUN_ID \
             --network-alias redis \
             docker.io/library/redis:8-alpine
 
@@ -98,7 +105,7 @@ jobs:
       - name: Wait for postgres to be ready
         run: |
           for i in $(seq 1 30); do
-            podman exec database-$RUN_ID pg_isready -h 127.0.0.1 -U hostr -d hostr && exit 0
+            podman exec database-$TEST_ID pg_isready -h 127.0.0.1 -U hostr -d hostr && exit 0
             echo "Waiting for postgres... ($i/30)"
             sleep 2
           done
@@ -108,8 +115,9 @@ jobs:
       - name: Test image
         run: |
           podman run \
-            --name hostr-test-app-$RUN_ID \
-            --network hostr-test-$RUN_ID \
+            --name hostr-test-app-$TEST_ID \
+            --network hostr-test-$TEST_ID \
+            --label hostr-ci-run=$RUN_ID \
             --env-file ./.forgejo/workflows/.env \
             --stop-timeout 10 \
             --pull never \
@@ -119,6 +127,6 @@ jobs:
       - name: Cleanup
         if: ${{ always() }}
         run: |
-          podman rm -f hostr-test-app-$RUN_ID database-$RUN_ID redis-$RUN_ID || true
-          podman network rm hostr-test-$RUN_ID 2>/dev/null || true
+          podman rm -f hostr-test-app-$TEST_ID database-$TEST_ID redis-$TEST_ID || true
+          podman network rm hostr-test-$TEST_ID 2>/dev/null || true
           podman rmi localhost/hostr:${{ github.sha }}-builder 2>/dev/null || true
