@@ -279,10 +279,10 @@ importers:
         version: 0.2.7
       webpack:
         specifier: ^5.106.2
-        version: 5.112.2(esbuild@0.28.1)(webpack-cli@7.2.3)
+        version: 5.112.2(esbuild@0.28.1)(webpack-cli@7.3.0)
       webpack-cli:
         specifier: ^7.0.2
-        version: 7.2.3(js-yaml@5.4.1)(json5@2.2.3)(webpack@5.112.2)
+        version: 7.3.0(js-yaml@5.4.1)(json5@2.2.3)(webpack@5.112.2)
 
 packages:
 
@@ -2908,9 +2908,9 @@ packages:
     resolution: {integrity: sha512-Kko+Y5XQ6fM+Ce3dq3m9YGxnacYZYl9cA1wZjaF3Vbry2L3i1qVg8+CAgNPsXRArPMUMCaOR7oa9Nqntc43JKA==}
     engines: {node: '>= 20.19.0'}
 
-  rechoir@0.8.0:
-    resolution: {integrity: sha512-/vxpCXddiX8NGfGO/mTafwjq4aFa/71pvamip0++IQk3zG8cbCj0fifNPrjjF1XMXUne91jL9OoxmdykoEtifQ==}
-    engines: {node: '>= 10.13.0'}
+  rechoir@1.0.0:
+    resolution: {integrity: sha512-vyBa7bWz11iJRwzJR0nGLt6r45bymWfYXAgd1FmP08BNP/DHAVabgpGPyEXQmBtKvhgxi17SQz2szhvkberQsg==}
+    engines: {node: '>= 22.15.0'}
 
   redis@6.3.1:
     resolution: {integrity: sha512-mV96ZKxQ4CGn3SyEGaY0Lb9YA443mdVey3c+mdr0NAUaBxiOZGoYCWX8PoM55kictSOmxlJRtZJxIsmZm3jL+w==}
@@ -2950,11 +2950,6 @@ packages:
 
   resolve-pkg-maps@1.0.0:
     resolution: {integrity: sha512-seS2Tj26TBVOC2NIc2rOe2y2ZO7efxITtLZcGSOnHHNOQ7CkiUBfw0Iw2ck6xkIhPwLhKNLS8BO+hEpngQlqzw==}
-
-  resolve@1.22.12:
-    resolution: {integrity: sha512-TyeJ1zif53BPfHootBGwPRYT1RUt6oGWsaQr8UyZW/eAm9bKoijtvruSDEmZHm92CwS9nj7/fWttqPCgzep8CA==}
-    engines: {node: '>= 0.4'}
-    hasBin: true
 
   resolve@2.0.0-next.7:
     resolution: {integrity: sha512-tqt+NBWwyaMgw3zDsnygx4CByWjQEJHOPMdslYhppaQSJUtL/D4JO9CcBBlhPoI8lz9oJIDXkwXfhF4aWqP8xQ==}
@@ -3326,11 +3321,12 @@ packages:
     resolution: {integrity: sha512-d2JWLCivmZYTSIoge9MsgFCZrt571BikcWGYkjC1khllbTeDlGqZ2D8vD8E/lJa8WGWbb7Plm8/XJYV7IJHZZw==}
     engines: {node: '>= 8'}
 
-  webpack-cli@7.2.3:
-    resolution: {integrity: sha512-vDFU7jrfCctnN7jJQWPl+V26B51GLp11prVZXg50oeonsgeBzSTJEWmXkjHsOjTgMjlPOQM8GWLh33X9RN/0ow==}
+  webpack-cli@7.3.0:
+    resolution: {integrity: sha512-roVjyVzEecpl5CnP8YlPZZM8ZIi7OqD3at02/NbGsG+/iRWp6f9OZkaDxIodRIQ7d36AZ/c9qx11L04TpyO9Hw==}
     engines: {node: '>=20.9.0'}
     hasBin: true
     peerDependencies:
+      '@bomb.sh/tab': ^0.0.22
       js-yaml: ^4.0.0 || ^5.0.0
       json5: ^2.2.3
       toml: ^3.0.0 || ^4.0.0 || ^5.0.0
@@ -3338,6 +3334,8 @@ packages:
       webpack-bundle-analyzer: ^4.0.0 || ^5.0.0
       webpack-dev-server: ^5.0.0 || ^6.0.0
     peerDependenciesMeta:
+      '@bomb.sh/tab':
+        optional: true
       js-yaml:
         optional: true
       json5:
@@ -5335,7 +5333,7 @@ snapshots:
       esbuild: 0.28.1
       get-tsconfig: 4.14.0
       loader-utils: 2.0.4
-      webpack: 5.112.2(esbuild@0.28.1)(webpack-cli@7.2.3)
+      webpack: 5.112.2(esbuild@0.28.1)(webpack-cli@7.3.0)
       webpack-sources: 3.5.0
 
   esbuild@0.28.1:
@@ -6053,7 +6051,7 @@ snapshots:
       jest-worker: 27.5.1
       schema-utils: 4.8.1(webpack@5.112.2)
       terser: 5.51.2
-      webpack: 5.112.2(esbuild@0.28.1)(webpack-cli@7.2.3)
+      webpack: 5.112.2(esbuild@0.28.1)(webpack-cli@7.3.0)
     optionalDependencies:
       esbuild: 0.28.1
 
@@ -6360,9 +6358,7 @@ snapshots:
 
   readdirp@5.1.1: {}
 
-  rechoir@0.8.0:
-    dependencies:
-      resolve: 1.22.12
+  rechoir@1.0.0: {}
 
   redis@6.3.1(@opentelemetry/api@1.10.0):
     dependencies:
@@ -6415,13 +6411,6 @@ snapshots:
   resolve-from@5.0.0: {}
 
   resolve-pkg-maps@1.0.0: {}
-
-  resolve@1.22.12:
-    dependencies:
-      es-errors: 1.3.0
-      is-core-module: 2.16.2
-      path-parse: 1.0.7
-      supports-preserve-symlinks-flag: 1.0.0
 
   resolve@2.0.0-next.7:
     dependencies:
@@ -6476,7 +6465,7 @@ snapshots:
       ajv-formats: 3.0.1
       ajv-keywords: 5.1.0(ajv@8.20.0)
     optionalDependencies:
-      webpack: 5.112.2(esbuild@0.28.1)(webpack-cli@7.2.3)
+      webpack: 5.112.2(esbuild@0.28.1)(webpack-cli@7.3.0)
 
   semver@6.3.1: {}
 
@@ -6834,7 +6823,7 @@ snapshots:
 
   web-streams-polyfill@3.3.3: {}
 
-  webpack-cli@7.2.3(js-yaml@5.4.1)(json5@2.2.3)(webpack@5.112.2):
+  webpack-cli@7.3.0(js-yaml@5.4.1)(json5@2.2.3)(webpack@5.112.2):
     dependencies:
       '@discoveryjs/json-ext': 1.1.0
       commander: 14.0.3
@@ -6842,8 +6831,8 @@ snapshots:
       envinfo: 7.21.0
       import-local: 3.2.0
       interpret: 3.1.1
-      rechoir: 0.8.0
-      webpack: 5.112.2(esbuild@0.28.1)(webpack-cli@7.2.3)
+      rechoir: 1.0.0
+      webpack: 5.112.2(esbuild@0.28.1)(webpack-cli@7.3.0)
       webpack-merge: 6.0.1
     optionalDependencies:
       js-yaml: 5.4.1
@@ -6859,7 +6848,7 @@ snapshots:
 
   webpack-sources@3.6.0: {}
 
-  webpack@5.112.2(esbuild@0.28.1)(webpack-cli@7.2.3):
+  webpack@5.112.2(esbuild@0.28.1)(webpack-cli@7.3.0):
     dependencies:
       '@types/estree': 1.0.9
       '@types/json-schema': 7.0.15
@@ -6879,7 +6868,7 @@ snapshots:
       watchpack: 2.6.3
       webpack-sources: 3.6.0
     optionalDependencies:
-      webpack-cli: 7.2.3(js-yaml@5.4.1)(json5@2.2.3)(webpack@5.112.2)
+      webpack-cli: 7.3.0(js-yaml@5.4.1)(json5@2.2.3)(webpack@5.112.2)
     transitivePeerDependencies:
       - '@minify-html/node'
       - '@napi-rs/image'
