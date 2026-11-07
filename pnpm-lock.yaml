@@ -200,7 +200,7 @@ importers:
         version: 4.13.16
       image-size:
         specifier: ^2.0.2
-        version: 2.0.4
+        version: 2.1.0
       jimp:
         specifier: ^1.6.1
         version: 1.6.1(supports-color@5.5.0)
@@ -2271,8 +2271,8 @@ packages:
   image-q@4.0.0:
     resolution: {integrity: sha512-PfJGVgIfKQJuq3s0tTDOKtztksibuUEbJQIYT3by6wctQo+Rdlh7ef4evJ5NCdxY4CfMbvFkocEwbl4BF8RlJw==}
 
-  image-size@2.0.4:
-    resolution: {integrity: sha512-QRUkFFsRV/6fuESxb9Vkq+a0LkSrgKXuc2NEqfikiXxxN/G3tjWt5EVUlMaImRBZRZK/jRBEbYvpPYZL8t08Zw==}
+  image-size@2.1.0:
+    resolution: {integrity: sha512-6Dbisa46RsgeAh3TMSFL2i8+uIFG+/LRmz6Q2oscSJJvXo1sOw3EgNO4M8jPl1P+gR1atJLDPrpclX4IHz63sA==}
     engines: {node: '>=18'}
     hasBin: true
 
@@ -5735,7 +5735,7 @@ snapshots:
     dependencies:
       '@types/node': 16.9.1
 
-  image-size@2.0.4: {}
+  image-size@2.1.0: {}
 
   immutable@5.1.9: {}
 
